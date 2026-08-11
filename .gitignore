@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build output (source-only distribution — see README.md §Distribution)
+dist/
+build/
+.turbo/
+
+# Local caches
+.cache/
+.parcel-cache/
+.vite/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env
+.env
+.env.local
+.env.*.local
