@@ -22,6 +22,7 @@
 .hc-btn {
   position: relative;
   display: inline-flex;
+  flex-direction: row; /* explicit — prevents app-level CSS from overriding to column */
   align-items: center;
   justify-content: center;
   gap: var(--hc-space-inline-xs);
@@ -177,6 +178,48 @@
 .hc-btn--danger[aria-disabled="true"] {
   background:   var(--hc-color-bg-muted);
   border-color: var(--hc-color-bg-muted);
+  color:        var(--hc-color-text-disabled);
+}
+
+/* ── Success (green outline — positive/affirmation actions like "Complete") ──── */
+.hc-btn--success {
+  background:   var(--hc-color-bg-default);
+  border-color: var(--hc-color-status-success-border);
+  color:        var(--hc-color-status-success-fg);
+}
+.hc-btn--success:hover:not(:disabled):not([aria-disabled="true"]) {
+  background:   var(--hc-color-status-success-bg);
+  border-color: var(--hc-color-green-200);
+}
+.hc-btn--success:active:not(:disabled):not([aria-disabled="true"]) {
+  background:   var(--hc-color-green-100);
+  border-color: var(--hc-color-green-300);
+}
+.hc-btn--success:disabled,
+.hc-btn--success[aria-disabled="true"] {
+  background:   var(--hc-color-bg-default);
+  border-color: var(--hc-color-border-subtle);
+  color:        var(--hc-color-text-disabled);
+}
+
+/* ── Danger Outline (red outline — soft-destructive actions like "Dismiss") ──── */
+.hc-btn--danger-outline {
+  background:   var(--hc-color-bg-default);
+  border-color: var(--hc-color-status-error-border);
+  color:        var(--hc-color-status-error-fg);
+}
+.hc-btn--danger-outline:hover:not(:disabled):not([aria-disabled="true"]) {
+  background:   var(--hc-color-status-error-bg);
+  border-color: var(--hc-color-red-200);
+}
+.hc-btn--danger-outline:active:not(:disabled):not([aria-disabled="true"]) {
+  background:   var(--hc-color-red-100);
+  border-color: var(--hc-color-red-300);
+}
+.hc-btn--danger-outline:disabled,
+.hc-btn--danger-outline[aria-disabled="true"] {
+  background:   var(--hc-color-bg-default);
+  border-color: var(--hc-color-border-subtle);
   color:        var(--hc-color-text-disabled);
 }
 

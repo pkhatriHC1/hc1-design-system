@@ -7,7 +7,7 @@
  * to add a new visual, add an alias, then extend this file.
  *
  * Shipped variants match the reference implementation exactly:
- *   primary · secondary · ghost · danger · link · icon
+ *   primary · secondary · ghost · danger · danger-outline · success · cta · link · icon
  */
 
 import { aliases } from "../aliases";
@@ -74,6 +74,24 @@ export const button = {
       text:               color.text.inverse,
       textDisabled:       color.text.disabled,
       border:             color.action.danger,
+    },
+    success: {
+      background:         color.background.default,
+      backgroundHover:    color.status.success.bg,
+      backgroundActive:   color.status.success.border,
+      backgroundDisabled: color.background.default,
+      text:               color.status.success.fg,
+      textDisabled:       color.text.disabled,
+      border:             color.status.success.border,
+    },
+    "danger-outline": {
+      background:         color.background.default,
+      backgroundHover:    color.status.error.bg,
+      backgroundActive:   color.status.error.border,
+      backgroundDisabled: color.background.default,
+      text:               color.status.error.fg,
+      textDisabled:       color.text.disabled,
+      border:             color.status.error.border,
     },
     link: {
       background:         "transparent",

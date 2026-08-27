@@ -16,7 +16,7 @@ import {
   t,
 } from "../standards/_shared";
 
-const VARIANTS: ButtonVariant[] = ["primary", "secondary", "ghost", "danger", "cta", "link", "icon"];
+const VARIANTS: ButtonVariant[] = ["primary", "secondary", "ghost", "danger", "danger-outline", "success", "cta", "link", "icon"];
 const SIZES: ButtonSize[]        = ["xs", "sm", "md", "lg", "xl"];
 
 export function ButtonDoc() {
