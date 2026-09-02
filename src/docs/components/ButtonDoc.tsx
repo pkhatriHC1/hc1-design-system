@@ -104,13 +104,15 @@ function Part({ name, desc }: { name: string; desc: string }) {
 /* ══════ Variants ════════════════════════════════════════════════════ */
 
 const VARIANT_META: Record<ButtonVariant, { usage: string }> = {
-  primary:   { usage: "The one primary action per surface — Save, Submit, Create, Generate." },
-  secondary: { usage: "Supporting actions alongside the primary — Cancel, Reset, Back." },
-  ghost:     { usage: "Low-emphasis actions in dense surfaces — toolbars, table row actions." },
-  danger:    { usage: "Destructive and unrecoverable actions — Delete, Revoke, Disable." },
-  cta:       { usage: "Execute / irreversible actions — Publish, Send, Approve, Finalize. Reserved: never the default." },
-  link:      { usage: "Actions that read as text but behave as buttons — inline 'Learn more', 'Undo'." },
-  icon:      { usage: "Icon-only actions where space is scarce — requires an aria-label." },
+  primary:          { usage: "The one primary action per surface — Save, Submit, Create, Generate." },
+  secondary:        { usage: "Supporting actions alongside the primary — Cancel, Reset, Back." },
+  ghost:            { usage: "Low-emphasis actions in dense surfaces — toolbars, table row actions." },
+  danger:           { usage: "Destructive and unrecoverable actions — Delete, Revoke, Disable." },
+  "danger-outline": { usage: "Soft-destructive actions that shouldn't shout — Dismiss, Discard draft, Remove filter." },
+  success:          { usage: "Positive-affirmation actions — Complete, Approve step, Accept. Not a substitute for primary." },
+  cta:              { usage: "Execute / irreversible actions — Publish, Send, Approve, Finalize. Reserved: never the default." },
+  link:             { usage: "Actions that read as text but behave as buttons — inline 'Learn more', 'Undo'." },
+  icon:             { usage: "Icon-only actions where space is scarce — requires an aria-label." },
 };
 
 function VariantsBlock() {
@@ -621,7 +623,7 @@ function ControlLabel({ children }: { children: React.ReactNode }) {
 type PropRow = { name: string; type: string; def: string; desc: string };
 
 const PROPS: PropRow[] = [
-  { name: "variant",   type: "'primary' | 'secondary' | 'ghost' | 'danger' | 'cta' | 'link' | 'icon'", def: "'primary'", desc: "Visual variant. See Standards → Variants." },
+  { name: "variant",   type: "'primary' | 'secondary' | 'ghost' | 'danger' | 'danger-outline' | 'success' | 'cta' | 'link' | 'icon'", def: "'primary'", desc: "Visual variant. See Standards → Variants." },
   { name: "size",      type: "'xs' | 'sm' | 'md' | 'lg' | 'xl'",                                def: "'md'",      desc: "Size ladder. See Standards → Sizes." },
   { name: "loading",   type: "boolean",                                                          def: "false",     desc: "Show spinner, reject clicks, announce via aria-busy. Preserves layout." },
   { name: "disabled",  type: "boolean",                                                          def: "false",     desc: "Native disabled + aria-disabled. Not focusable." },
@@ -759,23 +761,23 @@ function NotesBlock() {
     <DocBlock title="Implementation notes">
       <RuleList
         rules={[
-          { tone: "note", text: "The component's CSS lives at Button.css and references CSS custom properties from tokens/css/variables.css. Importing Button pulls both in — no separate setup step." },
-          { tone: "note", text: "No Tailwind color utilities are used anywhere in the component. All colors resolve to --hc-color-* variables via the alias layer." },
-          { tone: "note", text: "The component does not currently support asChild / polymorphism. A follow-up PR may add Radix Slot support when a real use case appears." },
-          { tone: "note", text: "Success and Info are documented in Standards → Variants but are not shipped as Button variants — they are feedback intents, not action intents (see the Variants standard)." },
+          { tone: "note", text: "Styling uses cva (class-variance-authority) + Tailwind v4 utilities that resolve to HC1 tokens via the @theme block in tokens/css/theme.css. There is no per-component .css file to import." },
+          { tone: "note", text: "Every color, padding, height, radius, and state maps 1:1 to the same --hc-* alias the previous Button.css consumed. The delivery mechanism changed; the visual output did not." },
+          { tone: "note", text: "The component does not currently support asChild / polymorphism. A follow-up PR may add @radix-ui/react-slot when a real use case appears." },
+          { tone: "note", text: "Info is documented in Standards → Variants but is not shipped as a Button variant — it is a feedback intent, not an action intent (see the Variants standard)." },
         ]}
       />
 
       <Callout tone="info" title="Adding a new variant">
-        (1) Propose an alias if a new color role is needed. (2) Extend
+        (1) Propose an alias if a new color role is needed. (2) Add a new entry to the
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          tokens/components/button.ts
+          variant
         </code>
-        with the variant tokens. (3) Add a
+        map in the
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          .hc-btn--{"{name}"}
+          buttonVariants
         </code>
-        block in Button.css. (4) Extend the ButtonVariant union in Button.types.ts. (5) Update this doc page. No shell changes.
+        cva call inside Button.tsx, using Tailwind utilities that reference the alias. (3) Extend the ButtonVariant union in Button.types.ts. (4) Update this doc page. No shell changes.
       </Callout>
     </DocBlock>
   );
