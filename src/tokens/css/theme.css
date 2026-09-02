@@ -1,0 +1,300 @@
+/* ─────────────────────────────────────────────────────────────────────
+ * HC1 Tailwind v4 @theme block.
+ *
+ * Bridges HC1 primitive tokens (declared in variables.css as --hc-*)
+ * into Tailwind v4's utility generator so classes like `bg-brand-500`,
+ * `p-16`, `rounded-control`, `shadow-md`, `duration-250`, and shadcn's
+ * `bg-primary` / `text-primary-foreground` are all available.
+ *
+ * SOURCE OF TRUTH
+ *   Every value here is `var(--hc-*)` — the raw hex/px/ms literals live
+ *   ONLY in variables.css. This file exists to expose them to Tailwind's
+ *   utility layer, not to redefine them.
+ *
+ *   The shadcn semantic layer (--primary, --border, --ring, etc.) lives
+ *   in shadcn-bridge.css and is referenced from the @theme --color-*
+ *   entries at the bottom of this file.
+ *
+ * LOAD ORDER
+ *   variables.css (below) @imports this file. Tailwind v4 processes
+ *   @theme at build time; the emitted CSS custom properties resolve
+ *   against variables.css + shadcn-bridge.css at runtime.
+ * ─────────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* ═══ COLORS — primitive ramps ══════════════════════════════════════
+     Every ramp mirrors ../primitives/colors.ts and variables.css.
+     Generates utilities: bg-brand-500, text-red-700, border-neutral-200, etc.
+     Ramp values are NOT redefined here — they reference --hc-color-* so
+     variables.css remains the single source of truth. */
+
+  --color-white: var(--hc-color-white);
+  --color-black: var(--hc-color-black);
+
+  --color-brand-50:  var(--hc-color-brand-50);
+  --color-brand-100: var(--hc-color-brand-100);
+  --color-brand-200: var(--hc-color-brand-200);
+  --color-brand-300: var(--hc-color-brand-300);
+  --color-brand-400: var(--hc-color-brand-400);
+  --color-brand-500: var(--hc-color-brand-500);
+  --color-brand-600: var(--hc-color-brand-600);
+  --color-brand-700: var(--hc-color-brand-700);
+  --color-brand-800: var(--hc-color-brand-800);
+  --color-brand-900: var(--hc-color-brand-900);
+  --color-brand-950: var(--hc-color-brand-950);
+
+  --color-accent-50:  var(--hc-color-accent-50);
+  --color-accent-100: var(--hc-color-accent-100);
+  --color-accent-200: var(--hc-color-accent-200);
+  --color-accent-300: var(--hc-color-accent-300);
+  --color-accent-400: var(--hc-color-accent-400);
+  --color-accent-500: var(--hc-color-accent-500);
+  --color-accent-600: var(--hc-color-accent-600);
+  --color-accent-700: var(--hc-color-accent-700);
+  --color-accent-800: var(--hc-color-accent-800);
+  --color-accent-900: var(--hc-color-accent-900);
+  --color-accent-950: var(--hc-color-accent-950);
+
+  --color-violet-50:  var(--hc-color-violet-50);
+  --color-violet-100: var(--hc-color-violet-100);
+  --color-violet-200: var(--hc-color-violet-200);
+  --color-violet-300: var(--hc-color-violet-300);
+  --color-violet-400: var(--hc-color-violet-400);
+  --color-violet-500: var(--hc-color-violet-500);
+  --color-violet-600: var(--hc-color-violet-600);
+  --color-violet-700: var(--hc-color-violet-700);
+  --color-violet-800: var(--hc-color-violet-800);
+  --color-violet-900: var(--hc-color-violet-900);
+  --color-violet-950: var(--hc-color-violet-950);
+
+  --color-neutral-50:  var(--hc-color-neutral-50);
+  --color-neutral-100: var(--hc-color-neutral-100);
+  --color-neutral-200: var(--hc-color-neutral-200);
+  --color-neutral-300: var(--hc-color-neutral-300);
+  --color-neutral-400: var(--hc-color-neutral-400);
+  --color-neutral-500: var(--hc-color-neutral-500);
+  --color-neutral-600: var(--hc-color-neutral-600);
+  --color-neutral-700: var(--hc-color-neutral-700);
+  --color-neutral-800: var(--hc-color-neutral-800);
+  --color-neutral-900: var(--hc-color-neutral-900);
+  --color-neutral-950: var(--hc-color-neutral-950);
+
+  --color-green-50:  var(--hc-color-green-50);
+  --color-green-100: var(--hc-color-green-100);
+  --color-green-200: var(--hc-color-green-200);
+  --color-green-300: var(--hc-color-green-300);
+  --color-green-400: var(--hc-color-green-400);
+  --color-green-500: var(--hc-color-green-500);
+  --color-green-600: var(--hc-color-green-600);
+  --color-green-700: var(--hc-color-green-700);
+  --color-green-800: var(--hc-color-green-800);
+  --color-green-900: var(--hc-color-green-900);
+  --color-green-950: var(--hc-color-green-950);
+
+  --color-yellow-50:  var(--hc-color-yellow-50);
+  --color-yellow-100: var(--hc-color-yellow-100);
+  --color-yellow-200: var(--hc-color-yellow-200);
+  --color-yellow-300: var(--hc-color-yellow-300);
+  --color-yellow-400: var(--hc-color-yellow-400);
+  --color-yellow-500: var(--hc-color-yellow-500);
+  --color-yellow-600: var(--hc-color-yellow-600);
+  --color-yellow-700: var(--hc-color-yellow-700);
+  --color-yellow-800: var(--hc-color-yellow-800);
+  --color-yellow-900: var(--hc-color-yellow-900);
+  --color-yellow-950: var(--hc-color-yellow-950);
+
+  --color-red-50:  var(--hc-color-red-50);
+  --color-red-100: var(--hc-color-red-100);
+  --color-red-200: var(--hc-color-red-200);
+  --color-red-300: var(--hc-color-red-300);
+  --color-red-400: var(--hc-color-red-400);
+  --color-red-500: var(--hc-color-red-500);
+  --color-red-600: var(--hc-color-red-600);
+  --color-red-700: var(--hc-color-red-700);
+  --color-red-800: var(--hc-color-red-800);
+  --color-red-900: var(--hc-color-red-900);
+  --color-red-950: var(--hc-color-red-950);
+
+  --color-blue-50:  var(--hc-color-blue-50);
+  --color-blue-100: var(--hc-color-blue-100);
+  --color-blue-200: var(--hc-color-blue-200);
+  --color-blue-300: var(--hc-color-blue-300);
+  --color-blue-400: var(--hc-color-blue-400);
+  --color-blue-500: var(--hc-color-blue-500);
+  --color-blue-600: var(--hc-color-blue-600);
+  --color-blue-700: var(--hc-color-blue-700);
+  --color-blue-800: var(--hc-color-blue-800);
+  --color-blue-900: var(--hc-color-blue-900);
+  --color-blue-950: var(--hc-color-blue-950);
+
+  /* ═══ SPACING ═══════════════════════════════════════════════════════
+     Explicit steps matching primitives/spacing.ts. Generates p-4, m-8,
+     gap-16, etc. Uses OUR numeric-pixel keys (p-16 = 16px) rather than
+     Tailwind's default 1/4rem multiplier, to keep spacing utilities
+     identical to the token names components already use. */
+  --spacing-0:   var(--hc-space-0);
+  --spacing-4:   var(--hc-space-4);
+  --spacing-8:   var(--hc-space-8);
+  --spacing-12:  var(--hc-space-12);
+  --spacing-16:  var(--hc-space-16);
+  --spacing-20:  var(--hc-space-20);
+  --spacing-24:  var(--hc-space-24);
+  --spacing-32:  var(--hc-space-32);
+  --spacing-40:  var(--hc-space-40);
+  --spacing-48:  var(--hc-space-48);
+  --spacing-64:  var(--hc-space-64);
+  --spacing-80:  var(--hc-space-80);
+  --spacing-96:  var(--hc-space-96);
+  --spacing-128: var(--hc-space-128);
+
+  /* ═══ RADIUS ════════════════════════════════════════════════════════
+     Numeric primitives + semantic aliases. Generates rounded-4,
+     rounded-control, rounded-full, etc. */
+  --radius-0:        var(--hc-radius-0);
+  --radius-4:        var(--hc-radius-4);
+  --radius-8:        var(--hc-radius-8);
+  --radius-12:       var(--hc-radius-12);
+  --radius-16:       var(--hc-radius-16);
+  --radius-24:       var(--hc-radius-24);
+  --radius-full:     var(--hc-radius-full);
+  --radius-chip:     var(--hc-radius-chip);
+  --radius-control:  var(--hc-radius-control);
+  --radius-surface:  var(--hc-radius-surface);
+  --radius-hero:     var(--hc-radius-hero);
+  --radius-circular: var(--hc-radius-circular);
+
+  /* ═══ SHADOWS ═══════════════════════════════════════════════════════
+     Compound depth ladder. Generates shadow-xs, shadow-sm, etc. */
+  --shadow-none: var(--hc-shadow-none);
+  --shadow-xs:   var(--hc-shadow-xs);
+  --shadow-sm:   var(--hc-shadow-sm);
+  --shadow-md:   var(--hc-shadow-md);
+  --shadow-lg:   var(--hc-shadow-lg);
+  --shadow-xl:   var(--hc-shadow-xl);
+
+  /* ═══ MOTION ════════════════════════════════════════════════════════
+     Durations generate duration-150 etc.; easings generate ease-standard
+     etc. Tailwind v4 canonical prefixes: --duration-* and --ease-*. */
+  --duration-150: var(--hc-duration-150);
+  --duration-250: var(--hc-duration-250);
+  --duration-350: var(--hc-duration-350);
+
+  --ease-standard: var(--hc-easing-standard);
+  --ease-entrance: var(--hc-easing-entrance);
+  --ease-exit:     var(--hc-easing-exit);
+  --ease-linear:   var(--hc-easing-linear);
+
+  /* ═══ TYPOGRAPHY ════════════════════════════════════════════════════
+     Font families (font-sans / font-mono), size scale (text-14 etc.),
+     weight enum (font-regular / font-medium etc.), letter-spacing
+     (tracking-tighter etc.), line-height (leading-tight etc.).
+
+     FONT STACK — ported verbatim from primitives/typography.ts. The
+     package does NOT self-host the font faces; each consuming app loads
+     Source Sans Pro / JetBrains Mono itself (matches current contract). */
+  --font-sans: var(--hc-font-sans);
+  --font-mono: var(--hc-font-mono);
+
+  --text-10: var(--hc-font-size-10);
+  --text-12: var(--hc-font-size-12);
+  --text-14: var(--hc-font-size-14);
+  --text-16: var(--hc-font-size-16);
+  --text-18: var(--hc-font-size-18);
+  --text-20: var(--hc-font-size-20);
+  --text-24: var(--hc-font-size-24);
+  --text-30: var(--hc-font-size-30);
+  --text-36: var(--hc-font-size-36);
+  --text-48: var(--hc-font-size-48);
+  --text-64: var(--hc-font-size-64);
+
+  --font-weight-regular:  var(--hc-font-weight-regular);
+  --font-weight-medium:   var(--hc-font-weight-medium);
+  --font-weight-semibold: var(--hc-font-weight-semibold);
+  --font-weight-bold:     var(--hc-font-weight-bold);
+
+  --tracking-tighter: -0.02em;
+  --tracking-tight:   -0.01em;
+  --tracking-normal:  0em;
+  --tracking-wide:    0.02em;
+  --tracking-wider:   0.05em;
+  --tracking-widest:  0.14em;
+
+  --leading-tight:   1.15;
+  --leading-snug:    1.25;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.65;
+  --leading-16:      16px;
+  --leading-20:      20px;
+  --leading-24:      24px;
+  --leading-28:      28px;
+  --leading-32:      32px;
+  --leading-36:      36px;
+  --leading-40:      40px;
+  --leading-44:      44px;
+  --leading-56:      56px;
+  --leading-72:      72px;
+
+  /* ═══ BREAKPOINTS ═══════════════════════════════════════════════════
+     Responsive prefixes: sm:, md:, lg:, xl:, 2xl:. */
+  --breakpoint-sm:  640px;
+  --breakpoint-md:  768px;
+  --breakpoint-lg:  1024px;
+  --breakpoint-xl:  1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ═══ OPACITY ═══════════════════════════════════════════════════════
+     Named opacity stops for utilities like opacity-50. */
+  --opacity-0:   var(--hc-opacity-0);
+  --opacity-5:   var(--hc-opacity-5);
+  --opacity-10:  var(--hc-opacity-10);
+  --opacity-20:  var(--hc-opacity-20);
+  --opacity-30:  var(--hc-opacity-30);
+  --opacity-40:  var(--hc-opacity-40);
+  --opacity-50:  var(--hc-opacity-50);
+  --opacity-60:  var(--hc-opacity-60);
+  --opacity-70:  var(--hc-opacity-70);
+  --opacity-80:  var(--hc-opacity-80);
+  --opacity-90:  var(--hc-opacity-90);
+  --opacity-100: var(--hc-opacity-100);
+
+  /* ═══ Z-INDEX ═══════════════════════════════════════════════════════
+     Named layers for utilities like z-tooltip. Values ported verbatim
+     from primitives/z-index.ts. */
+  --z-base:        var(--hc-z-base);
+  --z-dropdown:    var(--hc-z-dropdown);
+  --z-sticky:      var(--hc-z-sticky);
+  --z-overlay:     var(--hc-z-overlay);
+  --z-popover:     var(--hc-z-popover);
+  --z-tooltip:     var(--hc-z-tooltip);
+  --z-modal-scrim: var(--hc-z-modal-scrim);
+  --z-modal:       var(--hc-z-modal);
+  --z-toast:       var(--hc-z-toast);
+  --z-max:         var(--hc-z-max);
+
+  /* ═══ SHADCN SEMANTIC COLOR ALIASES ═════════════════════════════════
+     These generate bg-primary, text-primary-foreground, border-border,
+     ring-ring, bg-destructive, etc. — the utility surface shadcn's
+     stock component code expects.
+
+     Actual color VALUES live in shadcn-bridge.css (:root { --primary: ... }).
+     Loading order: variables.css → theme.css → shadcn-bridge.css. */
+  --color-background:            var(--background);
+  --color-foreground:            var(--foreground);
+  --color-card:                  var(--card);
+  --color-card-foreground:       var(--card-foreground);
+  --color-popover:               var(--popover);
+  --color-popover-foreground:    var(--popover-foreground);
+  --color-primary:               var(--primary);
+  --color-primary-foreground:    var(--primary-foreground);
+  --color-secondary:             var(--secondary);
+  --color-secondary-foreground:  var(--secondary-foreground);
+  --color-muted:                 var(--muted);
+  --color-muted-foreground:      var(--muted-foreground);
+  --color-accent:                var(--accent);
+  --color-accent-foreground:     var(--accent-foreground);
+  --color-destructive:           var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border:                var(--border);
+  --color-input:                 var(--input);
+  --color-ring:                  var(--ring);
+}

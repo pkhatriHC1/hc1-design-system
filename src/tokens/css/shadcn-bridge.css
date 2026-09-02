@@ -1,0 +1,79 @@
+/* ─────────────────────────────────────────────────────────────────────
+ * HC1 → shadcn semantic bridge.
+ *
+ * shadcn/ui's stock components read from a fixed set of CSS variables
+ * (--primary, --foreground, --border, --ring, --destructive, etc.).
+ * This file maps every one of those onto the corresponding HC1 alias
+ * token, so a component migrated to shadcn conventions renders in the
+ * HC1 palette without recoloring a single line of stock code.
+ *
+ * COLOR VALUES ARE NEVER REDEFINED HERE.
+ * Every var below is a var() reference to an --hc-color-* alias
+ * declared in variables.css. If a hex ever needs to change, change it
+ * there, not here.
+ *
+ * NAMING COLLISION — `--accent`
+ *   shadcn's `--accent` role means "subtle hover fill" (dropdown item
+ *   hover, muted secondary surface). HC1's `--hc-color-action-accent`
+ *   means "amber CTA / warm accent" — the opposite. To keep stock
+ *   shadcn code working, this file maps shadcn's `--accent` to
+ *   `--hc-color-bg-subtle` (neutral-100). If a component needs HC1's
+ *   amber accent, use one of:
+ *     - the primitive ramp:   `bg-accent-500`, `text-accent-700`, etc.
+ *     - the CTA alias:        `bg-[color:var(--hc-color-cta-default)]`
+ *     - the action alias:     `bg-[color:var(--hc-color-action-accent)]`
+ *   Never `bg-accent` (that resolves to the neutral hover fill).
+ *
+ * LOAD ORDER
+ *   Must load AFTER variables.css (so --hc-* aliases exist) and AFTER
+ *   theme.css (so the @theme --color-* → var(--primary) chain resolves
+ *   downstream to a real value). variables.css owns the load order.
+ * ─────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ═══ SURFACES ═════════════════════════════════════════════════════ */
+  --background:          var(--hc-color-bg-page);       /* neutral-50 canvas */
+  --foreground:          var(--hc-color-text-primary);  /* neutral-900 ink */
+
+  --card:                var(--hc-color-bg-surface);    /* white surface on canvas */
+  --card-foreground:     var(--hc-color-text-primary);
+
+  --popover:             var(--hc-color-bg-elevated);   /* white lifted surface */
+  --popover-foreground:  var(--hc-color-text-primary);
+
+  /* ═══ PRIMARY (HC1 brand teal) ═════════════════════════════════════ */
+  --primary:             var(--hc-color-action-primary);   /* brand-500 */
+  --primary-foreground:  var(--hc-color-text-on-solid);    /* white on brand fill */
+
+  /* ═══ SECONDARY (subtle neutral surface / soft button) ═════════════ */
+  --secondary:           var(--hc-color-bg-subtle);        /* neutral-100 */
+  --secondary-foreground: var(--hc-color-text-primary);    /* neutral-900 */
+
+  /* ═══ MUTED (skeleton / muted card / disabled-ish surface) ═════════ */
+  --muted:               var(--hc-color-bg-subtle);        /* neutral-100 */
+  --muted-foreground:    var(--hc-color-text-tertiary);    /* neutral-500 */
+
+  /* ═══ ACCENT — shadcn semantic (hover fill, NOT HC1 amber) ═════════
+     See file header for the collision note. Amber accent lives on
+     `bg-accent-500` (primitive) or `--hc-color-action-accent` (alias). */
+  --accent:              var(--hc-color-bg-subtle);        /* neutral-100 */
+  --accent-foreground:   var(--hc-color-text-primary);     /* neutral-900 */
+
+  /* ═══ DESTRUCTIVE (danger action) ══════════════════════════════════ */
+  --destructive:            var(--hc-color-action-danger); /* red-500 */
+  --destructive-foreground: var(--hc-color-text-on-solid); /* white on red */
+
+  /* ═══ BORDERS / INPUTS / FOCUS RING ════════════════════════════════ */
+  --border:              var(--hc-color-border-default);   /* neutral-200 */
+  --input:               var(--hc-color-border-default);   /* neutral-200 */
+  --ring:                var(--hc-color-border-focus);     /* brand-500 focus ring */
+
+  /* ═══ RADIUS (shadcn interop, for future `npx shadcn add …`) ═══════
+     shadcn snippets reference --radius directly and derive
+     --radius-sm/md/lg from it. We anchor --radius at HC1's control
+     radius (8px) so a snippet's `rounded-md` renders at ~6px and
+     `rounded-lg` at 8px — close to our scale. New HC1 components
+     should still prefer explicit `rounded-control`/`rounded-surface`
+     from the @theme block, not `rounded-md`. */
+  --radius:              var(--hc-radius-control);         /* 8px */
+}

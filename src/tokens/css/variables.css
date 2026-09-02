@@ -12,7 +12,20 @@
  * SCOPE
  *   Applied to :root — so the playground and any future consumer that
  *   imports this file can read tokens via var(--hc-*).
+ *
+ * MIGRATION LAYER (Tailwind v4 + shadcn/ui)
+ *   The two @imports below expose these same tokens to the shadcn stack:
+ *     theme.css         — Tailwind v4 @theme block (generates bg-brand-500,
+ *                         p-16, rounded-control, shadow-md, font-sans, etc.)
+ *     shadcn-bridge.css — :root { --primary: …; --border: …; --ring: …; }
+ *                         mapping shadcn's semantic names to HC1 aliases.
+ *   Both files reference the --hc-* vars declared in this file's :root
+ *   block below. CSS resolves vars at use-time, so @import-order at the
+ *   top + :root below is spec-compliant and semantically correct.
  * ─────────────────────────────────────────────────────────────────── */
+
+@import "./theme.css";
+@import "./shadcn-bridge.css";
 
 :root {
   /* ═══ PRIMITIVE COLORS ═══════════════════════════════════════════
