@@ -17,7 +17,8 @@ import type {
   ReactElement,
   ReactNode,
 } from "react";
-
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../../utils/cn";
 import type {
   CheckboxDescriptionProps,
   CheckboxIndicatorProps,
@@ -26,46 +27,25 @@ import type {
   CheckboxSize,
 } from "./Checkbox.types";
 
-// Design-system CSS variables — imported here so consumers get tokens
-// automatically when they import Checkbox, regardless of where they mount.
-import "../../tokens/css/variables.css";
-import "./Checkbox.css";
-
-/* ══════ CLASS NAMES ═══════════════════════════════════════════════ */
-
-const CLASS = {
-  root:              "hc-checkbox",
-  rootSize:          (s: CheckboxSize) => `hc-checkbox--size-${s}`,
-  rootChecked:       "hc-checkbox--checked",
-  rootIndeterminate: "hc-checkbox--indeterminate",
-  rootDisabled:      "hc-checkbox--disabled",
-  rootInvalid:       "hc-checkbox--invalid",
-  rootRequired:      "hc-checkbox--required",
-  rootHasText:       "hc-checkbox--has-text",
-
-  input:             "hc-checkbox__input",
-  indicator:         "hc-checkbox__indicator",
-  glyph:             "hc-checkbox__glyph",
-  glyphCheck:        "hc-checkbox__glyph--check",
-  glyphDash:         "hc-checkbox__glyph--dash",
-
-  text:              "hc-checkbox__text",
-  label:             "hc-checkbox__label",
-  labelRequired:     "hc-checkbox__label-required",
-  description:       "hc-checkbox__description",
-};
-
-function cx(...parts: (string | false | null | undefined)[]) {
-  return parts.filter(Boolean).join(" ");
-}
+/**
+ * HC1 Checkbox — the canonical multi-selection control.
+ *
+ * Migrated from Checkbox.css to shadcn-style (cva + Tailwind utilities).
+ * A deliberate design choice: this component preserves the real native
+ * `<input type="checkbox">` (rather than switching to a Radix
+ * `<button role="checkbox">`) so form serialization, native keyboard,
+ * screen-reader semantics, and forwardRef<HTMLInputElement> continue to
+ * work exactly as before.
+ *
+ * The visible box is a sibling span; the native input is visually hidden
+ * (opacity 0) but absolute-positioned over the box so focus rings and
+ * pointer targets both land on the visible chrome. `peer` on the input
+ * lets the box paint the focus ring via `peer-focus-visible:`; `group`
+ * on the root wrapper propagates hover to the box via `group-hover:`.
+ */
 
 /* ══════ CONTEXT ═══════════════════════════════════════════════════ */
 
-/**
- * Context bridge from root Checkbox to its subcomponents. Subcomponents
- * don't own state — they read presentational info (id, size, disabled)
- * from context so ids wire up automatically.
- */
 type CheckboxContextValue = {
   inputId: string;
   descriptionId: string;
@@ -93,15 +73,9 @@ type ChildBuckets = {
   indicator?: ReactElement;
   label?: ReactElement;
   description?: ReactElement;
-  /** Fallback: non-subcomponent children treated as inline label text. */
   fallbackLabel: ReactNode[];
 };
 
-/**
- * Walk children once and bucket by subcomponent. First occurrence wins.
- * Nodes that are not one of our named subcomponents fall through as
- * label text (so `<Checkbox>Accept</Checkbox>` works with no ceremony).
- */
 function splitChildren(children: ReactNode): ChildBuckets {
   const buckets: ChildBuckets = { fallbackLabel: [] };
   Children.forEach(children, (child) => {
@@ -132,13 +106,13 @@ function splitChildren(children: ReactNode): ChildBuckets {
 function CheckGlyph({ size }: { size: number }) {
   return (
     <svg
-      className={cx(CLASS.glyph, CLASS.glyphCheck)}
       width={size}
       height={size}
       viewBox="0 0 16 16"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
+      className="block text-current"
     >
       <path
         d="M3.5 8.5L6.5 11.5L12.5 4.5"
@@ -154,13 +128,13 @@ function CheckGlyph({ size }: { size: number }) {
 function DashGlyph({ size }: { size: number }) {
   return (
     <svg
-      className={cx(CLASS.glyph, CLASS.glyphDash)}
       width={size}
       height={size}
       viewBox="0 0 16 16"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
+      className="block text-current"
     >
       <path
         d="M4 8H12"
@@ -172,21 +146,219 @@ function DashGlyph({ size }: { size: number }) {
   );
 }
 
+/* ══════ CVA — ROOT (<label>) ══════════════════════════════════════ */
+
+const checkboxRootVariants = cva(
+  cn(
+    "group relative inline-flex items-start",
+    "font-sans text-neutral-900 cursor-pointer select-none",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "min-h-[var(--hc-checkbox-row-sm)] gap-8",
+        md: "min-h-[var(--hc-checkbox-row-md)] gap-8",
+        lg: "min-h-[var(--hc-checkbox-row-lg)] gap-12",
+      },
+      hasText: {
+        /* Bare row (no text) — collapse row height + center-align so
+           checkboxes in a table cell don't inject vertical space. */
+        false: "!min-h-0 items-center",
+        true: "",
+      },
+      disabled: {
+        true: cn(
+          "cursor-not-allowed text-neutral-400",
+          "[&_[data-slot=checkbox-label]]:text-neutral-400",
+          "[&_[data-slot=checkbox-description]]:text-neutral-400",
+        ),
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+      hasText: false,
+      disabled: false,
+    },
+  },
+);
+
+/* ══════ CVA — NATIVE INPUT (visually hidden, keyboard target) ═════ */
+
+const checkboxInputVariants = cva(
+  cn(
+    "peer absolute left-0 m-0 p-0 opacity-0 cursor-inherit",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "size-[var(--hc-checkbox-control-sm)]",
+        md: "size-[var(--hc-checkbox-control-md)]",
+        lg: "size-[var(--hc-checkbox-control-lg)]",
+      },
+      hasText: {
+        false: "top-0",
+        true: "",
+      },
+    },
+    compoundVariants: [
+      /* When text is present, align the input over the visible box so its
+         focus ring lands on the box (not the row baseline). */
+      { size: "sm", hasText: true, className: "top-[calc((var(--hc-checkbox-row-sm)-var(--hc-checkbox-control-sm))/2)]" },
+      { size: "md", hasText: true, className: "top-[calc((var(--hc-checkbox-row-md)-var(--hc-checkbox-control-md))/2)]" },
+      { size: "lg", hasText: true, className: "top-[calc((var(--hc-checkbox-row-lg)-var(--hc-checkbox-control-lg))/2)]" },
+    ],
+    defaultVariants: {
+      size: "md",
+      hasText: false,
+    },
+  },
+);
+
+/* ══════ CVA — INDICATOR (the visible box) ═════════════════════════ */
+
+type BoxState = "unchecked" | "checked" | "indeterminate";
+
+const checkboxIndicatorVariants = cva(
+  cn(
+    "inline-flex items-center justify-center shrink-0",
+    "border rounded-chip bg-white",
+    "transition-[background-color,border-color,color] duration-150 ease-standard motion-reduce:duration-0",
+    /* Focus ring lifts from the peer (native input) — brand by default,
+       compound-overridden to red when invalid. */
+    "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "size-[var(--hc-checkbox-control-sm)]",
+        md: "size-[var(--hc-checkbox-control-md)]",
+        lg: "size-[var(--hc-checkbox-control-lg)]",
+      },
+      hasText: {
+        false: "",
+        true: "",
+      },
+      boxState: {
+        unchecked: cn(
+          "border-neutral-300 text-white",
+          "group-hover:bg-neutral-100 group-hover:border-brand-500",
+        ),
+        checked: cn(
+          "bg-brand-500 border-brand-500 text-white",
+          "group-hover:bg-brand-600 group-hover:border-brand-600",
+        ),
+        indeterminate: cn(
+          "bg-brand-500 border-brand-500 text-white",
+          "group-hover:bg-brand-600 group-hover:border-brand-600",
+        ),
+      },
+      invalid: {
+        true: "peer-focus-visible:outline-red-500",
+        false: "",
+      },
+      disabled: {
+        true: "",
+        false: "",
+      },
+    },
+    compoundVariants: [
+      /* Vertical alignment: for rows with text, the indicator sits at
+         (row-height - control) / 2 from the top so it aligns optically
+         with the label's baseline. */
+      { size: "sm", hasText: true, className: "mt-[calc((var(--hc-checkbox-row-sm)-var(--hc-checkbox-control-sm))/2)]" },
+      { size: "md", hasText: true, className: "mt-[calc((var(--hc-checkbox-row-md)-var(--hc-checkbox-control-md))/2)]" },
+      { size: "lg", hasText: true, className: "mt-[calc((var(--hc-checkbox-row-lg)-var(--hc-checkbox-control-lg))/2)]" },
+
+      /* invalid × unchecked — red border, subtle bg on hover */
+      { invalid: true, boxState: "unchecked", className: cn(
+        "border-red-500",
+        "group-hover:bg-neutral-100 group-hover:border-red-500",
+      )},
+      /* invalid × checked / indeterminate — red fill, darker on hover
+         (color-mix preserved verbatim from original CSS). */
+      { invalid: true, boxState: "checked", className: cn(
+        "bg-red-500 border-red-500",
+        "group-hover:bg-[color-mix(in_oklab,var(--hc-color-red-500)_88%,black)]",
+        "group-hover:border-[color-mix(in_oklab,var(--hc-color-red-500)_88%,black)]",
+      )},
+      { invalid: true, boxState: "indeterminate", className: cn(
+        "bg-red-500 border-red-500",
+        "group-hover:bg-[color-mix(in_oklab,var(--hc-color-red-500)_88%,black)]",
+        "group-hover:border-[color-mix(in_oklab,var(--hc-color-red-500)_88%,black)]",
+      )},
+
+      /* disabled × unchecked — muted; suppress hover paint */
+      { disabled: true, boxState: "unchecked", className: cn(
+        "bg-neutral-100 border-neutral-100 text-neutral-400",
+        "group-hover:bg-neutral-100 group-hover:border-neutral-100",
+      )},
+      /* disabled × checked / indeterminate — action-primary-disabled fill */
+      { disabled: true, boxState: "checked", className: cn(
+        "bg-neutral-200 border-neutral-200 text-white",
+        "group-hover:bg-neutral-200 group-hover:border-neutral-200",
+      )},
+      { disabled: true, boxState: "indeterminate", className: cn(
+        "bg-neutral-200 border-neutral-200 text-white",
+        "group-hover:bg-neutral-200 group-hover:border-neutral-200",
+      )},
+    ],
+    defaultVariants: {
+      size: "md",
+      hasText: false,
+      boxState: "unchecked",
+      invalid: false,
+      disabled: false,
+    },
+  },
+);
+
+/* ══════ CVA — LABEL ═══════════════════════════════════════════════ */
+
+const checkboxLabelVariants = cva(
+  cn(
+    "text-neutral-900 font-medium inline",
+  ),
+  {
+    variants: {
+      size: {
+        /* Line-height matches the row height so the label sits centered
+           against the box on single-line labels. When a description is
+           present, JSX overrides this back to 1.4 leading so multi-line
+           reads correctly. */
+        sm: "text-12 leading-[var(--hc-checkbox-row-sm)]",
+        md: "text-14 leading-[var(--hc-checkbox-row-md)]",
+        lg: "text-16 leading-[var(--hc-checkbox-row-lg)]",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+    },
+  },
+);
+
+/* ══════ CVA — DESCRIPTION ═════════════════════════════════════════ */
+
+const checkboxDescriptionVariants = cva(
+  cn(
+    "text-neutral-500 font-normal leading-normal block",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "text-12",
+        md: "text-12",
+        lg: "text-14",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+    },
+  },
+);
+
 /* ══════ ROOT ══════════════════════════════════════════════════════ */
 
-/**
- * HC1 Checkbox — the canonical multi-selection control.
- *
- * Renders a real native `<input type="checkbox">` inside a `<label>`
- * wrapper. The visual box (`Checkbox.Indicator`) is auto-rendered at the
- * start of the row unless composed explicitly. Label + Description are
- * opt-in subcomponents; plain text children work too.
- *
- * Controlled with `checked` + `onCheckedChange`. Uncontrolled with
- * `defaultChecked`. `indeterminate` is a visual third state that ARIA
- * exposes as `aria-checked="mixed"` — the underlying input remains
- * a real checkbox; consumers own when to clear the indeterminate flag.
- */
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
   {
     size = "md",
@@ -214,19 +386,15 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
   const inputId = idProp ?? generatedId;
   const descriptionId = `${inputId}-description`;
 
-  // Compose forwarded ref with our own for indeterminate management.
   const innerRef = useRef<HTMLInputElement | null>(null);
   useImperativeHandle(ref, () => innerRef.current as HTMLInputElement, []);
 
-  // Track checked locally so uncontrolled usage can drive the visual state
-  // without asking consumers to lift state. In controlled mode the prop
-  // is the source of truth.
   const isControlled = checked !== undefined;
   const [innerChecked, setInnerChecked] = useState<boolean>(defaultChecked);
   const currentChecked = isControlled ? !!checked : innerChecked;
 
-  // Native `indeterminate` is a runtime property — it has no HTML attribute.
-  // Sync it every render so the DOM reflects the prop.
+  /* Native `indeterminate` is a runtime property, no HTML attribute.
+     Sync every render so DOM reflects the prop. */
   useEffect(() => {
     const el = innerRef.current;
     if (!el) return;
@@ -247,13 +415,11 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
   const hasDescription = !!buckets.description;
   const hasText        = hasLabel || hasDescription;
 
-  // Track description presence so we can conditionally wire aria-describedby.
   const [hasDescriptionRegistered, setHasDescriptionRegistered] = useState(hasDescription);
   const registerDescription = useCallback(
     (present: boolean) => setHasDescriptionRegistered(present),
     [],
   );
-  // Keep the initial-render inference in sync with the runtime registration.
   useEffect(() => {
     if (hasDescription !== hasDescriptionRegistered) {
       setHasDescriptionRegistered(hasDescription);
@@ -269,19 +435,12 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
     registerDescription,
   };
 
-  const rootClass = cx(
-    CLASS.root,
-    CLASS.rootSize(size),
-    currentChecked && !indeterminate && CLASS.rootChecked,
-    indeterminate && CLASS.rootIndeterminate,
-    disabled && CLASS.rootDisabled,
-    invalid && CLASS.rootInvalid,
-    required && CLASS.rootRequired,
-    hasText && CLASS.rootHasText,
-    className,
-  );
+  const boxState: BoxState = indeterminate
+    ? "indeterminate"
+    : currentChecked
+    ? "checked"
+    : "unchecked";
 
-  // Compose aria-describedby (consumer's + our description if present).
   const describedIds: string[] = [];
   if (ariaDescribedByProp) describedIds.push(ariaDescribedByProp);
   if (hasDescriptionRegistered) describedIds.push(descriptionId);
@@ -291,31 +450,30 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
 
   return (
     <CheckboxContext.Provider value={contextValue}>
-      {/* The outer <label> wraps the native input, so label→input click
-          association works via containment alone. We deliberately do NOT
-          set htmlFor here — pairing htmlFor with wrapping causes some
-          browsers to dispatch two synthetic clicks, netting the toggle
-          back to zero. Wrapping alone is spec-compliant and reliable. */}
+      {/* The outer <label> wraps the native input so click-to-toggle works
+          via containment alone. Deliberately no htmlFor — pairing htmlFor
+          with wrapping causes double synthetic clicks in some browsers,
+          netting the toggle back to zero. Wrapping alone is spec-compliant. */}
       <label
-        className={rootClass}
-        style={style as CSSProperties}
+        data-slot="checkbox-root"
         data-state={indeterminate ? "indeterminate" : currentChecked ? "checked" : "unchecked"}
         data-disabled={disabled || undefined}
         data-invalid={invalid || undefined}
+        style={style as CSSProperties}
+        className={cn(
+          checkboxRootVariants({
+            size,
+            hasText,
+            disabled,
+          } as VariantProps<typeof checkboxRootVariants>),
+          className,
+        )}
       >
-        {/* Native input — the accessibility surface. We always drive it as
-            a controlled input (checked={currentChecked}); the consumer's
-            controlled/uncontrolled facade is managed above via isControlled.
-            aria-checked is only overridden for indeterminate — native input
-            reports "true"/"false" automatically otherwise, and setting an
-            explicit aria-checked value on a native checkbox is discouraged
-            by ARIA spec. */}
         <input
           {...rest}
           ref={innerRef}
           id={inputId}
           type="checkbox"
-          className={CLASS.input}
           checked={currentChecked}
           disabled={disabled}
           required={required}
@@ -325,27 +483,50 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
           aria-describedby={ariaDescribedBy}
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledBy}
+          className={checkboxInputVariants({
+            size,
+            hasText,
+          } as VariantProps<typeof checkboxInputVariants>)}
         />
-        {/* The visual box — sibling to the native input so the input can
-            paint the focus ring around the box via a CSS adjacent selector.
-            If a consumer composed <Checkbox.Indicator> explicitly, use it
-            verbatim (they own its children). Otherwise render our internal
-            indicator with the right glyph for the current state. */}
+
         {buckets.indicator ?? (
-          <CheckboxIndicatorInternal
-            iconSize={iconSize}
-            indeterminate={indeterminate}
-            currentChecked={currentChecked}
-          />
+          <span
+            data-slot="checkbox-indicator"
+            aria-hidden="true"
+            className={checkboxIndicatorVariants({
+              size,
+              hasText,
+              boxState,
+              invalid,
+              disabled,
+            } as VariantProps<typeof checkboxIndicatorVariants>)}
+          >
+            {indeterminate ? (
+              <DashGlyph size={iconSize} />
+            ) : currentChecked ? (
+              <CheckGlyph size={iconSize} />
+            ) : null}
+          </span>
         )}
 
         {hasText && (
-          <span className={CLASS.text}>
+          <span className="inline-flex flex-col gap-4 min-w-0">
             {(buckets.label || buckets.fallbackLabel.length > 0) && (
-              <span className={CLASS.label}>
+              <span
+                data-slot="checkbox-label"
+                className={cn(
+                  checkboxLabelVariants({ size }),
+                  /* When description is present, revert to comfortable
+                     leading so the two-line stack reads correctly. */
+                  hasDescription && "leading-[1.4]",
+                )}
+              >
                 {buckets.label ?? buckets.fallbackLabel}
                 {required && (
-                  <span className={CLASS.labelRequired} aria-hidden="true">
+                  <span
+                    aria-hidden="true"
+                    className="text-red-500 ml-[4px] font-semibold"
+                  >
                     *
                   </span>
                 )}
@@ -365,52 +546,24 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
 
 (Checkbox as unknown as { displayName: string }).displayName = "Checkbox";
 
-/* ══════ INDICATOR ═════════════════════════════════════════════════ */
-
-/**
- * Auto-rendered by the root Checkbox. Consumers rarely compose this
- * explicitly — it's exported so custom check icons or custom positions
- * are possible in advanced compositions.
- */
-function CheckboxIndicatorInternal({
-  iconSize,
-  indeterminate,
-  currentChecked,
-  className,
-  ...rest
-}: CheckboxIndicatorProps & {
-  iconSize: number;
-  indeterminate: boolean;
-  currentChecked: boolean;
-}) {
-  return (
-    <span
-      className={cx(CLASS.indicator, className)}
-      aria-hidden="true"
-      {...rest}
-    >
-      {indeterminate ? (
-        <DashGlyph size={iconSize} />
-      ) : currentChecked ? (
-        <CheckGlyph size={iconSize} />
-      ) : null}
-    </span>
-  );
-}
+/* ══════ INDICATOR (composable escape hatch) ═══════════════════════ */
 
 const CheckboxIndicator = forwardRef<HTMLSpanElement, CheckboxIndicatorProps>(function CheckboxIndicator(
   { className, children, ...rest },
   ref,
 ) {
-  // When composed explicitly, we don't have direct access to the parent's
-  // checked/indeterminate state via context (kept small on purpose).
-  // Consumers who compose Indicator can override children; otherwise the
-  // internal one drawn by the root wins.
+  /* Composed explicitly. The parent Checkbox reads no state from context
+     into this — consumers who compose Indicator own its children entirely. */
   return (
     <span
       ref={ref}
-      className={cx(CLASS.indicator, className)}
+      data-slot="checkbox-indicator"
       aria-hidden="true"
+      className={cn(
+        "inline-flex items-center justify-center shrink-0",
+        "border border-neutral-300 rounded-chip bg-white",
+        className,
+      )}
       {...rest}
     >
       {children}
@@ -425,10 +578,17 @@ const CheckboxLabel = forwardRef<HTMLSpanElement, CheckboxLabelProps>(function C
   { className, children, ...rest },
   ref,
 ) {
-  // No htmlFor — the outer <label> already wraps the input. This is
-  // rendered as a semantic <span> so the click bubbles up to the label.
+  const ctx = useCheckboxContext("Checkbox.Label");
   return (
-    <span ref={ref} className={cx(CLASS.label, className)} {...rest}>
+    <span
+      ref={ref}
+      data-slot="checkbox-label"
+      className={cn(
+        checkboxLabelVariants({ size: ctx.size }),
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </span>
   );
@@ -453,7 +613,11 @@ const CheckboxDescription = forwardRef<HTMLSpanElement, CheckboxDescriptionProps
     <span
       ref={ref}
       id={descId}
-      className={cx(CLASS.description, className)}
+      data-slot="checkbox-description"
+      className={cn(
+        checkboxDescriptionVariants({ size: ctx.size }),
+        className,
+      )}
       {...rest}
     >
       {children}
@@ -467,3 +631,10 @@ CheckboxDescription.displayName = "Checkbox.Description";
 Checkbox.Indicator   = CheckboxIndicator;
 Checkbox.Label       = CheckboxLabel;
 Checkbox.Description = CheckboxDescription;
+
+export {
+  checkboxRootVariants,
+  checkboxIndicatorVariants,
+  checkboxLabelVariants,
+  checkboxDescriptionVariants,
+};

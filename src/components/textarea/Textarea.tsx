@@ -17,7 +17,8 @@ import type {
   ReactElement,
   ReactNode,
 } from "react";
-
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../../utils/cn";
 import type {
   TextareaCounterProps,
   TextareaDescriptionProps,
@@ -28,52 +29,20 @@ import type {
   TextareaValidation,
 } from "./Textarea.types";
 
-// Design-system CSS variables — imported here so consumers get tokens
-// automatically when they import Textarea, regardless of where they mount.
-import "../../tokens/css/variables.css";
-import "./Textarea.css";
-
-/* ══════ CLASS NAMES ═══════════════════════════════════════════════ */
-
-const CLASS = {
-  field:           "hc-textarea-field",
-  fieldFullWidth: "hc-textarea-field--full-width",
-  fieldDisabled:  "hc-textarea-field--disabled",
-  labelRow:        "hc-textarea-field__label-row",
-  label:           "hc-textarea-field__label",
-  description:     "hc-textarea-field__description",
-  markerRequired: "hc-textarea-field__marker hc-textarea-field__marker--required",
-  markerOptional: "hc-textarea-field__marker hc-textarea-field__marker--optional",
-  footer:          "hc-textarea-field__footer",
-  helper:          "hc-textarea-field__helper",
-  message: (v: TextareaValidation) =>
-    `hc-textarea-field__message hc-textarea-field__message--${v}`,
-  counter:      "hc-textarea-field__counter",
-  counterOver: "hc-textarea-field__counter hc-textarea-field__counter--over",
-
-  frame:            "hc-textarea",
-  size:             (s: string) => `hc-textarea--size-${s}`,
-  frameDisabled:   "hc-textarea--disabled",
-  frameReadonly:   "hc-textarea--readonly",
-  frameLoading:    "hc-textarea--loading",
-  frameAutoResize: "hc-textarea--auto-resize",
-  frameValidation: (v: TextareaValidation) => `hc-textarea--${v}`,
-  frameResize:      (r: "none" | "vertical") => `hc-textarea--resize-${r}`,
-  control:          "hc-textarea__control",
-  spinner:          "hc-textarea__spinner",
-};
-
-function cx(...parts: (string | false | null | undefined)[]) {
-  return parts.filter(Boolean).join(" ");
-}
+/**
+ * HC1 Textarea — the canonical multi-line text input.
+ *
+ * Migrated from Textarea.css to shadcn-style (cva + Tailwind utilities).
+ * Compound API (Textarea.Label / .Description / .Helper / .Counter),
+ * context registration for aria-describedby, auto-resize measurement,
+ * and every prop are preserved verbatim. Frame shape mirrors Input's
+ * philosophy but the geometry differs (padded frame, no fixed height,
+ * padY per size, rendered line-height per size) so a dedicated
+ * textareaFrameVariants exists rather than reusing inputFrameVariants.
+ */
 
 /* ══════ CONTEXT ═══════════════════════════════════════════════════ */
 
-/**
- * Bridge from root Textarea to subcomponents so they read ids + size
- * from a single source of truth. Subcomponents don't own state — they
- * just get contextual info to wire aria correctly.
- */
 type TextareaContextValue = {
   inputId: string;
   descriptionId: string;
@@ -112,11 +81,6 @@ type ChildBuckets = {
   counter?: ReactElement;
 };
 
-/**
- * Walk children once and bucket by subcomponent. First occurrence wins.
- * Unknown children are ignored (Textarea has no inline content slot —
- * pass explicit subcomponents or use the shorthand props).
- */
 function splitChildren(children: ReactNode): ChildBuckets {
   const buckets: ChildBuckets = {};
   Children.forEach(children, (child) => {
@@ -144,11 +108,6 @@ function splitChildren(children: ReactNode): ChildBuckets {
 
 /* ══════ RESOLVE VALIDATION ════════════════════════════════════════ */
 
-/**
- * Derive the active validation state. Message presence takes precedence,
- * ordered error → warning → success. Explicit `validation` fills in when
- * no message is provided. Identical rules to Input.
- */
 function resolveValidation(
   errorMessage: unknown,
   warningMessage: unknown,
@@ -161,21 +120,107 @@ function resolveValidation(
   return validation;
 }
 
-/* ══════ ROOT ══════════════════════════════════════════════════════ */
+/* ══════ FRAME CVA ═════════════════════════════════════════════════ */
+
+type FrameState = "default" | "error" | "warning" | "success" | "disabled" | "readonly";
 
 /**
- * HC1 Textarea — the canonical multi-line text input.
- *
- * Renders a native `<textarea>` inside a labelled field wrapper. Same
- * frame + footer philosophy as Input: label above, frame in the middle,
- * helper/message + counter footer beneath. Composition-first: Label,
- * Description, Helper, and Counter subcomponents; shorthand props for
- * the common case.
- *
- * Controlled with `value` + `onChange`. Uncontrolled with `defaultValue`.
- * `autoResize` grows the frame between `minRows` and `maxRows` as the
- * user types.
+ * Frame classes for the visual textarea box. Same border / focus /
+ * validation language as Input, plus per-size padding + rendered
+ * line-height + min/max heights driven by --hc-textarea-min-rows /
+ * --hc-textarea-max-rows (set inline by the root from minRows / maxRows).
  */
+const textareaFrameVariants = cva(
+  cn(
+    "relative flex w-full min-w-0",
+    "border rounded-control bg-white text-neutral-900",
+    "font-sans",
+    "cursor-text [-webkit-tap-highlight-color:transparent]",
+    "transition-[background-color,border-color,color,outline-color] duration-150 ease-standard motion-reduce:duration-0",
+    "border-neutral-200",
+    "outline-none",
+    "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring focus-within:border-brand-500",
+    "hover:border-neutral-300",
+  ),
+  {
+    variants: {
+      size: {
+        sm: cn(
+          "py-[var(--hc-textarea-pad-y-sm)] px-8 text-12",
+          "[&>textarea]:leading-[var(--hc-textarea-line-sm)]",
+          "[&>textarea]:min-h-[calc(var(--hc-textarea-min-rows,3)*var(--hc-textarea-line-sm))]",
+          "[&>textarea]:max-h-[calc(var(--hc-textarea-max-rows,12)*var(--hc-textarea-line-sm))]",
+          "[&_[data-slot=textarea-spinner]]:size-[12px]",
+        ),
+        md: cn(
+          "py-[var(--hc-textarea-pad-y-md)] px-12 text-14",
+          "[&>textarea]:leading-[var(--hc-textarea-line-md)]",
+          "[&>textarea]:min-h-[calc(var(--hc-textarea-min-rows,3)*var(--hc-textarea-line-md))]",
+          "[&>textarea]:max-h-[calc(var(--hc-textarea-max-rows,12)*var(--hc-textarea-line-md))]",
+          "[&_[data-slot=textarea-spinner]]:size-[14px]",
+        ),
+        lg: cn(
+          "py-[var(--hc-textarea-pad-y-lg)] px-12 text-16",
+          "[&>textarea]:leading-[var(--hc-textarea-line-lg)]",
+          "[&>textarea]:min-h-[calc(var(--hc-textarea-min-rows,3)*var(--hc-textarea-line-lg))]",
+          "[&>textarea]:max-h-[calc(var(--hc-textarea-max-rows,12)*var(--hc-textarea-line-lg))]",
+          "[&_[data-slot=textarea-spinner]]:size-[18px]",
+        ),
+      },
+      state: {
+        default: "",
+        error: cn(
+          "border-red-500 hover:border-red-500",
+          "focus-within:border-red-500 focus-within:outline-red-500",
+        ),
+        warning: cn(
+          "border-accent-700 hover:border-accent-700",
+          "focus-within:border-accent-700 focus-within:outline-accent-700",
+        ),
+        success: cn(
+          "border-green-500 hover:border-green-500",
+          "focus-within:border-green-500 focus-within:outline-green-500",
+        ),
+        disabled: cn(
+          "bg-neutral-100 border-neutral-100 text-neutral-400 cursor-not-allowed",
+          "hover:border-neutral-100",
+          "[&>textarea]:placeholder:text-neutral-400",
+        ),
+        readonly: cn(
+          "bg-neutral-100 border-neutral-100",
+          "hover:border-neutral-100",
+        ),
+      },
+      /* When autoResize is on, JS sets height inline; hide the scrollbar
+         so it doesn't flash between the JS measurement and the reflow.
+         (Original CSS behavior preserved verbatim — including the same
+         known limitation that overflow-y stays hidden past maxRows.) */
+      autoResize: {
+        true: "[&>textarea]:overflow-y-hidden",
+        false: "",
+      },
+      /* User-drag resize handle. Default 'none' matches textarea base. */
+      resize: {
+        none: "",
+        vertical: "[&>textarea]:resize-y",
+      },
+      loading: {
+        true: "cursor-progress [&>textarea]:cursor-progress",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+      state: "default",
+      autoResize: false,
+      resize: "none",
+      loading: false,
+    },
+  },
+);
+
+/* ══════ ROOT ══════════════════════════════════════════════════════ */
+
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
   {
     size = "md",
@@ -223,9 +268,6 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   const innerRef = useRef<HTMLTextAreaElement | null>(null);
   useImperativeHandle(ref, () => innerRef.current as HTMLTextAreaElement, []);
 
-  // Track "current value" locally so the counter + auto-resize work for
-  // both controlled and uncontrolled usage without asking the consumer to
-  // lift state.
   const isControlled = value !== undefined;
   const initial =
     isControlled
@@ -240,6 +282,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   );
   const isError = activeValidation === "error";
 
+  const frameState: FrameState = disabled
+    ? "disabled"
+    : readOnly
+    ? "readonly"
+    : activeValidation ?? "default";
+
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLTextAreaElement>) => {
       if (!isControlled) setInnerValue(event.target.value);
@@ -248,16 +296,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
     [isControlled, onChange],
   );
 
-  // Track presence of composed subcomponents so we know whether to render
-  // the shorthand-prop fallbacks.
   const buckets = splitChildren(children);
   const composedLabel       = buckets.label;
   const composedDescription = buckets.description;
   const composedHelper      = buckets.helper;
   const composedCounter     = buckets.counter;
 
-  // Runtime registration lets a subcomponent unmount without leaving a
-  // stale aria-describedby id behind. Same pattern Input + Checkbox use.
   const [descRegistered, setDescRegistered]     = useState(!!composedDescription || !!description);
   const [helperRegistered, setHelperRegistered] = useState(!!composedHelper || !!helperText);
   const [counterRegistered, setCounterRegistered] = useState(!!composedCounter || (showCounter && maxLength != null));
@@ -275,9 +319,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
     if (wantsCounter !== counterRegistered) setCounterRegistered(wantsCounter);
   }, [composedDescription, description, composedHelper, helperText, activeValidation, composedCounter, showCounter, maxLength, descRegistered, helperRegistered, counterRegistered]);
 
-  // Auto-resize: measure scrollHeight, subtract padding, clamp between
-  // minRows*lineHeight and maxRows*lineHeight. Runs on every value change
-  // + on layout so the initial render + font swap both hit the right size.
+  /* Auto-resize: measure scrollHeight, clamp between min/maxRows × line
+     height, apply inline. Values here mirror --hc-textarea-line-* /
+     --hc-textarea-pad-y-* in variables.css — if the tokens change, both
+     the CSS var references above AND these constants below need updating. */
   const lineHeightPx = size === "sm" ? 20 : size === "lg" ? 24 : 22;
   const paddingYPx   = size === "lg" ? 12 : 8;
   useLayoutEffect(() => {
@@ -285,21 +330,14 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
     const el = innerRef.current;
     if (!el) return;
 
-    // Reset height so we can measure the natural scrollHeight of the
-    // current content. Without this, the previous inline height keeps
-    // the measurement locked to whatever it was.
     el.style.height = "auto";
     const scroll = el.scrollHeight;
     const minH = minRows * lineHeightPx + paddingYPx * 2;
     const maxH = maxRows * lineHeightPx + paddingYPx * 2;
     const next = Math.min(Math.max(scroll, minH), maxH);
     el.style.height = `${next}px`;
-    // If scrollHeight exceeds maxH, the browser will paint an internal
-    // scrollbar automatically since overflow-y: auto.
   }, [currentValue, autoResize, minRows, maxRows, lineHeightPx, paddingYPx]);
 
-  // Compose aria-describedby from description + helper/message + counter
-  // in DOM order. Only include ids for slots that are currently rendered.
   const describedIds: string[] = [];
   if (descRegistered)   describedIds.push(descriptionId);
   if (activeValidation) describedIds.push(messageId);
@@ -325,8 +363,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
     registerCounter,
   };
 
-  // Style: expose min/max row heights as inline CSS custom properties so
-  // the frame's minHeight can be driven by them without JS.
+  /* Inline CSS custom properties so the frame's min/max height calcs
+     read minRows / maxRows without re-rendering the class string. */
   const frameStyle: React.CSSProperties = {
     ...style,
     "--hc-textarea-min-rows": String(minRows),
@@ -348,51 +386,71 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   return (
     <TextareaContext.Provider value={contextValue}>
       <div
-        className={cx(
-          CLASS.field,
-          fullWidth && CLASS.fieldFullWidth,
-          disabled && CLASS.fieldDisabled,
+        data-slot="textarea-field"
+        className={cn(
+          "inline-flex flex-col gap-4 font-sans text-neutral-900 min-w-0",
+          fullWidth && "flex w-full",
+          disabled && cn(
+            "[&_[data-slot=textarea-label]]:text-neutral-400 [&_[data-slot=textarea-label]]:cursor-not-allowed",
+            "[&_[data-slot=textarea-marker]]:text-neutral-400",
+            "[&_[data-slot=textarea-description]]:text-neutral-400 [&_[data-slot=textarea-description]]:cursor-not-allowed",
+          ),
           className,
         )}
       >
         {/* Label row — subcomponent wins, else render from `label` prop. */}
         {(composedLabel || label) && (
-          <div className={CLASS.labelRow}>
+          <div className="flex items-baseline justify-between gap-8 min-w-0">
             {composedLabel ?? (
-              <label htmlFor={id} className={CLASS.label}>
+              <label
+                htmlFor={id}
+                data-slot="textarea-label"
+                className="text-14 leading-[1.4] font-semibold text-neutral-900 cursor-pointer"
+              >
                 {label}
                 {required && (
-                  <span className={CLASS.markerRequired} aria-hidden="true">
+                  <span
+                    data-slot="textarea-marker"
+                    aria-hidden="true"
+                    className="text-12 leading-none font-semibold text-red-500 ml-4"
+                  >
                     {requiredMarker}
                   </span>
                 )}
               </label>
             )}
             {!required && optional && (
-              <span className={CLASS.markerOptional}>Optional</span>
+              <span
+                data-slot="textarea-marker"
+                className="text-12 leading-none font-normal text-neutral-500"
+              >
+                Optional
+              </span>
             )}
           </div>
         )}
 
         {/* Description — subcomponent wins, else render from `description`. */}
         {composedDescription ?? (description && (
-          <span id={descriptionId} className={CLASS.description}>
+          <span
+            id={descriptionId}
+            data-slot="textarea-description"
+            className="text-12 leading-normal text-neutral-500"
+          >
             {description}
           </span>
         ))}
 
-        {/* Frame ─ the visual textarea box. */}
+        {/* Frame — the visual textarea box. */}
         <div
-          className={cx(
-            CLASS.frame,
-            CLASS.size(size),
-            disabled && CLASS.frameDisabled,
-            readOnly && !disabled && CLASS.frameReadonly,
-            loading && CLASS.frameLoading,
-            autoResize && CLASS.frameAutoResize,
-            activeValidation && CLASS.frameValidation(activeValidation),
-            CLASS.frameResize(resize),
-          )}
+          data-slot="textarea-frame"
+          className={textareaFrameVariants({
+            size,
+            state: frameState,
+            autoResize,
+            resize,
+            loading,
+          } as VariantProps<typeof textareaFrameVariants>)}
           style={frameStyle}
           onClick={() => {
             if (!disabled && !readOnly) innerRef.current?.focus();
@@ -402,7 +460,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
             {...rest}
             ref={innerRef}
             id={id}
-            className={CLASS.control}
+            data-slot="textarea-control"
             value={isControlled ? String(value ?? "") : undefined}
             defaultValue={isControlled ? undefined : defaultValue}
             disabled={disabled}
@@ -415,24 +473,56 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
             aria-invalid={ariaInvalidProp ?? (isError || undefined)}
             aria-describedby={ariaDescribedBy}
             aria-busy={loading || undefined}
+            className={cn(
+              "flex-1 w-full min-w-0 p-0 m-0 border-0 outline-none bg-transparent",
+              "text-inherit font-[inherit] leading-[inherit]",
+              "appearance-none [-webkit-appearance:none]",
+              "resize-none overflow-x-hidden overflow-y-auto",
+              "placeholder:text-neutral-500 placeholder:opacity-100",
+              "disabled:cursor-not-allowed disabled:text-neutral-400",
+              "[&:disabled]:[-webkit-text-fill-color:var(--hc-color-text-disabled)]",
+              "read-only:cursor-default",
+            )}
           />
 
-          {loading && <span className={CLASS.spinner} aria-hidden="true" />}
+          {loading && (
+            <span
+              data-slot="textarea-spinner"
+              aria-hidden="true"
+              className={cn(
+                "absolute right-8 top-8",
+                "inline-block shrink-0 rounded-full pointer-events-none",
+                "border-2 border-neutral-200 border-t-brand-500",
+                "animate-spin motion-reduce:[animation-duration:2500ms]",
+              )}
+            />
+          )}
         </div>
 
         {/* Footer — helper OR message on the left, counter on the right. */}
         {showFooter && (
-          <div className={CLASS.footer}>
+          <div
+            data-slot="textarea-footer"
+            className="flex items-start justify-between gap-12 min-w-0"
+          >
             {showFooterMessage ? (
               <span
                 id={messageId}
-                className={CLASS.message(activeValidation!)}
                 role={activeValidation === "error" ? "alert" : undefined}
+                className={cn(
+                  "text-12 leading-[1.4] min-w-0 flex-1",
+                  activeValidation === "error"   && "text-red-500",
+                  activeValidation === "warning" && "text-accent-700",
+                  activeValidation === "success" && "text-green-500",
+                )}
               >
                 {messageNode}
               </span>
             ) : showFooterHelper ? (
-              <span id={helperId} className={CLASS.helper}>
+              <span
+                id={helperId}
+                className="text-12 leading-[1.4] text-neutral-500 min-w-0 flex-1"
+              >
                 {helperText}
               </span>
             ) : composedHelper ? (
@@ -444,11 +534,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
             {composedCounter ?? (showFooterCounter && (
               <span
                 id={counterId}
-                className={
+                className={cn(
+                  "text-12 leading-[1.4] tabular-nums shrink-0 ml-auto",
                   maxLength != null && currentLength > maxLength
-                    ? CLASS.counterOver
-                    : CLASS.counter
-                }
+                    ? "text-red-500 font-semibold"
+                    : "text-neutral-500",
+                )}
               >
                 {currentLength} / {maxLength}
               </span>
@@ -478,7 +569,11 @@ const TextareaLabel = forwardRef<HTMLLabelElement, TextareaLabelProps>(function 
     <label
       ref={ref}
       htmlFor={ctx.inputId}
-      className={cx(CLASS.label, className)}
+      data-slot="textarea-label"
+      className={cn(
+        "text-14 leading-[1.4] font-semibold text-neutral-900 cursor-pointer",
+        className,
+      )}
       {...rest}
     >
       {children}
@@ -505,7 +600,11 @@ const TextareaDescription = forwardRef<HTMLSpanElement, TextareaDescriptionProps
     <span
       ref={ref}
       id={descId}
-      className={cx(CLASS.description, className)}
+      data-slot="textarea-description"
+      className={cn(
+        "text-12 leading-normal text-neutral-500",
+        className,
+      )}
       {...rest}
     >
       {children}
@@ -532,7 +631,11 @@ const TextareaHelper = forwardRef<HTMLSpanElement, TextareaHelperProps>(function
     <span
       ref={ref}
       id={helperId}
-      className={cx(CLASS.helper, className)}
+      data-slot="textarea-helper"
+      className={cn(
+        "text-12 leading-[1.4] text-neutral-500 min-w-0 flex-1",
+        className,
+      )}
       {...rest}
     >
       {children}
@@ -565,7 +668,12 @@ const TextareaCounter = forwardRef<HTMLSpanElement, TextareaCounterProps>(functi
     <span
       ref={ref}
       id={counterId}
-      className={cx(over ? CLASS.counterOver : CLASS.counter, className)}
+      data-slot="textarea-counter"
+      className={cn(
+        "text-12 leading-[1.4] tabular-nums shrink-0 ml-auto",
+        over ? "text-red-500 font-semibold" : "text-neutral-500",
+        className,
+      )}
       {...rest}
     >
       {children ?? text}
@@ -580,3 +688,5 @@ Textarea.Label       = TextareaLabel;
 Textarea.Description = TextareaDescription;
 Textarea.Helper      = TextareaHelper;
 Textarea.Counter     = TextareaCounter;
+
+export { textareaFrameVariants };

@@ -1111,15 +1111,19 @@ function NotesBlock() {
       <Callout tone="info" title="Extending Textarea">
         (1) A future Rich Text Editor primitive would compose Textarea's shell but replace the native textarea with a contenteditable surface. Not built here — it's a distinct interaction family.
         (2) A future Markdown Editor primitive would compose Textarea + a preview pane + a toolbar. Same shell, different content. Not built here.
-        (3) A new size should only be added if a genuine layout intent emerges. Update
+        (3) A new size should only be added if a genuine layout intent emerges. Update the
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          tokens/components/input.ts
+          --hc-textarea-pad-y-*
         </code>
-        first (Textarea's font + padding ladders come from there) and the matching CSS vars in
+        and
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          variables.css
+          --hc-textarea-line-*
         </code>
-        before touching Textarea.css.
+        vars in variables.css, then add the new key to the size variant map inside
+        <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
+          textareaFrameVariants
+        </code>
+        (the cva call in Textarea.tsx). Mirror the numeric line-height and paddingY in the auto-resize measurement block below the cva.
       </Callout>
     </DocBlock>
   );

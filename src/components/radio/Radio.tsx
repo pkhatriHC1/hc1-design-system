@@ -18,7 +18,8 @@ import type {
   ReactElement,
   ReactNode,
 } from "react";
-
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../../utils/cn";
 import type {
   RadioDescriptionProps,
   RadioGroupOrientation,
@@ -29,55 +30,23 @@ import type {
   RadioSize,
 } from "./Radio.types";
 
-// Design-system CSS variables — imported here so consumers get tokens
-// automatically when they import Radio, regardless of where they mount.
-import "../../tokens/css/variables.css";
-import "./Radio.css";
-
-/* ══════ CLASS NAMES ═══════════════════════════════════════════════ */
-
-const CLASS = {
-  root:              "hc-radio",
-  rootSize:          (s: RadioSize) => `hc-radio--size-${s}`,
-  rootChecked:       "hc-radio--checked",
-  rootDisabled:      "hc-radio--disabled",
-  rootInvalid:       "hc-radio--invalid",
-  rootRequired:      "hc-radio--required",
-  rootHasText:       "hc-radio--has-text",
-
-  input:             "hc-radio__input",
-  indicator:         "hc-radio__indicator",
-  dot:               "hc-radio__dot",
-
-  text:              "hc-radio__text",
-  label:             "hc-radio__label",
-  labelRequired:     "hc-radio__label-required",
-  description:       "hc-radio__description",
-
-  group:             "hc-radio-group",
-  groupOrientation:  (o: RadioGroupOrientation) => `hc-radio-group--${o}`,
-  groupDisabled:     "hc-radio-group--disabled",
-  groupInvalid:      "hc-radio-group--invalid",
-  groupHeader:       "hc-radio-group__header",
-  groupLabel:        "hc-radio-group__label",
-  groupLabelRequired:"hc-radio-group__label-required",
-  groupDescription:  "hc-radio-group__description",
-  groupItems:        "hc-radio-group__items",
-  groupError:        "hc-radio-group__error",
-};
-
-function cx(...parts: (string | false | null | undefined)[]) {
-  return parts.filter(Boolean).join(" ");
-}
+/**
+ * HC1 Radio + RadioGroup — the canonical single-selection control.
+ *
+ * Migrated from Radio.css to shadcn-style (cva + Tailwind utilities).
+ * Same design choice as Checkbox: preserve the real native
+ * `<input type="radio">` (not @radix-ui/react-radio-group) so form
+ * serialization, native keyboard, arrow-key navigation between radios
+ * sharing a `name`, and forwardRef<HTMLInputElement> all continue to
+ * work exactly as before.
+ *
+ * `peer` on the native input lets the sibling circle paint the focus
+ * ring via `peer-focus-visible:`; `group` on the root wrapper propagates
+ * hover via `group-hover:` — same technique as Checkbox.
+ */
 
 /* ══════ GROUP CONTEXT ═════════════════════════════════════════════ */
 
-/**
- * Bridge from RadioGroup to each descendant Radio. Radios read shared
- * state (name/value/size/disabled/invalid/required) and register their
- * own `value` so the group can determine which one owns the roving
- * `tabIndex=0`.
- */
 type RadioGroupContextValue = {
   name: string;
   value: string | undefined;
@@ -86,12 +55,7 @@ type RadioGroupContextValue = {
   disabled: boolean | undefined;
   invalid: boolean | undefined;
   required: boolean | undefined;
-  /** Registers this Radio's value with the group. Returns unregister fn. */
   register: (value: string) => () => void;
-  /**
-   * The value that should own `tabIndex=0`. Equals `value` when the group
-   * has a selection; otherwise the first registered radio's value.
-   */
   rovingValue: string | undefined;
 };
 
@@ -103,7 +67,6 @@ type ChildBuckets = {
   indicator?: ReactElement;
   label?: ReactElement;
   description?: ReactElement;
-  /** Fallback: non-subcomponent children treated as inline label text. */
   fallbackLabel: ReactNode[];
 };
 
@@ -132,22 +95,218 @@ function splitRadioChildren(children: ReactNode): ChildBuckets {
   return buckets;
 }
 
+/* ══════ CVA — ROOT (<label>) ══════════════════════════════════════ */
+
+const radioRootVariants = cva(
+  cn(
+    "group relative inline-flex items-start",
+    "font-sans text-neutral-900 cursor-pointer select-none",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "min-h-[var(--hc-radio-row-sm)] gap-8",
+        md: "min-h-[var(--hc-radio-row-md)] gap-8",
+        lg: "min-h-[var(--hc-radio-row-lg)] gap-12",
+      },
+      hasText: {
+        false: "!min-h-0 items-center",
+        true: "",
+      },
+      disabled: {
+        true: cn(
+          "cursor-not-allowed text-neutral-400",
+          "[&_[data-slot=radio-label]]:text-neutral-400",
+          "[&_[data-slot=radio-description]]:text-neutral-400",
+        ),
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+      hasText: false,
+      disabled: false,
+    },
+  },
+);
+
+/* ══════ CVA — NATIVE INPUT (visually hidden, keyboard target) ═════ */
+
+const radioInputVariants = cva(
+  cn(
+    "peer absolute left-0 m-0 p-0 opacity-0 cursor-inherit",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "size-[var(--hc-radio-control-sm)]",
+        md: "size-[var(--hc-radio-control-md)]",
+        lg: "size-[var(--hc-radio-control-lg)]",
+      },
+      hasText: {
+        false: "top-0",
+        true: "",
+      },
+    },
+    compoundVariants: [
+      { size: "sm", hasText: true, className: "top-[calc((var(--hc-radio-row-sm)-var(--hc-radio-control-sm))/2)]" },
+      { size: "md", hasText: true, className: "top-[calc((var(--hc-radio-row-md)-var(--hc-radio-control-md))/2)]" },
+      { size: "lg", hasText: true, className: "top-[calc((var(--hc-radio-row-lg)-var(--hc-radio-control-lg))/2)]" },
+    ],
+    defaultVariants: {
+      size: "md",
+      hasText: false,
+    },
+  },
+);
+
+/* ══════ CVA — INDICATOR (the visible circle) ══════════════════════ */
+
+type BoxState = "unchecked" | "checked";
+
+const radioIndicatorVariants = cva(
+  cn(
+    "inline-flex items-center justify-center shrink-0",
+    "border rounded-full bg-white",
+    "transition-[background-color,border-color,color] duration-150 ease-standard motion-reduce:duration-0",
+    "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "size-[var(--hc-radio-control-sm)]",
+        md: "size-[var(--hc-radio-control-md)]",
+        lg: "size-[var(--hc-radio-control-lg)]",
+      },
+      hasText: {
+        false: "",
+        true: "",
+      },
+      boxState: {
+        unchecked: cn(
+          "border-neutral-300 text-white",
+          "group-hover:bg-neutral-100 group-hover:border-brand-500",
+        ),
+        checked: cn(
+          "bg-brand-500 border-brand-500 text-white",
+          "group-hover:bg-brand-600 group-hover:border-brand-600",
+        ),
+      },
+      invalid: {
+        true: "peer-focus-visible:outline-red-500",
+        false: "",
+      },
+      disabled: {
+        true: "",
+        false: "",
+      },
+    },
+    compoundVariants: [
+      /* Vertical alignment: for rows with text, the circle sits at
+         (row-height - control) / 2 from the top so it aligns with the
+         label's baseline. */
+      { size: "sm", hasText: true, className: "mt-[calc((var(--hc-radio-row-sm)-var(--hc-radio-control-sm))/2)]" },
+      { size: "md", hasText: true, className: "mt-[calc((var(--hc-radio-row-md)-var(--hc-radio-control-md))/2)]" },
+      { size: "lg", hasText: true, className: "mt-[calc((var(--hc-radio-row-lg)-var(--hc-radio-control-lg))/2)]" },
+
+      /* invalid × unchecked — red border, subtle bg on hover */
+      { invalid: true, boxState: "unchecked", className: cn(
+        "border-red-500",
+        "group-hover:bg-neutral-100 group-hover:border-red-500",
+      )},
+      /* invalid × checked — red fill, color-mix darken on hover (verbatim) */
+      { invalid: true, boxState: "checked", className: cn(
+        "bg-red-500 border-red-500",
+        "group-hover:bg-[color-mix(in_oklab,var(--hc-color-red-500)_88%,black)]",
+        "group-hover:border-[color-mix(in_oklab,var(--hc-color-red-500)_88%,black)]",
+      )},
+
+      /* disabled × unchecked — muted, suppress hover */
+      { disabled: true, boxState: "unchecked", className: cn(
+        "bg-neutral-100 border-neutral-100 text-neutral-400",
+        "group-hover:bg-neutral-100 group-hover:border-neutral-100",
+      )},
+      /* disabled × checked — action-primary-disabled fill */
+      { disabled: true, boxState: "checked", className: cn(
+        "bg-neutral-200 border-neutral-200 text-white",
+        "group-hover:bg-neutral-200 group-hover:border-neutral-200",
+      )},
+    ],
+    defaultVariants: {
+      size: "md",
+      hasText: false,
+      boxState: "unchecked",
+      invalid: false,
+      disabled: false,
+    },
+  },
+);
+
+/* ══════ CVA — DOT (inner filled circle when checked) ══════════════ */
+
+const radioDotVariants = cva(
+  cn(
+    "block rounded-full bg-current",
+    "transition-[transform,opacity] duration-150 ease-standard motion-reduce:duration-0",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "size-[var(--hc-radio-dot-sm)]",
+        md: "size-[var(--hc-radio-dot-md)]",
+        lg: "size-[var(--hc-radio-dot-lg)]",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+    },
+  },
+);
+
+/* ══════ CVA — LABEL ═══════════════════════════════════════════════ */
+
+const radioLabelVariants = cva(
+  cn(
+    "text-neutral-900 font-medium inline",
+  ),
+  {
+    variants: {
+      size: {
+        /* Line-height locked to row height for single-line alignment;
+           JSX reverts to leading-[1.4] when a Description is present. */
+        sm: "text-12 leading-[var(--hc-radio-row-sm)]",
+        md: "text-14 leading-[var(--hc-radio-row-md)]",
+        lg: "text-16 leading-[var(--hc-radio-row-lg)]",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+    },
+  },
+);
+
+/* ══════ CVA — DESCRIPTION ═════════════════════════════════════════ */
+
+const radioDescriptionVariants = cva(
+  cn(
+    "text-neutral-500 font-normal leading-normal block",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "text-12",
+        md: "text-12",
+        lg: "text-14",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+    },
+  },
+);
+
 /* ══════ RADIO ROOT ════════════════════════════════════════════════ */
 
-/**
- * HC1 Radio — a single radio button.
- *
- * Same DOM shape as Checkbox: `<label>` wrapping a native
- * `<input type="radio">` + a sibling visual indicator (circular) + an
- * optional text stack (Label + Description). Every visual state and
- * token comes from the Checkbox palette so mixed forms read as one
- * system.
- *
- * Inside a `<RadioGroup>`, all shared state (name, checked, size,
- * disabled, invalid, required, tabIndex) is derived from group context.
- * Standalone usage is supported too: pass `name` + `checked`/`onCheckedChange`
- * (controlled) or `defaultChecked` (uncontrolled) directly.
- */
 export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
   {
     value,
@@ -175,17 +334,12 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
   const group = useContext(RadioGroupContext);
   const inGroup = !!group;
 
-  // Merge props with group context — explicit props win over group.
   const size     = sizeProp     ?? group?.size     ?? "md";
   const disabled = disabledProp ?? group?.disabled ?? false;
   const invalid  = invalidProp  ?? group?.invalid  ?? false;
   const required = requiredProp ?? group?.required ?? false;
   const name     = nameProp     ?? group?.name;
 
-  // Selection state:
-  //   - In group: derived from group.value === this.value
-  //   - Standalone controlled: from `checked` prop
-  //   - Standalone uncontrolled: from local state seeded by defaultChecked
   const isControlled = checkedProp !== undefined;
   const [innerChecked, setInnerChecked] = useState<boolean>(defaultChecked);
   const currentChecked =
@@ -193,8 +347,8 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
     : isControlled                  ? !!checkedProp
     :                                 innerChecked;
 
-  // Register this radio's value with the group so it can pick the
-  // roving-tabbable radio.
+  /* Register this radio's value with the group so it can pick the
+     roving-tabbable radio. */
   useEffect(() => {
     if (!inGroup || value === undefined) return;
     return group!.register(value);
@@ -209,8 +363,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
 
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      // Native radio change events fire only when the radio becomes
-      // checked (browsers don't fire change on the deselected sibling).
+      /* Native radio change fires only on the newly-checked radio. */
       if (inGroup && value !== undefined) {
         group!.onValueChange(value);
       } else if (!isControlled) {
@@ -227,7 +380,6 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
   const hasDescription = !!buckets.description;
   const hasText        = hasLabel || hasDescription;
 
-  // Track description presence so we can conditionally wire aria-describedby.
   const [hasDescriptionRegistered, setHasDescriptionRegistered] = useState(hasDescription);
   const registerDescription = useCallback(
     (present: boolean) => setHasDescriptionRegistered(present),
@@ -246,50 +398,38 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
     registerDescription,
   };
 
-  const rootClass = cx(
-    CLASS.root,
-    CLASS.rootSize(size),
-    currentChecked && CLASS.rootChecked,
-    disabled        && CLASS.rootDisabled,
-    invalid         && CLASS.rootInvalid,
-    required        && CLASS.rootRequired,
-    hasText         && CLASS.rootHasText,
-    className,
-  );
+  const boxState: BoxState = currentChecked ? "checked" : "unchecked";
 
-  // Compose aria-describedby (consumer's + our description if present).
   const describedIds: string[] = [];
   if (ariaDescribedByProp) describedIds.push(ariaDescribedByProp);
   if (hasDescriptionRegistered) describedIds.push(descriptionId);
   const ariaDescribedBy = describedIds.length > 0 ? describedIds.join(" ") : undefined;
 
-  // Roving tabindex: only the currently-selected radio (or the first if
-  // none is selected) is tabbable within a RadioGroup.
+  /* Roving tabindex: only the currently-selected radio (or the first if
+     none is selected) is tabbable within a RadioGroup. */
   const tabIndex = inGroup
     ? (value !== undefined && group!.rovingValue === value ? 0 : -1)
     : rest.tabIndex;
 
   return (
     <RadioSubcomponentContext.Provider value={contextValue}>
-      {/* The outer <label> wraps the native input, so label→input click
-          association works via containment alone. We deliberately do NOT
-          set htmlFor here — pairing htmlFor with wrapping causes some
-          browsers to dispatch two synthetic clicks, netting the toggle
-          back to zero. Wrapping alone is spec-compliant and reliable.
-          (Same fix as Checkbox — see PR #18 gotcha.) */}
+      {/* Outer <label> wraps input for click-to-select without htmlFor
+          (double-click bug in some browsers — same fix as Checkbox). */}
       <label
-        className={rootClass}
-        style={style as CSSProperties}
+        data-slot="radio-root"
         data-state={currentChecked ? "checked" : "unchecked"}
         data-disabled={disabled || undefined}
         data-invalid={invalid || undefined}
+        style={style as CSSProperties}
+        className={cn(
+          radioRootVariants({
+            size,
+            hasText,
+            disabled,
+          } as VariantProps<typeof radioRootVariants>),
+          className,
+        )}
       >
-        {/* Native input — the accessibility surface. Same containment
-            pattern Checkbox uses: absolutely positioned inside the label,
-            opacity 0, sized to the visible indicator so pointer + focus
-            land on the real element. Always internally controlled so
-            React never bails to the "uncontrolled" path unpredictably
-            (Checkbox PR #18 gotcha — same fix here). */}
         <input
           {...rest}
           ref={innerRef}
@@ -297,7 +437,6 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
           type="radio"
           name={name}
           value={value}
-          className={CLASS.input}
           checked={currentChecked}
           disabled={disabled}
           required={required}
@@ -307,20 +446,49 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
           aria-describedby={ariaDescribedBy}
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledBy}
+          className={radioInputVariants({
+            size,
+            hasText,
+          } as VariantProps<typeof radioInputVariants>)}
         />
-        {/* Visible indicator — sibling to the native input so the input can
-            paint the focus ring on it via a CSS adjacent selector. If a
-            consumer composed <Radio.Indicator> explicitly, use it verbatim
-            (they own its children). Otherwise render our internal one. */}
-        {buckets.indicator ?? <RadioIndicatorInternal checked={currentChecked} />}
+
+        {buckets.indicator ?? (
+          <span
+            data-slot="radio-indicator"
+            aria-hidden="true"
+            className={radioIndicatorVariants({
+              size,
+              hasText,
+              boxState,
+              invalid,
+              disabled,
+            } as VariantProps<typeof radioIndicatorVariants>)}
+          >
+            {currentChecked && (
+              <span
+                data-slot="radio-dot"
+                className={radioDotVariants({ size })}
+              />
+            )}
+          </span>
+        )}
 
         {hasText && (
-          <span className={CLASS.text}>
+          <span className="inline-flex flex-col gap-4 min-w-0">
             {(buckets.label || buckets.fallbackLabel.length > 0) && (
-              <span className={CLASS.label}>
+              <span
+                data-slot="radio-label"
+                className={cn(
+                  radioLabelVariants({ size }),
+                  hasDescription && "leading-[1.4]",
+                )}
+              >
                 {buckets.label ?? buckets.fallbackLabel}
                 {required && (
-                  <span className={CLASS.labelRequired} aria-hidden="true">
+                  <span
+                    aria-hidden="true"
+                    className="text-red-500 ml-[4px] font-semibold"
+                  >
                     *
                   </span>
                 )}
@@ -340,7 +508,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
 
 (Radio as unknown as { displayName: string }).displayName = "Radio";
 
-/* ══════ SUBCOMPONENT CONTEXT (Description ↔ root) ══════════════════ */
+/* ══════ SUBCOMPONENT CONTEXT (Description ↔ root) ═════════════════ */
 
 type RadioSubcomponentContextValue = {
   inputId: string;
@@ -361,15 +529,7 @@ function useRadioSubcomponentContext(source: string): RadioSubcomponentContextVa
   return ctx;
 }
 
-/* ══════ INDICATOR ═════════════════════════════════════════════════ */
-
-function RadioIndicatorInternal({ checked }: { checked: boolean }) {
-  return (
-    <span className={CLASS.indicator} aria-hidden="true">
-      {checked && <span className={CLASS.dot} />}
-    </span>
-  );
-}
+/* ══════ INDICATOR (composable escape hatch) ═══════════════════════ */
 
 const RadioIndicator = forwardRef<HTMLSpanElement, RadioIndicatorProps>(function RadioIndicator(
   { className, children, ...rest },
@@ -378,8 +538,13 @@ const RadioIndicator = forwardRef<HTMLSpanElement, RadioIndicatorProps>(function
   return (
     <span
       ref={ref}
-      className={cx(CLASS.indicator, className)}
+      data-slot="radio-indicator"
       aria-hidden="true"
+      className={cn(
+        "inline-flex items-center justify-center shrink-0",
+        "border border-neutral-300 rounded-full bg-white",
+        className,
+      )}
       {...rest}
     >
       {children}
@@ -394,8 +559,17 @@ const RadioLabel = forwardRef<HTMLSpanElement, RadioLabelProps>(function RadioLa
   { className, children, ...rest },
   ref,
 ) {
+  const ctx = useRadioSubcomponentContext("Radio.Label");
   return (
-    <span ref={ref} className={cx(CLASS.label, className)} {...rest}>
+    <span
+      ref={ref}
+      data-slot="radio-label"
+      className={cn(
+        radioLabelVariants({ size: ctx.size }),
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </span>
   );
@@ -420,7 +594,11 @@ const RadioDescription = forwardRef<HTMLSpanElement, RadioDescriptionProps>(func
     <span
       ref={ref}
       id={descId}
-      className={cx(CLASS.description, className)}
+      data-slot="radio-description"
+      className={cn(
+        radioDescriptionVariants({ size: ctx.size }),
+        className,
+      )}
       {...rest}
     >
       {children}
@@ -431,23 +609,27 @@ RadioDescription.displayName = "Radio.Description";
 
 /* ══════ RADIO GROUP ═══════════════════════════════════════════════ */
 
+const radioGroupItemsVariants = cva(
+  "flex min-w-0",
+  {
+    variants: {
+      orientation: {
+        vertical:   "flex-col gap-8",
+        horizontal: "flex-row flex-wrap gap-16",
+      },
+    },
+    defaultVariants: {
+      orientation: "vertical",
+    },
+  },
+);
+
 /**
  * HC1 RadioGroup — groups Radio buttons under a shared name + selection.
  *
- * Provides:
- *   - shared `name` (auto via useId)
- *   - controlled `value` + `onValueChange` (or uncontrolled `defaultValue`)
- *   - inheritable `size`, `disabled`, `invalid`, `required`
- *   - `orientation` (vertical / horizontal)
- *   - roving `tabIndex` — the checked radio is tabbable; if nothing is
- *     checked, the first registered radio is tabbable so keyboard users
- *     can tab INTO the group
- *   - optional `label` + `description` + `errorMessage` slots
- *
- * Arrow-key navigation between radios is handled NATIVELY by the browser
- * because all radios share the same `name`. RadioGroup does not
- * reimplement it — it only wires up focus + tabIndex so the native
- * behavior works.
+ * Arrow-key navigation between radios is NATIVE — the browser handles it
+ * automatically because all child radios share the same `name`. This
+ * component only wires focus + tabIndex so the native behavior works.
  */
 export function RadioGroup({
   value: controlledValue,
@@ -490,8 +672,6 @@ export function RadioGroup({
     [isControlled, onValueChange],
   );
 
-  // Track registered radio values in insertion order so we can pick the
-  // roving-tabbable one (the checked value, or first if none checked).
   const [registered, setRegistered] = useState<string[]>([]);
   const register = useCallback((v: string) => {
     setRegistered((r) => (r.includes(v) ? r : [...r, v]));
@@ -522,14 +702,6 @@ export function RadioGroup({
     [name, currentValue, handleValueChange, size, disabled, groupInvalid, required, register, rovingValue],
   );
 
-  const rootClass = cx(
-    CLASS.group,
-    CLASS.groupOrientation(orientation),
-    disabled     && CLASS.groupDisabled,
-    groupInvalid && CLASS.groupInvalid,
-    className,
-  );
-
   const composedLabelledBy = [ariaLabelledByProp, labelId].filter(Boolean).join(" ") || undefined;
   const composedDescribedBy = [ariaDescribedByProp, descId, errorId].filter(Boolean).join(" ") || undefined;
 
@@ -537,38 +709,69 @@ export function RadioGroup({
     <div
       {...rest}
       role="radiogroup"
+      data-slot="radio-group"
+      data-orientation={orientation}
       aria-orientation={orientation}
       aria-labelledby={composedLabelledBy}
       aria-describedby={composedDescribedBy}
       aria-required={required || undefined}
       aria-invalid={groupInvalid || undefined}
       aria-disabled={disabled || undefined}
-      className={rootClass}
+      className={cn(
+        "flex flex-col gap-8 font-sans text-neutral-900 min-w-0",
+        className,
+      )}
     >
       {(label || description) && (
-        <div className={CLASS.groupHeader}>
+        <div data-slot="radio-group-header" className="flex flex-col gap-4">
           {label && (
-            <div id={labelId} className={CLASS.groupLabel}>
+            <div
+              id={labelId}
+              data-slot="radio-group-label"
+              className={cn(
+                "text-14 font-semibold leading-[1.4]",
+                groupInvalid ? "text-red-500" : "text-neutral-900",
+              )}
+            >
               {label}
               {required && (
-                <span className={CLASS.groupLabelRequired} aria-hidden="true">
+                <span
+                  aria-hidden="true"
+                  className="text-red-500 ml-[4px] font-semibold"
+                >
                   *
                 </span>
               )}
             </div>
           )}
           {description && (
-            <div id={descId} className={CLASS.groupDescription}>
+            <div
+              id={descId}
+              data-slot="radio-group-description"
+              className="text-12 text-neutral-500 leading-normal"
+            >
               {description}
             </div>
           )}
         </div>
       )}
       <RadioGroupContext.Provider value={contextValue}>
-        <div className={CLASS.groupItems}>{children}</div>
+        <div
+          data-slot="radio-group-items"
+          className={radioGroupItemsVariants({
+            orientation: orientation as RadioGroupOrientation,
+          })}
+        >
+          {children}
+        </div>
       </RadioGroupContext.Provider>
       {errorMessage && (
-        <div id={errorId} className={CLASS.groupError} role="alert">
+        <div
+          id={errorId}
+          data-slot="radio-group-error"
+          role="alert"
+          className="text-12 text-red-500 leading-normal"
+        >
           {errorMessage}
         </div>
       )}
@@ -582,3 +785,12 @@ RadioGroup.displayName = "RadioGroup";
 Radio.Indicator   = RadioIndicator;
 Radio.Label       = RadioLabel;
 Radio.Description = RadioDescription;
+
+export {
+  radioRootVariants,
+  radioIndicatorVariants,
+  radioDotVariants,
+  radioLabelVariants,
+  radioDescriptionVariants,
+  radioGroupItemsVariants,
+};

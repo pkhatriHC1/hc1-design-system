@@ -1375,15 +1375,16 @@ function NotesBlock() {
     <DocBlock title="Implementation notes">
       <RuleList
         rules={[
-          { tone: "note", text: "Drawer.Content is portalled into document.body — the panel is not a child of the trigger in the DOM. This keeps the scrim and stacking context predictable no matter where the Drawer is composed." },
-          { tone: "note", text: "The panel slides in from its anchor edge — translateX(-100%) → 0 for left, translateX(100%) → 0 for right. Both use aliases.motion.overlayEnter for consistency with Dialog." },
-          { tone: "note", text: "Only the inner-facing corners are rounded (top-left/bottom-left on a right drawer; top-right/bottom-right on a left drawer). The outer edge abuts the viewport, so those corners are square." },
-          { tone: "note", text: "Open state can be controlled (open + onOpenChange) or uncontrolled (defaultOpen). Both are supported by the same root component — no separate ControlledDrawer." },
-          { tone: "note", text: "Body scroll is locked while any drawer is open — via the same reference-counted lock Dialog uses. Opening a Drawer inside an already-open Dialog does not race the lock. The scrollbar gutter is preserved so opening a drawer does not shift the underlying layout." },
-          { tone: "note", text: "The focus trap cycles Tab and Shift+Tab within the panel. Focus falls back to the panel itself if there are no focusable children — so keyboard users are never dumped back to the page." },
-          { tone: "note", text: "Drawer.Title and Drawer.Description register with the root via context and generate the ids that get wired into aria-labelledby / aria-describedby. Omit either — the corresponding aria attribute is not set." },
-          { tone: "note", text: "The scrim is shared with Dialog via the same --hc-dialog-scrim CSS variable. Retinting the inverse alias retints every overlay in the product — Dialog and Drawer together." },
-          { tone: "note", text: "overlay={false} keeps the scrim div for positioning but makes it pointer-events: none and background: transparent so the underlying page stays interactive. Focus is still trapped inside the panel." },
+          { tone: "note", text: "Drawer wraps @radix-ui/react-dialog (same primitive Dialog uses) with side-anchored positioning — the shadcn Sheet pattern. Radix owns focus trap, body scroll lock (via ReactRemoveScroll), Escape + outside-click close, Portal, Overlay, and aria wiring. We own the visual layer + the compound sub-component surface." },
+          { tone: "note", text: "Drawer.Content is portaled to document.body, fixed-positioned at left:0 or right:0, full-height (100dvh with vh fallback), width capped by size." },
+          { tone: "note", text: "The panel slides in from its anchor edge — translateX(-100%) → 0 for left, translateX(100%) → 0 for right (via data-[state=open]:translate-x-0). Same 250ms ease-entrance timing as Dialog." },
+          { tone: "note", text: "Only the inner-facing corners are rounded (rounded-r-surface on a left drawer; rounded-l-surface on a right drawer). The outer edge abuts the viewport, so those corners are square." },
+          { tone: "note", text: "Body scroll is locked while any drawer is open — Radix's ReactRemoveScroll handles the lock, and it composes correctly with Dialog's lock (nested overlays don't race). The scrollbar gutter is preserved." },
+          { tone: "note", text: "Focus is trapped inside the panel automatically by Radix Dialog Content. On close, focus restores to the trigger." },
+          { tone: "note", text: "Drawer.Title + Drawer.Description use Radix Title / Description with asChild — the semantic wrapper (<hN>, <p>) is preserved AND aria-labelledby / aria-describedby auto-wire via ids." },
+          { tone: "note", text: "The scrim uses the same --hc-dialog-scrim CSS variable as Dialog + modal Popover, so retinting the inverse alias retints every overlay in the product." },
+          { tone: "note", text: "overlay={false} makes the scrim transparent + pointer-events-none so the underlying page stays interactive. Radix's outside-click close is disabled in that mode (nothing to click). Focus stays trapped and body scroll stays locked (Radix modal semantics still apply)." },
+          { tone: "note", text: "sticky Header / Footer use CSS position:sticky inside the scrollable Content. Sticky Header adds a border-bottom + subtle downward shadow; sticky Footer adds an upward shadow — so scrolled body content reads as passing under both." },
         ]}
       />
 
@@ -1393,15 +1394,15 @@ function NotesBlock() {
         should be a thin composition on top of this Drawer — never a
         reimplementation. Wrap Drawer.Content with the variant's opinionated
         header/footer and reuse everything else. (2) A new size should only
-        be added if a genuine layout intent emerges. Add the pixel value to
+        be added if a genuine layout intent emerges. Add the pixel value to the
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          tokens/components/drawer.ts
+          --hc-drawer-size-*
         </code>
-        and the matching CSS variable in
+        var in variables.css, then add the new key to the size variant map inside
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          variables.css
+          drawerContentVariants
         </code>
-        before adding a new CSS class.
+        (the cva call in Drawer.tsx).
       </Callout>
     </DocBlock>
   );

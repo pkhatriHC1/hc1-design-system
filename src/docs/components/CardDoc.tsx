@@ -1292,8 +1292,8 @@ function NotesBlock() {
       <RuleList
         rules={[
           { tone: "note", text: "The compound component pattern lives at Card.tsx — Card.Header, Card.Title etc. are static properties on the Card function. Consumers can destructure or dot-access." },
-          { tone: "note", text: "Density flows via React context — the root sets the --hc-card-pad and --hc-card-gap CSS custom properties, and every subcomponent reads them. Change density on the root, every child scales." },
-          { tone: "note", text: "The loading overlay uses color-mix(in oklab, ...) for the scrim so the tint follows the surface token exactly. Falls back gracefully on browsers without color-mix (all evergreen browsers support it since 2023)." },
+          { tone: "note", text: "Density flows via CSS custom properties — the root sets --hc-card-pad, --hc-card-title-size, --hc-card-icon-size, and --hc-card-actions-gap. Every subcomponent reads them via arbitrary Tailwind values (e.g. p-[var(--hc-card-pad)]). Change density on the root, every child scales." },
+          { tone: "note", text: "Styling uses cva + Tailwind v4 utilities that resolve to HC1 tokens via the @theme block. The loading overlay uses bg-[color:var(--hc-color-bg-elevated)]/85 for a translucent surface-toned scrim." },
           { tone: "note", text: "Card.Header rearranges children internally — Card.Icon renders first, Card.Actions renders last, everything else stacks in the middle. This keeps composition natural: consumers author children in any order." },
           { tone: "note", text: "Card renders as <button> when onClick is present OR when variant='interactive'. Otherwise it's a plain <div>. This mirrors the design principle: elements gain interactivity by intent, not by default." },
         ]}
@@ -1302,10 +1302,15 @@ function NotesBlock() {
       <Callout tone="info" title="Extending Card">
         (1) A new variant is only justified if a new semantic surface intent
         emerges. Add the color role to the alias layer first, then extend
+        the
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          tokens/components/card.ts
+          variant
         </code>
-        + Card.css. (2) A new subcomponent should be composable — no boolean
+        map in the
+        <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
+          cardVariants
+        </code>
+        cva call inside Card.tsx. (2) A new subcomponent should be composable — no boolean
         props on the root to enable it. Add
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
           Card.Media
@@ -1313,7 +1318,7 @@ function NotesBlock() {
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
           Card.Badge
         </code>,
-        etc., as its own file that reads the density context.
+        etc. and register on the compound export at the bottom of Card.tsx.
       </Callout>
     </DocBlock>
   );

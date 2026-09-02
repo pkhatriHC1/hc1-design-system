@@ -17,7 +17,8 @@ import type {
   ReactElement,
   ReactNode,
 } from "react";
-
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../../utils/cn";
 import type {
   ToastActionsProps,
   ToastCloseProps,
@@ -29,29 +30,23 @@ import type {
   ToastVariant,
 } from "./Toast.types";
 
-// Design-system CSS variables — imported here so consumers get tokens
-// automatically wherever they mount the Toast.
-import "../../tokens/css/variables.css";
-import "./Toast.css";
-
-/* ══════ CLASS NAMES ═══════════════════════════════════════════════ */
-
-const CLASS = {
-  root:        "hc-toast",
-  variant:     (v: ToastVariant) => `hc-toast--variant-${v}`,
-  state:       (s: ToastState)   => `hc-toast--state-${s}`,
-
-  icon:        "hc-toast__icon",
-  body:        "hc-toast__body",
-  title:       "hc-toast__title",
-  description: "hc-toast__description",
-  actions:     "hc-toast__actions",
-  close:       "hc-toast__close",
-};
-
-function cx(...parts: (string | false | null | undefined)[]) {
-  return parts.filter(Boolean).join(" ");
-}
+/**
+ * HC1 Toast — the canonical transient-feedback primitive.
+ *
+ * Migrated from Toast.css to shadcn-style (cva + Tailwind utilities).
+ *
+ * Deliberately does NOT wrap @radix-ui/react-toast — Radix Toast requires
+ * a ToastProvider + ToastViewport queue/positioning system that would
+ * balloon the public API surface. The current design keeps Toast as a
+ * lean presentational primitive (no portal, no queue, no viewport) so
+ * downstream apps can wrap it with their own queuing / positioning
+ * strategy. The auto-close timer + pause/resume on hover/focus lifecycle
+ * lives here because it belongs to a single Toast, not the queue.
+ *
+ * Compound API preserved verbatim — Toast, Toast.Icon, Toast.Title,
+ * Toast.Description, Toast.Actions, Toast.Close. Child bucketing (icon
+ * left, body middle, close right) is order-independent.
+ */
 
 /* ══════ CONTEXT ═══════════════════════════════════════════════════ */
 
@@ -74,27 +69,67 @@ function useToastContext(source: string): ToastContextValue {
 }
 
 /* ══════ EXIT DURATION ═════════════════════════════════════════════
- * Matches `motion.overlayExit` (150ms) — kept as a constant so the JS
- * timer and the CSS transition stay in sync. Update both if either
- * changes. */
+ * Matches motion.overlayExit (150ms) — kept as a constant so the JS
+ * timer and the CSS transition stay in sync. */
 const EXIT_DURATION_MS = 150;
+
+/* ══════ CVA — ROOT ═════════════════════════════════════════════════ */
+
+const toastRootVariants = cva(
+  cn(
+    "relative flex items-start gap-12 box-border text-left min-w-[320px] max-w-[420px]",
+    "py-12 pr-16 pl-[calc(16px+4px)]",
+    "bg-white text-neutral-900 border border-neutral-200 rounded-surface shadow-lg",
+    "font-sans",
+    /* Left accent stripe painted via a pseudo-element (arbitrary variant). */
+    "before:content-[''] before:absolute before:top-0 before:bottom-0 before:left-0 before:w-[4px]",
+    "before:rounded-tl-surface before:rounded-bl-surface",
+    "before:bg-[color:var(--hc-toast-accent)]",
+    /* Entrance transition: opacity 0 + translateY(8px) + scale(0.98) → rest.
+       Matches original hc-toast-enter keyframe (via data-state). */
+    "opacity-0 translate-y-[8px] scale-[0.98]",
+    "data-[state=visible]:opacity-100 data-[state=visible]:translate-y-0 data-[state=visible]:scale-100",
+    /* Exit transition: opacity 1 → 0 + translateY(4px). Matches
+       hc-toast-exit keyframe. */
+    "data-[state=closing]:opacity-0 data-[state=closing]:translate-y-[4px] data-[state=closing]:scale-[0.98]",
+    "data-[state=closing]:pointer-events-none",
+    "transition-[opacity,transform] duration-250 ease-entrance",
+    "data-[state=closing]:duration-150 data-[state=closing]:ease-exit",
+    "motion-reduce:duration-0 motion-reduce:data-[state=closing]:duration-0",
+  ),
+  {
+    variants: {
+      variant: {
+        info: cn(
+          "[--hc-toast-accent:var(--hc-color-status-info-fg)]",
+          "[--hc-toast-icon-color:var(--hc-color-blue-600)]",
+        ),
+        success: cn(
+          "[--hc-toast-accent:var(--hc-color-status-success-fg)]",
+          "[--hc-toast-icon-color:var(--hc-color-green-600)]",
+        ),
+        warning: cn(
+          "[--hc-toast-accent:var(--hc-color-status-warning-fg)]",
+          "[--hc-toast-icon-color:var(--hc-color-yellow-600)]",
+        ),
+        danger: cn(
+          "[--hc-toast-accent:var(--hc-color-action-danger)]",
+          "[--hc-toast-icon-color:var(--hc-color-red-600)]",
+        ),
+        neutral: cn(
+          "[--hc-toast-accent:var(--hc-color-border-strong)]",
+          "[--hc-toast-icon-color:var(--hc-color-text-tertiary)]",
+        ),
+      },
+    },
+    defaultVariants: {
+      variant: "info",
+    },
+  },
+);
 
 /* ══════ ROOT ══════════════════════════════════════════════════════ */
 
-/**
- * HC1 Toast — the canonical transient-feedback primitive.
- *
- * Compose with `Toast.Icon`, `Toast.Title`, `Toast.Description`,
- * `Toast.Actions`, and `Toast.Close`. Children can be authored in any
- * order — the root splits them into three layout slots (Icon / body /
- * Close) so the visual arrangement is stable.
- *
- * The Toast owns its own auto-close lifecycle. The consumer owns
- * whether the Toast is mounted — Toast never portals itself, never
- * manages a queue, never removes itself from the DOM. When the exit
- * animation completes, `onDismiss` fires and the consumer should
- * unmount.
- */
 const ToastRoot = forwardRef<HTMLDivElement, ToastProps>(function ToastRoot(
   {
     variant     = "info",
@@ -181,8 +216,8 @@ const ToastRoot = forwardRef<HTMLDivElement, ToastProps>(function ToastRoot(
     scheduleDismiss(remainingRef.current);
   }, [effectiveDuration, scheduleDismiss]);
 
-  // Start the timer on mount. Also restart if `autoClose` / `persistent`
-  // change while the Toast is visible (rare, but well-defined).
+  /* Start the timer on mount + restart if autoClose / persistent change
+     while the Toast is visible (rare but well-defined). */
   useEffect(() => {
     remainingRef.current = effectiveDuration ?? Infinity;
     if (effectiveDuration != null && state === "visible") {
@@ -207,7 +242,7 @@ const ToastRoot = forwardRef<HTMLDivElement, ToastProps>(function ToastRoot(
     onFocus?.(event);
   };
   const handleBlur = (event: React.FocusEvent<HTMLDivElement>) => {
-    // Only resume when focus leaves the Toast subtree entirely.
+    /* Only resume when focus leaves the Toast subtree entirely. */
     if (
       event.currentTarget &&
       event.relatedTarget instanceof Node &&
@@ -236,9 +271,8 @@ const ToastRoot = forwardRef<HTMLDivElement, ToastProps>(function ToastRoot(
 
   const { icon, close, body } = splitChildren(children);
 
-  // Once the exit animation has completed the parent is expected to
-  // unmount. If it does not, we render nothing so the DOM stays clean
-  // and no residual focusable node is left behind.
+  /* Once the exit animation has completed the parent is expected to
+     unmount. If it does not, we render nothing so the DOM stays clean. */
   if (state === "dismissed") return null;
 
   return (
@@ -250,10 +284,11 @@ const ToastRoot = forwardRef<HTMLDivElement, ToastProps>(function ToastRoot(
         aria-live={role === "alert" ? "assertive" : "polite"}
         aria-atomic="true"
         data-state={state}
-        className={cx(
-          CLASS.root,
-          CLASS.variant(variant),
-          CLASS.state(state),
+        data-slot="toast-root"
+        className={cn(
+          toastRootVariants({
+            variant,
+          } as VariantProps<typeof toastRootVariants>),
           className,
         )}
         style={style as CSSProperties}
@@ -264,7 +299,9 @@ const ToastRoot = forwardRef<HTMLDivElement, ToastProps>(function ToastRoot(
         onKeyDown={handleKeyDown}
       >
         {icon}
-        <div className={CLASS.body}>{body}</div>
+        <div data-slot="toast-body" className="flex-1 min-w-0 flex flex-col gap-4">
+          {body}
+        </div>
         {dismissible && close}
       </div>
     </ToastContext.Provider>
@@ -289,8 +326,8 @@ function splitChildren(children: ReactNode): {
       return;
     }
     const el = child as ReactElement;
-    // Only the first Icon / Close wins if the consumer accidentally
-    // authors two. Everything else falls through to the body stack.
+    /* First Icon / Close wins if the consumer accidentally authors two.
+       Everything else falls through to the body stack. */
     if (el.type === ToastIcon) {
       if (!icon) icon = el;
       return;
@@ -314,8 +351,14 @@ const ToastIcon = forwardRef<HTMLSpanElement, ToastIconProps>(function ToastIcon
   return (
     <span
       ref={ref}
-      className={cx(CLASS.icon, className)}
+      data-slot="toast-icon"
       aria-hidden="true"
+      className={cn(
+        "shrink-0 inline-flex items-center justify-center mt-[2px]",
+        "text-[color:var(--hc-toast-icon-color,currentColor)]",
+        "[&_svg]:block [&_svg]:size-[20px]",
+        className,
+      )}
       {...rest}
     >
       {children}
@@ -341,7 +384,11 @@ const ToastTitle = forwardRef<HTMLDivElement, ToastTitleProps>(function ToastTit
   return (
     <Tag
       ref={ref as React.Ref<HTMLDivElement & HTMLHeadingElement>}
-      className={cx(CLASS.title, className)}
+      data-slot="toast-title"
+      className={cn(
+        "m-0 font-sans text-14 font-semibold leading-[1.4] text-neutral-900",
+        className,
+      )}
       {...rest}
     >
       {children}
@@ -357,7 +404,18 @@ const ToastDescription = forwardRef<HTMLDivElement, ToastDescriptionProps>(funct
   ref,
 ) {
   return (
-    <div ref={ref} className={cx(CLASS.description, className)} {...rest}>
+    <div
+      ref={ref}
+      data-slot="toast-description"
+      className={cn(
+        "m-0 font-sans text-14 leading-normal text-neutral-700 min-w-0",
+        /* Reset UA default paragraph margins + inter-paragraph rhythm. */
+        "[&_p]:m-0",
+        "[&_p+p]:mt-4",
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </div>
   );
@@ -371,7 +429,15 @@ const ToastActions = forwardRef<HTMLDivElement, ToastActionsProps>(function Toas
   ref,
 ) {
   return (
-    <div ref={ref} className={cx(CLASS.actions, className)} {...rest}>
+    <div
+      ref={ref}
+      data-slot="toast-actions"
+      className={cn(
+        "flex flex-wrap gap-8 mt-8 min-w-0",
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </div>
   );
@@ -389,12 +455,23 @@ const ToastClose = forwardRef<HTMLButtonElement, ToastCloseProps>(function Toast
     <button
       ref={ref}
       type="button"
-      className={cx(CLASS.close, className)}
+      data-slot="toast-close"
       onClick={(event) => {
         onClick?.(event);
         ctx.requestDismiss();
       }}
       aria-label={label}
+      className={cn(
+        "appearance-none border-0 m-0 p-0 bg-transparent text-neutral-500 cursor-pointer shrink-0",
+        "size-[24px] rounded-full inline-flex items-center justify-center",
+        "text-[length:14px]/none",
+        /* Tug into the padding so the X sits closer to the corner. */
+        "-mr-[4px] -mt-[2px]",
+        "transition-[background-color,color] duration-150 ease-standard motion-reduce:duration-0",
+        "hover:bg-neutral-100 hover:text-neutral-900",
+        "outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
+        className,
+      )}
       {...rest}
     >
       <CloseIcon />
@@ -440,4 +517,4 @@ Toast.Description = ToastDescription;
 Toast.Actions     = ToastActions;
 Toast.Close       = ToastClose;
 
-export { Toast, useToastContext };
+export { Toast, useToastContext, toastRootVariants };

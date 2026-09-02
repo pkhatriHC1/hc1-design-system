@@ -852,18 +852,27 @@ function NotesBlock() {
     <DocBlock title="Implementation notes">
       <RuleList
         rules={[
-          { tone: "note", text: "Tooltip.Content is rendered into a portal on document.body — same technique Dialog uses — so it escapes overflow-hidden ancestors and always paints above the surrounding surface. No z-index gymnastics on the parent required." },
-          { tone: "note", text: "Positioning is done in a useLayoutEffect that runs before paint. It reads the trigger's getBoundingClientRect + the (already-mounted, visibility:hidden) content's size, computes the placement, and writes inline top/left. This means one measure pass per open; no flicker at 0,0." },
-          { tone: "note", text: "The arrow is a rotated 8×8 square anchored half-inside the panel edge. JS writes an inline `left` (top/bottom sides) or `top` (left/right sides) that tracks the trigger centre so the arrow always points at the trigger even when the tooltip has been clamped away from centre by a viewport edge." },
-          { tone: "note", text: "Timers are held in refs so back-to-back schedule calls cancel each other. Blur and Escape both hide via `hideNow()` which skips delayHide entirely." },
-          { tone: "note", text: "Pointer-events on the tooltip panel are disabled by default — the trigger's hover flow doesn't hitch as the pointer glides over the tooltip. Consumers of custom Content who need pointer-events should reconsider — that's usually a Popover, not a Tooltip." },
-          { tone: "note", text: "Trigger uses cloneElement to attach handlers + ref + aria-describedby to a single child. Multi-child triggers are not supported; wrap in an inline span if you need composition." },
-          { tone: "note", text: "aria-describedby is added ONLY while the tooltip is open. This avoids leaking dangling references when the tooltip is closed and its content id is nowhere in the DOM." },
+          { tone: "note", text: "Tooltip wraps @radix-ui/react-tooltip — Radix owns focus / hover / touch / keyboard / portal / positioning semantics; we only own the visual layer via cva + Tailwind utilities. The DS ships an inline TooltipProvider inside each Tooltip root so consumers don't need to add a top-level provider." },
+          { tone: "note", text: "Tooltip.Content is portaled to document.body via Radix Portal so it escapes overflow-hidden ancestors and always paints above the surrounding surface. No z-index gymnastics on the parent required." },
+          { tone: "note", text: "Positioning uses Radix's built-in floating-ui integration. Requested `placement` maps to Radix `side`; collision avoidance (default on) flips to the opposite side when the requested one doesn't fit." },
+          { tone: "note", text: "The arrow is a Radix SVG element sized 11×5 pointing at the trigger. Radix positions it automatically along the cross axis." },
+          { tone: "note", text: "Pointer-events on the tooltip panel are disabled — the trigger's hover flow doesn't hitch as the pointer glides over the tooltip. Content that legitimately needs interaction should use Popover, not Tooltip." },
+          { tone: "note", text: "Trigger uses Radix's asChild + @radix-ui/react-slot to clone its single child and attach handlers + ref + aria-describedby cleanly. Multi-child triggers are not supported; wrap in an inline span if you need composition." },
+          { tone: "note", text: "aria-describedby is added by Radix ONLY while the tooltip is open. This avoids leaking dangling references when the tooltip is closed and its content id is nowhere in the DOM." },
         ]}
       />
 
+      <Callout tone="warning" title="Two intentional API micro-differences">
+        <p style={{ margin: 0 }}>
+          <strong>placement=&quot;auto&quot;</strong> maps to <code>side=&quot;top&quot;</code> + Radix collision avoidance (flips to opposite side when the requested one doesn't fit). Practical result is very close but not identical to the original &quot;auto&quot; which also considered left/right based on available space.
+        </p>
+        <p style={{ margin: 0, marginTop: t.space.stack.sm }}>
+          <strong>delayHide</strong> is preserved in the API for source compatibility but ignored internally — Radix exposes only a show delay (<code>delayDuration</code>) and manages exit timing itself. Only <code>delayShow</code> maps onto Radix.
+        </p>
+      </Callout>
+
       <Callout tone="info" title="Foundation for Popover">
-        Tooltip's positioning engine, portal, arrow, and side-flip logic are deliberately kept API-agnostic so a future Popover primitive can reuse them. Popover swaps hover/focus semantics for click-to-open, adds focus management (Popover content IS focusable), and inherits everything else. When Popover ships, expect much of this file to move to a shared `_positioning` module.
+        Popover (future primitive) will also wrap Radix — click-to-open semantics, focusable content, but same portal + positioning + arrow foundation. When Popover ships, expect a shared floating-panel visual layer that both primitives consume.
       </Callout>
     </DocBlock>
   );

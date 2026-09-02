@@ -861,10 +861,12 @@ function NotesBlock() {
         rules={[
           { tone: "note", text: "The Toast owns its auto-close timer and exit lifecycle. The consumer owns whether it's mounted — Toast never portals itself, never queues, and never removes itself from the DOM. When the exit animation completes, `onDismiss` fires and the parent should unmount." },
           { tone: "note", text: "Auto-close pauses on mouseenter + focusin, and resumes on mouseleave + focusout. Remaining time is preserved across pauses so a Toast set to 4s that pauses at 1s remaining still gets a full 1s on resume — no user gets robbed of reading time." },
-          { tone: "note", text: "The variant matrix is 5 combinations. Each is a single CSS selector that sets two vars (--hc-toast-accent, --hc-toast-icon-color). The base .hc-toast selector reads those vars, so layout code is written once." },
-          { tone: "note", text: "The accent stripe is a 4px inset ::before element on the left edge, painted with the variant accent color. The body typography stays neutral so the message reads consistently across every tone." },
-          { tone: "note", text: "Exit animation duration (150ms) is duplicated between the CSS keyframe and a JS setTimeout in Toast.tsx — the two must stay in sync. Both reference the same overlayExit motion role in the token layer." },
-          { tone: "note", text: "The Toast child-splitter walks Children.forEach and buckets by subcomponent type. First Icon / Close wins if the consumer accidentally authors two; everything else falls into the body stack in author order — same trick as Alert." },
+          { tone: "note", text: "The 5 variants are cva variants that set two CSS custom properties on the root (--hc-toast-accent, --hc-toast-icon-color). The ::before accent stripe reads --hc-toast-accent; the Icon subcomponent reads --hc-toast-icon-color via text-[color:var(...)]." },
+          { tone: "note", text: "The accent stripe is a 4px inset ::before element on the left edge, painted with the variant accent color. Body typography stays neutral so the message reads consistently across every tone." },
+          { tone: "note", text: "Exit animation duration (150ms) is duplicated between a Tailwind transition (data-[state=closing]:duration-150 ease-exit) and a JS setTimeout in Toast.tsx — the two must stay in sync. Both derive from the overlayExit motion role in the token layer." },
+          { tone: "note", text: "Deliberately does NOT wrap @radix-ui/react-toast — Radix Toast requires a ToastProvider + ToastViewport queue/positioning system that would balloon the public API. This primitive is intentionally minimal so downstream apps can wrap it with their own queuing / positioning strategy." },
+          { tone: "note", text: "Child-splitter walks Children.forEach and buckets by subcomponent type. First Icon / Close wins if the consumer accidentally authors two; everything else falls into the body stack in author order — same pattern as Alert." },
+          { tone: "note", text: "Styling uses cva + Tailwind v4 utilities that resolve to HC1 tokens. Entrance / exit transitions are driven by Tailwind's data-[state]: variant against Radix-style data-state attributes we set on the root." },
         ]}
       />
 

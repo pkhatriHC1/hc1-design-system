@@ -1179,12 +1179,14 @@ function NotesBlock() {
     <DocBlock title="Implementation notes">
       <RuleList
         rules={[
-          { tone: "note", text: "Dialog.Content is portalled into document.body — the panel is not a child of the trigger in the DOM. This keeps the scrim and stacking context predictable no matter where the Dialog is composed." },
-          { tone: "note", text: "Open state can be controlled (open + onOpenChange) or uncontrolled (defaultOpen). Both are supported by the same root component — no separate ControlledDialog." },
-          { tone: "note", text: "Body scroll is locked while any dialog is open. The scrollbar gutter is preserved so opening a dialog does not shift the underlying layout." },
-          { tone: "note", text: "The focus trap cycles Tab and Shift+Tab within the panel. Focus falls back to the panel itself if there are no focusable children — so keyboard users are never dumped back to the page." },
-          { tone: "note", text: "Dialog.Title and Dialog.Description register with the root via context and generate the ids that get wired into aria-labelledby / aria-describedby. Omit either — the corresponding aria attribute is not set." },
-          { tone: "note", text: "The scrim animates with color-mix on the inverse background rather than a raw rgba literal. Retinting the inverse alias retints every dialog scrim in the product." },
+          { tone: "note", text: "Dialog wraps @radix-ui/react-dialog — Radix owns focus management (move into panel + restore to trigger), body scroll lock (via ReactRemoveScroll), Escape + outside-click close, Portal, Overlay, and aria-modal / aria-labelledby / aria-describedby wiring. We own the visual layer + the compound sub-component surface." },
+          { tone: "note", text: "Dialog.Content is portaled into document.body — the panel is not a child of the trigger in the DOM. Stacking context is independent of composition." },
+          { tone: "note", text: "Open state can be controlled (open + onOpenChange) or uncontrolled (defaultOpen). Both flow into Radix Dialog Root, which owns the state machine." },
+          { tone: "note", text: "Body scroll is locked while any dialog is open via ReactRemoveScroll (Radix's internal). The scrollbar gutter is preserved so opening a dialog doesn't shift the underlying layout." },
+          { tone: "note", text: "Focus is trapped inside the panel automatically. Focus falls back to the panel itself if there are no focusable children — keyboard users are never dumped back to the page. On close, focus restores to the trigger." },
+          { tone: "note", text: "Dialog.Title + Dialog.Description use Radix Title / Description with asChild + a semantic wrapper (<hN>, <p>). Radix auto-wires aria-labelledby / aria-describedby via ids on those elements. Omit Description — Radix warns in dev but the dialog still works." },
+          { tone: "note", text: "closeOnOverlayClick=false → passes onPointerDownOutside={(e) => e.preventDefault()} to Radix Content. closeOnEscape=false → onEscapeKeyDown={(e) => e.preventDefault()}." },
+          { tone: "note", text: "The scrim tints via var(--hc-dialog-scrim) which is color-mix on the inverse background. Retinting the inverse alias retints every dialog scrim in the product — and Drawer + modal Popover share the same var so the overlay family stays cohesive." },
         ]}
       />
 
@@ -1194,15 +1196,15 @@ function NotesBlock() {
         never a reimplementation. Wrap Dialog.Content with the variant's
         opinionated header/footer and reuse everything else. (2) A new size
         should only be added if a genuine layout intent emerges. Add the
-        pixel value to
+        pixel value to the
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          tokens/components/dialog.ts
+          --hc-dialog-size-*
         </code>
-        and the matching CSS variable in
+        var in variables.css, then add the new key to the size variant map inside
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          variables.css
+          dialogContentVariants
         </code>
-        before adding a new CSS class.
+        (the cva call in Dialog.tsx).
       </Callout>
     </DocBlock>
   );

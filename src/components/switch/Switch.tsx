@@ -17,7 +17,8 @@ import type {
   ReactElement,
   ReactNode,
 } from "react";
-
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../../utils/cn";
 import type {
   SwitchDescriptionProps,
   SwitchIndicatorProps,
@@ -26,46 +27,23 @@ import type {
   SwitchSize,
 } from "./Switch.types";
 
-// Design-system CSS variables — imported here so consumers get tokens
-// automatically when they import Switch, regardless of where they mount.
-import "../../tokens/css/variables.css";
-import "./Switch.css";
-
-/* ══════ CLASS NAMES ═══════════════════════════════════════════════ */
-
-const CLASS = {
-  root:           "hc-switch",
-  rootSize:       (s: SwitchSize) => `hc-switch--size-${s}`,
-  rootChecked:    "hc-switch--checked",
-  rootDisabled:   "hc-switch--disabled",
-  rootInvalid:    "hc-switch--invalid",
-  rootRequired:   "hc-switch--required",
-  rootHasText:    "hc-switch--has-text",
-  rootLoading:    "hc-switch--loading",
-
-  input:          "hc-switch__input",
-  indicator:      "hc-switch__indicator",
-  track:          "hc-switch__track",
-  thumb:          "hc-switch__thumb",
-  spinner:        "hc-switch__spinner",
-
-  text:           "hc-switch__text",
-  label:          "hc-switch__label",
-  labelRequired:  "hc-switch__label-required",
-  description:    "hc-switch__description",
-};
-
-function cx(...parts: (string | false | null | undefined)[]) {
-  return parts.filter(Boolean).join(" ");
-}
+/**
+ * HC1 Switch — the canonical binary toggle control.
+ *
+ * Migrated from Switch.css to shadcn-style (cva + Tailwind utilities).
+ * Same architectural choice as Checkbox / Radio: preserve the real native
+ * `<input type="checkbox" role="switch">` (not @radix-ui/react-switch) so
+ * form serialization, native keyboard, screen-reader semantics, and
+ * forwardRef<HTMLInputElement> all continue to work exactly as before.
+ *
+ * The pill track and sliding thumb are painted via cva variants. `peer`
+ * on the native input lets the sibling track paint the focus ring via
+ * `peer-focus-visible:`; `group` on the root wrapper propagates hover
+ * via `group-hover:`.
+ */
 
 /* ══════ CONTEXT ═══════════════════════════════════════════════════ */
 
-/**
- * Bridge from root Switch to its subcomponents. Subcomponents don't own
- * state — they read presentational info (id, size, disabled) from context
- * so ids wire up automatically. Same shape as Checkbox / Radio.
- */
 type SwitchContextValue = {
   inputId: string;
   descriptionId: string;
@@ -93,7 +71,6 @@ type ChildBuckets = {
   indicator?: ReactElement;
   label?: ReactElement;
   description?: ReactElement;
-  /** Fallback: non-subcomponent children treated as inline label text. */
   fallbackLabel: ReactNode[];
 };
 
@@ -127,13 +104,14 @@ function splitChildren(children: ReactNode): ChildBuckets {
 function Spinner({ size }: { size: number }) {
   return (
     <svg
-      className={CLASS.spinner}
       width={size}
       height={size}
       viewBox="0 0 16 16"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
+      data-slot="switch-spinner"
+      className="block text-current animate-spin motion-reduce:[animation-duration:2400ms]"
     >
       <circle cx="8" cy="8" r="6" stroke="currentColor" strokeOpacity="0.3" strokeWidth="2" />
       <path
@@ -146,24 +124,248 @@ function Spinner({ size }: { size: number }) {
   );
 }
 
+/* ══════ CVA — ROOT (<label>) ═════════════════════════════════════ */
+
+const switchRootVariants = cva(
+  cn(
+    "group relative inline-flex items-start",
+    "font-sans text-neutral-900 cursor-pointer select-none",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "min-h-[var(--hc-switch-row-sm)] gap-8",
+        md: "min-h-[var(--hc-switch-row-md)] gap-8",
+        lg: "min-h-[var(--hc-switch-row-lg)] gap-12",
+      },
+      hasText: {
+        false: "!min-h-0 items-center",
+        true: "",
+      },
+      disabled: {
+        true: cn(
+          "cursor-not-allowed text-neutral-400",
+          "[&_[data-slot=switch-label]]:text-neutral-400",
+          "[&_[data-slot=switch-description]]:text-neutral-400",
+        ),
+        false: "",
+      },
+      loading: {
+        true: "cursor-progress",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+      hasText: false,
+      disabled: false,
+      loading: false,
+    },
+  },
+);
+
+/* ══════ CVA — NATIVE INPUT (visually hidden, keyboard target) ═════ */
+
+const switchInputVariants = cva(
+  cn(
+    "peer absolute left-0 m-0 p-0 opacity-0 cursor-inherit",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "w-[var(--hc-switch-track-w-sm)] h-[var(--hc-switch-track-h-sm)]",
+        md: "w-[var(--hc-switch-track-w-md)] h-[var(--hc-switch-track-h-md)]",
+        lg: "w-[var(--hc-switch-track-w-lg)] h-[var(--hc-switch-track-h-lg)]",
+      },
+      hasText: {
+        false: "top-0",
+        true: "",
+      },
+    },
+    compoundVariants: [
+      { size: "sm", hasText: true, className: "top-[calc((var(--hc-switch-row-sm)-var(--hc-switch-track-h-sm))/2)]" },
+      { size: "md", hasText: true, className: "top-[calc((var(--hc-switch-row-md)-var(--hc-switch-track-h-md))/2)]" },
+      { size: "lg", hasText: true, className: "top-[calc((var(--hc-switch-row-lg)-var(--hc-switch-track-h-lg))/2)]" },
+    ],
+    defaultVariants: {
+      size: "md",
+      hasText: false,
+    },
+  },
+);
+
+/* ══════ CVA — TRACK (the visible pill) ═══════════════════════════ */
+
+type BoxState = "unchecked" | "checked";
+
+const switchTrackVariants = cva(
+  cn(
+    "relative inline-flex items-center shrink-0 p-0",
+    "border rounded-full",
+    "transition-[background-color,border-color] duration-150 ease-standard motion-reduce:duration-0",
+    "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "w-[var(--hc-switch-track-w-sm)] h-[var(--hc-switch-track-h-sm)]",
+        md: "w-[var(--hc-switch-track-w-md)] h-[var(--hc-switch-track-h-md)]",
+        lg: "w-[var(--hc-switch-track-w-lg)] h-[var(--hc-switch-track-h-lg)]",
+      },
+      hasText: {
+        false: "",
+        true: "",
+      },
+      boxState: {
+        unchecked: cn(
+          "bg-neutral-200 border-neutral-300",
+          "group-hover:border-brand-500",
+        ),
+        checked: cn(
+          "bg-brand-500 border-brand-500",
+          "group-hover:bg-brand-600 group-hover:border-brand-600",
+        ),
+      },
+      invalid: {
+        true: "peer-focus-visible:outline-red-500",
+        false: "",
+      },
+      disabled: {
+        true: "",
+        false: "",
+      },
+    },
+    compoundVariants: [
+      /* Vertical alignment: for rows with text, the track sits centered
+         on the row so it aligns with the label's baseline. */
+      { size: "sm", hasText: true, className: "mt-[calc((var(--hc-switch-row-sm)-var(--hc-switch-track-h-sm))/2)]" },
+      { size: "md", hasText: true, className: "mt-[calc((var(--hc-switch-row-md)-var(--hc-switch-track-h-md))/2)]" },
+      { size: "lg", hasText: true, className: "mt-[calc((var(--hc-switch-row-lg)-var(--hc-switch-track-h-lg))/2)]" },
+
+      /* invalid × unchecked — red border, no hover paint change beyond border */
+      { invalid: true, boxState: "unchecked", className: cn(
+        "border-red-500",
+        "group-hover:border-red-500",
+      )},
+      /* invalid × checked — red fill, color-mix darken on hover (verbatim) */
+      { invalid: true, boxState: "checked", className: cn(
+        "bg-red-500 border-red-500",
+        "group-hover:bg-[color-mix(in_oklab,var(--hc-color-red-500)_88%,black)]",
+        "group-hover:border-[color-mix(in_oklab,var(--hc-color-red-500)_88%,black)]",
+      )},
+
+      /* disabled × unchecked — muted, suppress hover */
+      { disabled: true, boxState: "unchecked", className: cn(
+        "bg-neutral-100 border-neutral-100",
+        "group-hover:bg-neutral-100 group-hover:border-neutral-100",
+      )},
+      /* disabled × checked — action-primary-disabled fill */
+      { disabled: true, boxState: "checked", className: cn(
+        "bg-neutral-200 border-neutral-200",
+        "group-hover:bg-neutral-200 group-hover:border-neutral-200",
+      )},
+    ],
+    defaultVariants: {
+      size: "md",
+      hasText: false,
+      boxState: "unchecked",
+      invalid: false,
+      disabled: false,
+    },
+  },
+);
+
+/* ══════ CVA — THUMB (the sliding circle) ═════════════════════════ */
+
+const switchThumbVariants = cva(
+  cn(
+    "inline-flex items-center justify-center",
+    "rounded-full bg-white shadow-xs",
+    "absolute top-1/2 left-[2px] -translate-y-1/2 translate-x-0",
+    "transition-[transform,background-color,color] duration-150 ease-standard motion-reduce:duration-0",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "w-[var(--hc-switch-thumb-sm)] h-[var(--hc-switch-thumb-sm)]",
+        md: "w-[var(--hc-switch-thumb-md)] h-[var(--hc-switch-thumb-md)]",
+        lg: "w-[var(--hc-switch-thumb-lg)] h-[var(--hc-switch-thumb-lg)]",
+      },
+      boxState: {
+        unchecked: "text-neutral-500",
+        /* Checked: brand-500 spinner tint; still white thumb bg. */
+        checked: "text-brand-500",
+      },
+      disabled: {
+        /* Disabled removes the drop shadow — matches Switch.css `.hc-switch--disabled .hc-switch__thumb { box-shadow: none }`. */
+        true: "shadow-none",
+        false: "",
+      },
+      loading: {
+        /* When loading, thumb color forces to brand-500 so the spinner
+           reads as an in-flight cue (overrides the unchecked-only neutral). */
+        true: "!text-brand-500",
+        false: "",
+      },
+    },
+    compoundVariants: [
+      /* Checked slide: translateX = track-width - thumb-width - 4px
+         (2px inset on each side of the track). */
+      { boxState: "checked", size: "sm", className: "translate-x-[calc(var(--hc-switch-track-w-sm)-var(--hc-switch-thumb-sm)-4px)]" },
+      { boxState: "checked", size: "md", className: "translate-x-[calc(var(--hc-switch-track-w-md)-var(--hc-switch-thumb-md)-4px)]" },
+      { boxState: "checked", size: "lg", className: "translate-x-[calc(var(--hc-switch-track-w-lg)-var(--hc-switch-thumb-lg)-4px)]" },
+    ],
+    defaultVariants: {
+      size: "md",
+      boxState: "unchecked",
+      disabled: false,
+      loading: false,
+    },
+  },
+);
+
+/* ══════ CVA — LABEL ═══════════════════════════════════════════════ */
+
+const switchLabelVariants = cva(
+  cn(
+    "text-neutral-900 font-medium inline",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "text-12 leading-[var(--hc-switch-row-sm)]",
+        md: "text-14 leading-[var(--hc-switch-row-md)]",
+        lg: "text-16 leading-[var(--hc-switch-row-lg)]",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+    },
+  },
+);
+
+/* ══════ CVA — DESCRIPTION ═════════════════════════════════════════ */
+
+const switchDescriptionVariants = cva(
+  cn(
+    "text-neutral-500 font-normal leading-normal block",
+  ),
+  {
+    variants: {
+      size: {
+        sm: "text-12",
+        md: "text-12",
+        lg: "text-14",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+    },
+  },
+);
+
 /* ══════ ROOT ══════════════════════════════════════════════════════ */
 
-/**
- * HC1 Switch — the canonical binary toggle control.
- *
- * Renders a real native `<input type="checkbox" role="switch">` inside a
- * `<label>` wrapper. The visual pill track (`Switch.Indicator`) is
- * auto-rendered at the start of the row unless composed explicitly.
- * Label + Description are opt-in subcomponents; plain text children work
- * too.
- *
- * Controlled with `checked` + `onCheckedChange`. Uncontrolled with
- * `defaultChecked`. `loading` freezes the switch and paints a spinner
- * in the thumb — useful while an async save round-trips.
- *
- * The DOM shape and internal-controlled input pattern are identical to
- * Checkbox / Radio. Only the visual metaphor changes.
- */
 export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
   {
     size = "md",
@@ -191,12 +393,9 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
   const inputId = idProp ?? generatedId;
   const descriptionId = `${inputId}-description`;
 
-  // Compose forwarded ref with our own.
   const innerRef = useRef<HTMLInputElement | null>(null);
   useImperativeHandle(ref, () => innerRef.current as HTMLInputElement, []);
 
-  // Track checked locally so uncontrolled usage works without the consumer
-  // lifting state. In controlled mode the prop is the source of truth.
   const isControlled = checked !== undefined;
   const [innerChecked, setInnerChecked] = useState<boolean>(defaultChecked);
   const currentChecked = isControlled ? !!checked : innerChecked;
@@ -217,7 +416,6 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
   const hasDescription = !!buckets.description;
   const hasText        = hasLabel || hasDescription;
 
-  // Track description presence so we can conditionally wire aria-describedby.
   const [hasDescriptionRegistered, setHasDescriptionRegistered] = useState(hasDescription);
   const registerDescription = useCallback(
     (present: boolean) => setHasDescriptionRegistered(present),
@@ -238,57 +436,44 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
     registerDescription,
   };
 
-  const rootClass = cx(
-    CLASS.root,
-    CLASS.rootSize(size),
-    currentChecked  && CLASS.rootChecked,
-    effectiveDisabled && CLASS.rootDisabled,
-    invalid           && CLASS.rootInvalid,
-    required          && CLASS.rootRequired,
-    hasText           && CLASS.rootHasText,
-    loading           && CLASS.rootLoading,
-    className,
-  );
+  const boxState: BoxState = currentChecked ? "checked" : "unchecked";
 
-  // Compose aria-describedby (consumer's + our description if present).
   const describedIds: string[] = [];
   if (ariaDescribedByProp) describedIds.push(ariaDescribedByProp);
   if (hasDescriptionRegistered) describedIds.push(descriptionId);
   const ariaDescribedBy = describedIds.length > 0 ? describedIds.join(" ") : undefined;
 
-  // Spinner sits inside the thumb — sized to the thumb per size step.
+  /* Spinner size per switch size — sized to fit inside the thumb. */
   const spinnerSize = size === "sm" ? 8 : size === "lg" ? 12 : 10;
 
   return (
     <SwitchContext.Provider value={contextValue}>
-      {/* The outer <label> wraps the native input, so label→input click
-          association works via containment alone. htmlFor is deliberately
-          omitted — pairing htmlFor with wrapping causes some browsers to
-          dispatch two synthetic clicks, netting the toggle back to zero.
-          (Same fix as Checkbox PR #18 gotcha.) */}
+      {/* Outer <label> wraps input for click-to-toggle without htmlFor
+          (double-click bug in some browsers — same fix as Checkbox). */}
       <label
-        className={rootClass}
-        style={style as CSSProperties}
+        data-slot="switch-root"
         data-state={currentChecked ? "checked" : "unchecked"}
         data-disabled={effectiveDisabled || undefined}
         data-invalid={invalid || undefined}
         data-loading={loading || undefined}
         aria-busy={loading || undefined}
+        style={style as CSSProperties}
+        className={cn(
+          switchRootVariants({
+            size,
+            hasText,
+            disabled: effectiveDisabled,
+            loading,
+          } as VariantProps<typeof switchRootVariants>),
+          className,
+        )}
       >
-        {/* Native input — the accessibility surface. role="switch" tells
-            assistive tech this is a two-state toggle, not a tri-state
-            checkbox. aria-checked reflects native input.checked (no
-            explicit override needed for on/off; ARIA discourages
-            overriding native state). Always internally controlled so
-            React never bails to the uncontrolled path unpredictably
-            (Checkbox PR #18 gotcha — same fix here). */}
         <input
           {...rest}
           ref={innerRef}
           id={inputId}
           type="checkbox"
           role="switch"
-          className={CLASS.input}
           checked={currentChecked}
           disabled={effectiveDisabled}
           required={required}
@@ -297,23 +482,54 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
           aria-describedby={ariaDescribedBy}
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledBy}
+          className={switchInputVariants({
+            size,
+            hasText,
+          } as VariantProps<typeof switchInputVariants>)}
         />
-        {/* Visible indicator — sibling to the native input so the input
-            can paint the focus ring on it via a CSS adjacent selector.
-            If a consumer composed <Switch.Indicator> explicitly, use it
-            verbatim (they own its children). Otherwise render our own
-            internal track + thumb. */}
+
         {buckets.indicator ?? (
-          <SwitchIndicatorInternal loading={loading} spinnerSize={spinnerSize} />
+          <span
+            data-slot="switch-track"
+            aria-hidden="true"
+            className={switchTrackVariants({
+              size,
+              hasText,
+              boxState,
+              invalid,
+              disabled: effectiveDisabled,
+            } as VariantProps<typeof switchTrackVariants>)}
+          >
+            <span
+              data-slot="switch-thumb"
+              className={switchThumbVariants({
+                size,
+                boxState,
+                disabled: effectiveDisabled,
+                loading,
+              } as VariantProps<typeof switchThumbVariants>)}
+            >
+              {loading && <Spinner size={spinnerSize} />}
+            </span>
+          </span>
         )}
 
         {hasText && (
-          <span className={CLASS.text}>
+          <span className="inline-flex flex-col gap-4 min-w-0">
             {(buckets.label || buckets.fallbackLabel.length > 0) && (
-              <span className={CLASS.label}>
+              <span
+                data-slot="switch-label"
+                className={cn(
+                  switchLabelVariants({ size }),
+                  hasDescription && "leading-[1.4]",
+                )}
+              >
                 {buckets.label ?? buckets.fallbackLabel}
                 {required && (
-                  <span className={CLASS.labelRequired} aria-hidden="true">
+                  <span
+                    aria-hidden="true"
+                    className="text-red-500 ml-[4px] font-semibold"
+                  >
                     *
                   </span>
                 )}
@@ -333,37 +549,30 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
 
 (Switch as unknown as { displayName: string }).displayName = "Switch";
 
-/* ══════ INDICATOR ═════════════════════════════════════════════════ */
-
-/**
- * Internal indicator: pill track + circular thumb. The `off` and `on`
- * positions are CSS-driven (translateX on .hc-switch--checked). When
- * `loading`, a small spinner paints inside the thumb.
- */
-function SwitchIndicatorInternal({ loading, spinnerSize }: { loading: boolean; spinnerSize: number }) {
-  return (
-    <span className={cx(CLASS.indicator, CLASS.track)} aria-hidden="true">
-      <span className={CLASS.thumb}>
-        {loading && <Spinner size={spinnerSize} />}
-      </span>
-    </span>
-  );
-}
+/* ══════ INDICATOR (composable escape hatch) ═══════════════════════ */
 
 const SwitchIndicator = forwardRef<HTMLSpanElement, SwitchIndicatorProps>(function SwitchIndicator(
   { className, children, ...rest },
   ref,
 ) {
-  // When composed explicitly, the consumer controls the children — but
-  // classes remain so the CSS state cascade still applies.
   return (
     <span
       ref={ref}
-      className={cx(CLASS.indicator, CLASS.track, className)}
+      data-slot="switch-track"
       aria-hidden="true"
+      className={cn(
+        "relative inline-flex items-center shrink-0 p-0",
+        "border border-neutral-300 rounded-full bg-neutral-200",
+        className,
+      )}
       {...rest}
     >
-      {children ?? <span className={CLASS.thumb} />}
+      {children ?? (
+        <span
+          data-slot="switch-thumb"
+          className="inline-flex items-center justify-center rounded-full bg-white shadow-xs absolute top-1/2 left-[2px] -translate-y-1/2"
+        />
+      )}
     </span>
   );
 });
@@ -375,11 +584,17 @@ const SwitchLabel = forwardRef<HTMLSpanElement, SwitchLabelProps>(function Switc
   { className, children, ...rest },
   ref,
 ) {
-  // No htmlFor — the outer <label> already wraps the input. Rendered as a
-  // semantic <span> so the click bubbles up to the label. Same shape as
-  // Checkbox / Radio labels.
+  const ctx = useSwitchContext("Switch.Label");
   return (
-    <span ref={ref} className={cx(CLASS.label, className)} {...rest}>
+    <span
+      ref={ref}
+      data-slot="switch-label"
+      className={cn(
+        switchLabelVariants({ size: ctx.size }),
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </span>
   );
@@ -404,7 +619,11 @@ const SwitchDescription = forwardRef<HTMLSpanElement, SwitchDescriptionProps>(fu
     <span
       ref={ref}
       id={descId}
-      className={cx(CLASS.description, className)}
+      data-slot="switch-description"
+      className={cn(
+        switchDescriptionVariants({ size: ctx.size }),
+        className,
+      )}
       {...rest}
     >
       {children}
@@ -418,3 +637,11 @@ SwitchDescription.displayName = "Switch.Description";
 Switch.Indicator   = SwitchIndicator;
 Switch.Label       = SwitchLabel;
 Switch.Description = SwitchDescription;
+
+export {
+  switchRootVariants,
+  switchTrackVariants,
+  switchThumbVariants,
+  switchLabelVariants,
+  switchDescriptionVariants,
+};

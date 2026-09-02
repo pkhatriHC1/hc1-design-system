@@ -818,11 +818,12 @@ function NotesBlock() {
       <RuleList
         rules={[
           { tone: "note", text: "The root is a <span>, not a <div>. Badges are inline surfaces — mounting them inside inline text or a table cell should not force a new line." },
-          { tone: "note", text: "Variant × appearance is a 7 × 3 matrix — 21 combinations, each one a single CSS selector that sets --hc-badge-{bg,fg,border}. The base .hc-badge selector reads those three vars, so every combination shares the same layout code." },
+          { tone: "note", text: "Variant × appearance is a 7 × 3 matrix — 21 combinations, each one a single cva compoundVariant that maps directly to HC1 color tokens. The variant variant alone picks the dot color (appearance-independent) via a --hc-badge-dot ~ descendant selector." },
           { tone: "note", text: "The dot color is always the variant's *solid* ink (bright), regardless of the badge's appearance. An 'active' dot on a soft green badge still reads as unambiguous green." },
           { tone: "note", text: "count takes over the content. Passing both `count` and `children` is intentionally not composed — count wins, children are ignored. This keeps the rendering rules unambiguous." },
           { tone: "note", text: "The remove control is a real <button> inside the badge. The badge itself never becomes a button — that would break the 'not a filter / not a link' rule and create ambiguous focus targets." },
           { tone: "note", text: "The remove hover wash uses color-mix(currentColor 15%, transparent) so the same rule works on every variant × appearance without a per-variant override." },
+          { tone: "note", text: "Styling uses cva + Tailwind v4 utilities that resolve to HC1 tokens. Icon and remove-button sizes cascade from the root's size variant via data-slot descendant selectors — the parent size drives all chrome dimensions without prop-drilling." },
         ]}
       />
 
@@ -832,11 +833,15 @@ function NotesBlock() {
         Badge — wrap it with the surface's opinionated state model and reuse
         every visual choice. (2) A new variant should only be added if a
         genuine semantic role emerges (e.g. a compliance-mandated 'legal'
-        tone). Add the tone to
+        tone). Add the tone to the
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          tokens/components/badge.ts
+          variant
         </code>
-        and the matching CSS rule in Badge.css before using it.
+        map in
+        <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
+          badgeVariants
+        </code>
+        (the cva call in Badge.tsx), plus one compound variant per appearance (soft / solid / outline).
       </Callout>
     </DocBlock>
   );

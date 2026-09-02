@@ -1,19 +1,8 @@
-import {
-  cloneElement,
-  createContext,
-  forwardRef,
-  isValidElement,
-  useCallback,
-  useContext,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactElement } from "react";
-import { createPortal } from "react-dom";
-
+import { forwardRef } from "react";
+import type { CSSProperties } from "react";
+import * as RadixDialog from "@radix-ui/react-dialog";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../../utils/cn";
 import type {
   DialogActionsProps,
   DialogBodyProps,
@@ -23,264 +12,121 @@ import type {
   DialogFooterProps,
   DialogHeaderProps,
   DialogProps,
-  DialogSize,
   DialogTitleProps,
   DialogTriggerProps,
 } from "./Dialog.types";
 
-// Design-system CSS variables — imported here so consumers get tokens
-// automatically when they import Dialog, regardless of where they mount it.
-import "../../tokens/css/variables.css";
-import "./Dialog.css";
-
-/* ══════ CLASS NAMES ═══════════════════════════════════════════════ */
-
-const CLASS = {
-  scrim:          "hc-dialog-scrim",
-  scrimOpen:      "hc-dialog-scrim--open",
-
-  panel:          "hc-dialog-panel",
-  panelSize:      (s: DialogSize) => `hc-dialog-panel--size-${s}`,
-  panelOpen:      "hc-dialog-panel--open",
-  panelLoading:   "hc-dialog-panel--loading",
-
-  header:         "hc-dialog-panel__header",
-  headerBody:     "hc-dialog-panel__header-body",
-  title:          "hc-dialog-panel__title",
-  description:    "hc-dialog-panel__description",
-
-  body:           "hc-dialog-panel__body",
-
-  footer:         "hc-dialog-panel__footer",
-  actions:        "hc-dialog-panel__actions",
-  actionsAlign:   (a: "start" | "center" | "end") => `hc-dialog-panel__actions--${a}`,
-
-  close:          "hc-dialog-panel__close",
-
-  loading:        "hc-dialog-panel__loading",
-  spinner:        "hc-dialog-panel__spinner",
-  loadingLabel:   "hc-dialog-panel__loading-label",
-};
-
-function cx(...parts: (string | false | null | undefined)[]) {
-  return parts.filter(Boolean).join(" ");
-}
-
-/* ══════ CONTEXT ═══════════════════════════════════════════════════ */
-
-type DialogContextValue = {
-  open: boolean;
-  setOpen: (next: boolean) => void;
-  triggerRef: React.MutableRefObject<HTMLElement | null>;
-  titleId: string;
-  descriptionId: string;
-  registerTitle: (present: boolean) => void;
-  registerDescription: (present: boolean) => void;
-};
-
-const DialogContext = createContext<DialogContextValue | null>(null);
-
-function useDialogContext(source: string): DialogContextValue {
-  const ctx = useContext(DialogContext);
-  if (!ctx) {
-    throw new Error(
-      `[hc1 Dialog] ${source} must be rendered inside a <Dialog> parent.`,
-    );
-  }
-  return ctx;
-}
-
-/* ══════ FOCUS UTILITIES ═══════════════════════════════════════════ */
-
-const FOCUSABLE_SELECTOR = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled]):not([type='hidden'])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  "[tabindex]:not([tabindex='-1'])",
-].join(",");
-
-function getFocusable(container: HTMLElement | null): HTMLElement[] {
-  if (!container) return [];
-  const nodes = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-  return nodes.filter(
-    (el) =>
-      !el.hasAttribute("disabled") &&
-      el.getAttribute("aria-hidden") !== "true" &&
-      // Fast approximate visibility check — offsetParent is null for display:none.
-      (el.offsetParent !== null || el === document.activeElement),
-  );
-}
-
-/* ══════ BODY SCROLL LOCK ══════════════════════════════════════════ */
-
-let scrollLockCount = 0;
-let previousBodyOverflow: string | null = null;
-let previousBodyPaddingRight: string | null = null;
-
-function lockBodyScroll() {
-  if (typeof document === "undefined") return;
-  scrollLockCount += 1;
-  if (scrollLockCount > 1) return;
-
-  const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-  previousBodyOverflow = document.body.style.overflow;
-  previousBodyPaddingRight = document.body.style.paddingRight;
-  document.body.style.overflow = "hidden";
-  if (scrollbarWidth > 0) {
-    document.body.style.paddingRight = `${scrollbarWidth}px`;
-  }
-}
-
-function unlockBodyScroll() {
-  if (typeof document === "undefined") return;
-  scrollLockCount = Math.max(0, scrollLockCount - 1);
-  if (scrollLockCount > 0) return;
-
-  document.body.style.overflow = previousBodyOverflow ?? "";
-  document.body.style.paddingRight = previousBodyPaddingRight ?? "";
-  previousBodyOverflow = null;
-  previousBodyPaddingRight = null;
-}
-
-/* ══════ ROOT ══════════════════════════════════════════════════════ */
-
 /**
  * HC1 Dialog — the canonical overlay primitive.
  *
- * Compose with `Dialog.Trigger`, `Dialog.Content`, `Dialog.Header`,
- * `Dialog.Title`, `Dialog.Description`, `Dialog.Body`, `Dialog.Footer`,
- * `Dialog.Actions`, and `Dialog.Close`. Controlled and uncontrolled
- * usage are both supported; pair `open` with `onOpenChange` for controlled.
+ * Migrated from a hand-built implementation (~450 lines of focus trap +
+ * body scroll lock + Escape handler + Portal + Overlay + Title/Description
+ * context registration) to a wrapper around @radix-ui/react-dialog.
+ *
+ * Radix owns focus management (move into panel + restore to trigger),
+ * body scroll lock (via ReactRemoveScroll), Escape + outside-click close,
+ * Portal, Overlay, aria-modal / aria-labelledby / aria-describedby wiring
+ * (via Title + Description components). My file owns the visual layer +
+ * the compound sub-component surface (Header / Body / Footer / Actions +
+ * loading overlay + X close button).
+ *
+ * Public API preserved — Dialog, Dialog.Trigger, Dialog.Content,
+ * Dialog.Header, Dialog.Title, Dialog.Description, Dialog.Body,
+ * Dialog.Footer, Dialog.Actions, Dialog.Close compose identically.
  */
+
+/* ══════ CVA — OVERLAY (scrim) ═════════════════════════════════════ */
+
+const dialogOverlayVariants = cva(
+  cn(
+    "fixed inset-0 z-modal-scrim",
+    "bg-[color:var(--hc-dialog-scrim)]",
+    /* Fade-in matches the original hc-dialog-scrim-in keyframe (250ms). */
+    "opacity-0 data-[state=open]:opacity-100",
+    "transition-opacity duration-250 ease-entrance motion-reduce:duration-0",
+  ),
+);
+
+/* ══════ CVA — CONTENT (panel) ═════════════════════════════════════ */
+
+const dialogContentVariants = cva(
+  cn(
+    "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-modal",
+    "flex flex-col",
+    /* Viewport safety: never overflow the viewport with 16px margin each
+       side, and cap height with 24px each side (matches original
+       max-height calc). */
+    "w-[calc(100vw-32px)]",
+    "max-h-[calc(100vh-48px)]",
+    "bg-white text-neutral-900 border border-neutral-100 rounded-surface shadow-xl",
+    "font-sans text-left overflow-hidden outline-none",
+    /* Entrance transition: fade + translateY(4px) + scale(0.98) → rest.
+       Matches original hc-dialog-panel-in keyframe. Exit is instant
+       (Radix unmounts) — same as original. */
+    "opacity-0 translate-y-[calc(-50%+4px)] scale-[0.98]",
+    "data-[state=open]:opacity-100 data-[state=open]:translate-y-[-50%] data-[state=open]:scale-100",
+    "transition-[opacity,transform] duration-250 ease-entrance motion-reduce:duration-0",
+  ),
+  {
+    variants: {
+      size: {
+        sm:         "max-w-[var(--hc-dialog-size-sm)]",
+        md:         "max-w-[var(--hc-dialog-size-md)]",
+        lg:         "max-w-[var(--hc-dialog-size-lg)]",
+        xl:         "max-w-[var(--hc-dialog-size-xl)]",
+        /* Fullscreen: edge-to-edge, no radius, no shadow. Override the
+           viewport safety margins entirely. */
+        fullscreen: cn(
+          "w-screen h-screen max-w-none max-h-none",
+          "rounded-none shadow-none border-transparent",
+          "translate-x-0 translate-y-0 left-0 top-0",
+          "data-[state=open]:translate-x-0 data-[state=open]:translate-y-0",
+        ),
+      },
+      loading: {
+        true:  "[&_[data-slot=dialog-body]]:invisible",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+      loading: false,
+    },
+  },
+);
+
+/* ══════ ROOT ══════════════════════════════════════════════════════ */
+
 function DialogRoot({
-  open: controlledOpen,
-  defaultOpen = false,
+  open,
+  defaultOpen,
   onOpenChange,
   children,
 }: DialogProps) {
-  const isControlled = controlledOpen !== undefined;
-  const [uncontrolledOpen, setUncontrolledOpen] = useState<boolean>(defaultOpen);
-  const open = isControlled ? !!controlledOpen : uncontrolledOpen;
-
-  const triggerRef = useRef<HTMLElement | null>(null);
-
-  const setOpen = useCallback(
-    (next: boolean) => {
-      if (!isControlled) setUncontrolledOpen(next);
-      onOpenChange?.(next);
-    },
-    [isControlled, onOpenChange],
-  );
-
-  const generatedTitleId = useId();
-  const generatedDescId = useId();
-  const [hasTitle, setHasTitle] = useState(false);
-  const [hasDescription, setHasDescription] = useState(false);
-
-  const registerTitle = useCallback((present: boolean) => setHasTitle(present), []);
-  const registerDescription = useCallback(
-    (present: boolean) => setHasDescription(present),
-    [],
-  );
-
-  const contextValue = useMemo<DialogContextValue>(
-    () => ({
-      open,
-      setOpen,
-      triggerRef,
-      titleId: hasTitle ? generatedTitleId : "",
-      descriptionId: hasDescription ? generatedDescId : "",
-      registerTitle,
-      registerDescription,
-    }),
-    [
-      open,
-      setOpen,
-      generatedTitleId,
-      generatedDescId,
-      hasTitle,
-      hasDescription,
-      registerTitle,
-      registerDescription,
-    ],
-  );
-
   return (
-    <DialogContext.Provider value={contextValue}>
+    <RadixDialog.Root
+      open={open}
+      defaultOpen={defaultOpen}
+      onOpenChange={onOpenChange}
+    >
       {children}
-    </DialogContext.Provider>
+    </RadixDialog.Root>
   );
 }
-
 DialogRoot.displayName = "Dialog";
 
 /* ══════ TRIGGER ═══════════════════════════════════════════════════ */
 
-const DialogTrigger = function DialogTrigger({ children }: DialogTriggerProps) {
-  const ctx = useDialogContext("Dialog.Trigger");
-
-  if (!isValidElement(children)) {
-    throw new Error(
-      "[hc1 Dialog] Dialog.Trigger expects a single React element as its child.",
-    );
-  }
-
-  const child = children as ReactElement<{
-    onClick?: (event: ReactMouseEvent) => void;
-    ref?: React.Ref<HTMLElement>;
-  }>;
-
-  const handleClick = (event: ReactMouseEvent) => {
-    child.props.onClick?.(event);
-    if (event.defaultPrevented) return;
-    ctx.setOpen(true);
-  };
-
-  const composedRef = (node: HTMLElement | null) => {
-    ctx.triggerRef.current = node;
-    const originalRef = (child as { ref?: React.Ref<HTMLElement> }).ref;
-    if (typeof originalRef === "function") originalRef(node);
-    else if (originalRef && typeof originalRef === "object") {
-      (originalRef as React.MutableRefObject<HTMLElement | null>).current = node;
-    }
-  };
-
-  return cloneElement(child, {
-    onClick: handleClick,
-    ref: composedRef,
-    "aria-haspopup": "dialog",
-    "aria-expanded": ctx.open || undefined,
-  } as Record<string, unknown>);
-};
+function DialogTrigger({ children }: DialogTriggerProps) {
+  return <RadixDialog.Trigger asChild>{children}</RadixDialog.Trigger>;
+}
 DialogTrigger.displayName = "Dialog.Trigger";
 
-/* ══════ CLOSE ═════════════════════════════════════════════════════ */
+/* ══════ CLOSE (asChild wrapper) ═══════════════════════════════════ */
 
-const DialogClose = function DialogClose({ children }: DialogCloseProps) {
-  const ctx = useDialogContext("Dialog.Close");
-
-  if (!isValidElement(children)) {
-    throw new Error(
-      "[hc1 Dialog] Dialog.Close expects a single React element as its child.",
-    );
-  }
-
-  const child = children as ReactElement<{
-    onClick?: (event: ReactMouseEvent) => void;
-  }>;
-
-  const handleClick = (event: ReactMouseEvent) => {
-    child.props.onClick?.(event);
-    if (event.defaultPrevented) return;
-    ctx.setOpen(false);
-  };
-
-  return cloneElement(child, {
-    onClick: handleClick,
-  } as Record<string, unknown>);
-};
+function DialogClose({ children }: DialogCloseProps) {
+  return <RadixDialog.Close asChild>{children}</RadixDialog.Close>;
+}
 DialogClose.displayName = "Dialog.Close";
 
 /* ══════ CONTENT ═══════════════════════════════════════════════════ */
@@ -294,6 +140,7 @@ function XIcon({ size = 16 }: { size?: number }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
+      className="block"
     >
       <path
         d="M4 4L12 12M12 4L4 12"
@@ -317,165 +164,79 @@ const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(function Di
     className,
     style,
     children,
-    onKeyDown,
     ...rest
   },
   forwardedRef,
 ) {
-  const ctx = useDialogContext("Dialog.Content");
-  const { open, setOpen, triggerRef } = ctx;
-
-  const panelRef = useRef<HTMLDivElement | null>(null);
-
-  // Compose forwarded ref with internal panelRef.
-  const setPanelRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      panelRef.current = node;
-      if (typeof forwardedRef === "function") forwardedRef(node);
-      else if (forwardedRef) {
-        (forwardedRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
-      }
-    },
-    [forwardedRef],
-  );
-
-  // Body scroll lock + focus management. Fires only while open.
-  useEffect(() => {
-    if (!open) return;
-
-    lockBodyScroll();
-    const previouslyFocused = (document.activeElement as HTMLElement | null) ?? null;
-
-    // Move focus into the panel after mount. Prefer the first focusable
-    // element; fall back to the panel itself (which sets tabIndex=-1).
-    const focusTimer = window.setTimeout(() => {
-      const panel = panelRef.current;
-      if (!panel) return;
-      const focusables = getFocusable(panel);
-      const target = focusables[0] ?? panel;
-      target.focus({ preventScroll: true });
-    }, 0);
-
-    return () => {
-      window.clearTimeout(focusTimer);
-      unlockBodyScroll();
-      // Restore focus to the trigger (or the element focused before open).
-      const restoreTarget = triggerRef.current ?? previouslyFocused;
-      if (restoreTarget && typeof restoreTarget.focus === "function") {
-        // Defer to next tick so the browser doesn't fight our own blur.
-        window.setTimeout(() => restoreTarget.focus({ preventScroll: true }), 0);
-      }
-    };
-  }, [open, triggerRef]);
-
-  // Escape key — bound to document while open so the dialog closes even
-  // when focus has drifted (a rare but real edge case).
-  useEffect(() => {
-    if (!open || !closeOnEscape) return;
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.stopPropagation();
-        setOpen(false);
-      }
-    };
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [open, closeOnEscape, setOpen]);
-
-  const handlePanelKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    onKeyDown?.(event);
-
-    // Focus trap — cycle Tab within the panel.
-    if (event.key === "Tab") {
-      const panel = panelRef.current;
-      const focusables = getFocusable(panel);
-      if (focusables.length === 0) {
-        event.preventDefault();
-        panel?.focus({ preventScroll: true });
-        return;
-      }
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      const active = document.activeElement as HTMLElement | null;
-
-      if (event.shiftKey && (active === first || !panel?.contains(active))) {
-        event.preventDefault();
-        last.focus({ preventScroll: true });
-      } else if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first.focus({ preventScroll: true });
-      }
-    }
-  };
-
-  const handleScrimClick = (event: ReactMouseEvent<HTMLDivElement>) => {
-    // Only fire when the click landed on the scrim itself, not bubbled
-    // from the panel.
-    if (event.target !== event.currentTarget) return;
-    if (!closeOnOverlayClick) return;
-    setOpen(false);
-  };
-
-  if (!open) return null;
-  if (typeof document === "undefined") return null;
-
-  const panelClass = cx(
-    CLASS.panel,
-    CLASS.panelSize(size),
-    CLASS.panelOpen,
-    loading && CLASS.panelLoading,
-    className,
-  );
-
-  const portal = (
-    <div
-      className={cx(CLASS.scrim, CLASS.scrimOpen)}
-      onMouseDown={handleScrimClick}
-      data-hc-dialog-scrim=""
-    >
-      <div
-        ref={setPanelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={ctx.titleId || undefined}
-        aria-describedby={ctx.descriptionId || undefined}
+  return (
+    <RadixDialog.Portal>
+      <RadixDialog.Overlay className={dialogOverlayVariants()} />
+      <RadixDialog.Content
+        ref={forwardedRef}
         aria-busy={loading || undefined}
-        tabIndex={-1}
-        onKeyDown={handlePanelKeyDown}
-        className={panelClass}
+        onPointerDownOutside={
+          closeOnOverlayClick ? undefined : (e) => e.preventDefault()
+        }
+        onEscapeKeyDown={
+          closeOnEscape ? undefined : (e) => e.preventDefault()
+        }
         style={style as CSSProperties}
+        className={cn(
+          dialogContentVariants({
+            size,
+            loading,
+          } as VariantProps<typeof dialogContentVariants>),
+          className,
+        )}
+        data-slot="dialog-content"
         {...rest}
       >
         {children}
 
         {showCloseButton && (
-          <button
-            type="button"
-            className={CLASS.close}
+          <RadixDialog.Close
             aria-label={closeLabel}
-            onClick={() => setOpen(false)}
+            className={cn(
+              "absolute top-12 right-12",
+              "inline-flex items-center justify-center size-[28px] p-0",
+              "border border-transparent rounded-control bg-transparent text-neutral-500",
+              "cursor-pointer appearance-none",
+              "[-webkit-tap-highlight-color:transparent]",
+              "transition-[background-color,color] duration-150 ease-standard motion-reduce:duration-0",
+              "hover:bg-neutral-100 hover:text-neutral-900",
+              "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+            )}
           >
             <XIcon />
-          </button>
+          </RadixDialog.Close>
         )}
 
         {loading && (
           <div
-            className={CLASS.loading}
             role="status"
             aria-live="polite"
+            className={cn(
+              "absolute inset-0 flex flex-col items-center justify-center gap-8 z-[1]",
+              "bg-[color:var(--hc-color-bg-elevated)]/85",
+            )}
           >
-            <span className={CLASS.spinner} aria-hidden="true" />
+            <span
+              aria-hidden="true"
+              className={cn(
+                "block rounded-full size-[24px] border-[2.5px] border-neutral-200 border-t-brand-500",
+                "animate-spin motion-reduce:[animation-duration:2500ms]",
+              )}
+            />
             {loadingLabel && (
-              <span className={CLASS.loadingLabel}>{loadingLabel}</span>
+              <span className="text-14 text-neutral-500 leading-[1.4]">
+                {loadingLabel}
+              </span>
             )}
           </div>
         )}
-      </div>
-    </div>
+      </RadixDialog.Content>
+    </RadixDialog.Portal>
   );
-
-  return createPortal(portal, document.body);
 });
 DialogContent.displayName = "Dialog.Content";
 
@@ -486,8 +247,18 @@ const DialogHeader = forwardRef<HTMLDivElement, DialogHeaderProps>(function Dial
   ref,
 ) {
   return (
-    <div ref={ref} className={cx(CLASS.header, className)} {...rest}>
-      <div className={CLASS.headerBody}>{children}</div>
+    <div
+      ref={ref}
+      data-slot="dialog-header"
+      className={cn(
+        "relative flex items-start gap-12",
+        /* padding: stack-lg × [inline-xl + 32px reserved for X] × stack-lg × inline-xl */
+        "pt-16 pr-[calc(24px+32px)] pb-16 pl-24",
+        className,
+      )}
+      {...rest}
+    >
+      <div className="flex-1 min-w-0 flex flex-col gap-4">{children}</div>
     </div>
   );
 });
@@ -499,24 +270,26 @@ const DialogTitle = forwardRef<HTMLHeadingElement, DialogTitleProps>(function Di
   { as = 2, className, children, id, ...rest },
   ref,
 ) {
-  const ctx = useDialogContext("Dialog.Title");
   const Tag = `h${as}` as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
-  const titleId = id ?? ctx.titleId;
-
-  useEffect(() => {
-    ctx.registerTitle(true);
-    return () => ctx.registerTitle(false);
-  }, [ctx]);
-
+  /* Radix Title auto-wires aria-labelledby on the parent Dialog by
+     rendering an id on this element and hooking it up automatically. We
+     wrap Radix Title with asChild + our custom tag so the semantic
+     heading level is preserved. */
   return (
-    <Tag
-      ref={ref as React.Ref<HTMLHeadingElement>}
-      id={titleId || undefined}
-      className={cx(CLASS.title, className)}
-      {...rest}
-    >
-      {children}
-    </Tag>
+    <RadixDialog.Title asChild>
+      <Tag
+        ref={ref as React.Ref<HTMLHeadingElement>}
+        id={id}
+        data-slot="dialog-title"
+        className={cn(
+          "m-0 text-neutral-900 text-20 font-semibold leading-[1.3]",
+          className,
+        )}
+        {...rest}
+      >
+        {children}
+      </Tag>
+    </RadixDialog.Title>
   );
 });
 DialogTitle.displayName = "Dialog.Title";
@@ -527,23 +300,21 @@ const DialogDescription = forwardRef<HTMLParagraphElement, DialogDescriptionProp
   { className, children, id, ...rest },
   ref,
 ) {
-  const ctx = useDialogContext("Dialog.Description");
-  const descId = id ?? ctx.descriptionId;
-
-  useEffect(() => {
-    ctx.registerDescription(true);
-    return () => ctx.registerDescription(false);
-  }, [ctx]);
-
   return (
-    <p
-      ref={ref}
-      id={descId || undefined}
-      className={cx(CLASS.description, className)}
-      {...rest}
-    >
-      {children}
-    </p>
+    <RadixDialog.Description asChild>
+      <p
+        ref={ref}
+        id={id}
+        data-slot="dialog-description"
+        className={cn(
+          "m-0 text-neutral-500 text-14 leading-normal",
+          className,
+        )}
+        {...rest}
+      >
+        {children}
+      </p>
+    </RadixDialog.Description>
   );
 });
 DialogDescription.displayName = "Dialog.Description";
@@ -555,7 +326,20 @@ const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(function DialogBo
   ref,
 ) {
   return (
-    <div ref={ref} className={cx(CLASS.body, className)} {...rest}>
+    <div
+      ref={ref}
+      data-slot="dialog-body"
+      className={cn(
+        "flex-1 min-h-0 overflow-y-auto",
+        "py-12 px-24",
+        "text-neutral-700 text-16 leading-normal",
+        /* When Body follows Header directly, collapse its top padding so
+           the two sections share one rhythmic gap. */
+        "[[data-slot=dialog-header]+&]:pt-0",
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </div>
   );
@@ -569,7 +353,18 @@ const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(function Dial
   ref,
 ) {
   return (
-    <div ref={ref} className={cx(CLASS.footer, className)} {...rest}>
+    <div
+      ref={ref}
+      data-slot="dialog-footer"
+      className={cn(
+        "flex items-center gap-12",
+        "py-16 px-24",
+        "bg-white border-t border-neutral-100",
+        "text-neutral-500 text-14 leading-[1.4]",
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </div>
   );
@@ -578,6 +373,24 @@ DialogFooter.displayName = "Dialog.Footer";
 
 /* ══════ ACTIONS ═══════════════════════════════════════════════════ */
 
+const dialogActionsVariants = cva(
+  cn(
+    "flex flex-wrap items-center gap-8 min-w-0",
+  ),
+  {
+    variants: {
+      align: {
+        start:  "justify-start",
+        center: "justify-center",
+        end:    "justify-end ml-auto",
+      },
+    },
+    defaultVariants: {
+      align: "end",
+    },
+  },
+);
+
 const DialogActions = forwardRef<HTMLDivElement, DialogActionsProps>(function DialogActions(
   { align = "end", className, children, ...rest },
   ref,
@@ -585,7 +398,8 @@ const DialogActions = forwardRef<HTMLDivElement, DialogActionsProps>(function Di
   return (
     <div
       ref={ref}
-      className={cx(CLASS.actions, CLASS.actionsAlign(align), className)}
+      data-slot="dialog-actions"
+      className={cn(dialogActionsVariants({ align }), className)}
       {...rest}
     >
       {children}
@@ -619,4 +433,9 @@ Dialog.Footer      = DialogFooter;
 Dialog.Actions     = DialogActions;
 Dialog.Close       = DialogClose;
 
-export { Dialog };
+export {
+  Dialog,
+  dialogOverlayVariants,
+  dialogContentVariants,
+  dialogActionsVariants,
+};

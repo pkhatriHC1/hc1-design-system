@@ -888,26 +888,32 @@ function NotesBlock() {
     <DocBlock title="Implementation notes">
       <RuleList
         rules={[
-          { tone: "note", text: "Switch reuses Checkbox's DOM shape: a <label> wraps a native <input> that's absolutely-positioned + opacity-0 over the visible track. Pointer + focus land on the real element; the focus ring paints on the adjacent-sibling track via a CSS combinator." },
-          { tone: "note", text: "The size ladder shares Checkbox's row heights (28 / 36 / 44) by direct token reference (see tokens/components/switch.ts: `row: checkbox.size.sm.row`) — the two controls always align vertically. Track and thumb geometry are Switch-specific." },
+          { tone: "note", text: "Switch reuses Checkbox's DOM shape: a <label> wraps a native <input> that's absolutely-positioned + opacity-0 over the visible track. Pointer + focus land on the real element; the focus ring paints on the sibling track via Tailwind's `peer-focus-visible:` variant." },
+          { tone: "note", text: "The size ladder shares Checkbox / Radio row heights (28 / 36 / 44) via --hc-switch-row-* aliases in variables.css — the three controls always align vertically. Track and thumb geometry are Switch-specific (--hc-switch-track-w-*, --hc-switch-track-h-*, --hc-switch-thumb-*)." },
           { tone: "note", text: "Underlying input is `<input type='checkbox' role='switch'>`. role='switch' tells assistive tech this is a two-state toggle so it's announced as \"on\" / \"off\" instead of \"checked\" / \"not checked\". aria-checked is emitted natively by the checkbox — we don't override it." },
           { tone: "note", text: "The Switch component always renders its native input as internally controlled (checked={currentChecked}) — same fix as Checkbox PR #18. Consumer's controlled/uncontrolled facade is resolved above the render." },
-          { tone: "note", text: "The thumb slides via CSS `transform: translate()` on the checked class. The translate distance = trackWidth − thumbSize − 4px (2px inset each side), computed per size so the thumb always sits flush at both ends." },
+          { tone: "note", text: "The thumb slides via CSS `translate-x: calc(trackWidth − thumbSize − 4px)` on the checked state (2px inset on each side of the track). Compound cva variants apply the per-size translate so the thumb always sits flush at both ends." },
           { tone: "note", text: "Loading disables the native input, sets aria-busy='true' on the row, and paints a spinner inside the thumb. Consumer owns clearing loading when the async work finishes." },
+          { tone: "note", text: "Styling uses cva + Tailwind v4 utilities that resolve to HC1 tokens. Deliberately does NOT wrap @radix-ui/react-switch — same reasoning as Checkbox / Radio (Radix uses <button role='switch'> which would break form serialization and change the forwardRef target)." },
         ]}
       />
 
       <Callout tone="info" title="Extending Switch">
         (1) A future Toggle Group primitive (a segmented row of two-state toggles for exclusive-choice patterns) would compose Switch semantics but present as a segmented control. Not built here — it's a distinct visual family.
-        (2) A new size should only be added if a genuine layout intent emerges. Update
+        (2) A new size should only be added if a genuine layout intent emerges. Update the
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          tokens/components/checkbox.ts
-        </code>
-        first (Switch's row heights come from there) and the matching CSS vars in
+          --hc-switch-track-w-*
+        </code>,
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          variables.css
+          --hc-switch-track-h-*
+        </code>,
+        <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
+          --hc-switch-thumb-*
+        </code>, and
+        <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
+          --hc-switch-row-*
         </code>
-        before touching Switch.css.
+        vars in variables.css, then add the new key to each of the size variant maps in Switch.tsx.
       </Callout>
     </DocBlock>
   );

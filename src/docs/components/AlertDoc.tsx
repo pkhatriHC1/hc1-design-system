@@ -719,11 +719,12 @@ function NotesBlock() {
       <RuleList
         rules={[
           { tone: "note", text: "The Alert splits its children into three slots — Icon (left), Body (middle: Title + Description + Actions), Close (right) — by inspecting each child's component type. The consumer can author the children in any order and the layout stays stable." },
-          { tone: "note", text: "The variant × appearance matrix is 5 × 3 = 15 combinations. Each is a single CSS selector that sets four vars (bg, fg, border, icon). The base .hc-alert selector reads those vars, so layout code is written once." },
+          { tone: "note", text: "The variant × appearance matrix is 5 × 3 = 15 combinations. Each is one cva compoundVariant that sets bg / text / border via direct Tailwind classes plus --hc-alert-icon-color via an arbitrary property. The Icon subcomponent reads that var via text-[color:var(...)]." },
           { tone: "note", text: "The Alert is stateless — it does not manage its own dismissal. Consumers own the visible/hidden state and unmount the Alert on dismiss. This keeps the primitive small and lets a downstream Toast queue (or an animated presence library) wrap it without fighting internal state." },
           { tone: "note", text: "Alert.Title defaults to a plain <div> — most Alerts are inline notices, not page-level landmarks. Set `as={4}` (or another heading level) when the Alert *is* a landmark — a form-level validation summary at the top of a form." },
           { tone: "note", text: "The Alert never becomes a button or a link. Only Alert.Close is interactive. Wrapping the Alert in a link would create an ambiguous focus target and mix message semantics with navigation." },
           { tone: "note", text: "The close-button hover wash uses `color-mix(currentColor 12%, transparent)` so the same rule works across every variant × appearance without a per-variant override — same trick as Badge." },
+          { tone: "note", text: "Styling uses cva + Tailwind v4 utilities that resolve to HC1 tokens. Icon color propagates via a CSS custom property set on the root and read by the Icon subcomponent." },
         ]}
       />
 
@@ -734,11 +735,15 @@ function NotesBlock() {
         — wrap it with the surface's opinionated content and reuse every
         visual choice. (2) A new variant should only be added if a genuine
         semantic role emerges (e.g. a compliance-mandated 'legal' tone).
-        Add the tone to
+        Add the tone to the
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          tokens/components/alert.ts
+          variant
         </code>
-        and the matching CSS rule in Alert.css before using it.
+        map in
+        <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
+          alertRootVariants
+        </code>
+        (the cva call in Alert.tsx), plus one compound variant per appearance (soft / outline / solid).
       </Callout>
     </DocBlock>
   );

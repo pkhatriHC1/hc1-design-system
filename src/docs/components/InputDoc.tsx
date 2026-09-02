@@ -879,7 +879,7 @@ function NotesBlock() {
     <DocBlock title="Implementation notes">
       <RuleList
         rules={[
-          { tone: "note", text: "The component's CSS lives at Input.css and references CSS custom properties from tokens/css/variables.css. Importing Input pulls both in — no separate setup step." },
+          { tone: "note", text: "Styling uses cva + Tailwind v4 utilities that resolve to HC1 tokens via the @theme block. Icon / clear-button / spinner sizes cascade from the frame via data-slot descendant selectors, so the parent size variant drives all chrome dimensions without prop-drilling." },
           { tone: "note", text: "The clear button works for both controlled and uncontrolled inputs. It writes an empty string through the native value setter and dispatches an input event so any form observer sees the change." },
           { tone: "note", text: "Height ladder is authored to match Button exactly. If you change one, change both." },
           { tone: "note", text: "The frame uses focus-within so the focus ring lights on tab-in to the inner <input> — the same visual as clicking directly on the input." },
@@ -888,15 +888,15 @@ function NotesBlock() {
       />
 
       <Callout tone="info" title="Extending the family">
-        (1) If a new control needs a role not in the alias layer, add the alias first. (2) Add a component token module under
+        (1) If a new control needs a role not in the alias layer, add the alias first. (2) Author the new component under
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          tokens/components/
+          src/components/
         </code>
-        that mirrors the Input structure — same size keys, same state keys. (3) Ship the component under
+        with a three-file layout (Component.tsx, Component.types.ts, index.ts) — no per-component .css file. (3) Reuse the
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          src/design-system/components/
+          inputFrameVariants
         </code>
-        with a matching four-file layout (Component.tsx, Component.types.ts, Component.css, index.ts). (4) Reuse the Input frame classes where the shape is truly identical — don't rewrite from scratch.
+        cva export where the shape is truly identical (Textarea, Select trigger) — don't rewrite from scratch.
       </Callout>
     </DocBlock>
   );

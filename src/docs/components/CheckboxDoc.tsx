@@ -992,26 +992,31 @@ function NotesBlock() {
     <DocBlock title="Implementation notes">
       <RuleList
         rules={[
-          { tone: "note", text: "The native <input type='checkbox'> is visually collapsed to zero size but stays interactive — pointer, keyboard, and form submission all flow through the real element. The visual box is a sibling <span>; the focus ring paints on that sibling via a CSS adjacent selector." },
+          { tone: "note", text: "The native <input type='checkbox'> is visually collapsed to zero size (opacity 0) but stays interactive — pointer, keyboard, and form submission all flow through the real element. The visual box is a sibling <span>; the focus ring paints on that sibling via Tailwind's `peer-focus-visible:` variant on the box." },
           { tone: "note", text: "The whole row is a <label> wrapping the input. Clicking anywhere on the row (box, label, description) toggles the checkbox without any custom click handler." },
           { tone: "note", text: "Controlled + uncontrolled coexist on the same root — mixing them is guarded internally so React never warns about switching between the two." },
           { tone: "note", text: "`indeterminate` is applied both as `aria-checked='mixed'` AND as the runtime `input.indeterminate` DOM property (via useEffect). Assistive tech will read the state whichever it inspects." },
           { tone: "note", text: "Checkbox.Description registers with the root via context and generates the id that gets wired into aria-describedby. If you use Checkbox without a Description, no aria-describedby is set." },
-          { tone: "note", text: "The check glyph uses inline SVG (not a font icon) so it scales cleanly and inherits currentColor for the state transitions." },
+          { tone: "note", text: "Styling uses cva + Tailwind v4 utilities that resolve to HC1 tokens. Hover propagates from the root <label> to the child box via Tailwind's `group-hover:` variant (root has the `group` class)." },
+          { tone: "note", text: "Deliberately does NOT wrap @radix-ui/react-checkbox — Radix uses <button role='checkbox'> which would change the a11y surface, break form serialization, and change the forwardRef target from HTMLInputElement to HTMLButtonElement." },
         ]}
       />
 
       <Callout tone="info" title="Extending Checkbox">
         (1) Downstream selection surfaces — Table row selection, bulk-action toolbars, permission matrices — should compose this Checkbox verbatim. Do not wrap it in a bespoke component that hides state; wire your controlled state directly.
-        (2) A new size should only be added if a genuine layout intent emerges. Update
+        (2) A new size should only be added if a genuine layout intent emerges. Update the
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          tokens/components/checkbox.ts
+          --hc-checkbox-control-*
         </code>
-        and the matching CSS variables in
+        and
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          variables.css
+          --hc-checkbox-row-*
         </code>
-        before touching Checkbox.css.
+        vars in variables.css, then add the new key to each of the size variant maps in
+        <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
+          checkboxRootVariants
+        </code>
+        / <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>Input</code> / Indicator / Label / Description cva calls inside Checkbox.tsx.
       </Callout>
     </DocBlock>
   );

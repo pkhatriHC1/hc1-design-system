@@ -1056,27 +1056,34 @@ function NotesBlock() {
     <DocBlock title="Implementation notes">
       <RuleList
         rules={[
-          { tone: "note", text: "Radio reuses Checkbox's DOM shape: a <label> wraps a native <input> that's absolutely-positioned + opacity-0 over the visible indicator. Pointer + focus land on the real element; the focus ring paints on the adjacent-sibling indicator via a CSS combinator." },
-          { tone: "note", text: "The size ladder is a direct reference to Checkbox's tokens (see tokens/components/radio.ts: `size: checkbox.size`) — the two controls always share the same dimensions. If we ever want them to diverge, we extend the aliases layer, not this file." },
+          { tone: "note", text: "Radio reuses Checkbox's DOM shape: a <label> wraps a native <input> that's absolutely-positioned + opacity-0 over the visible circle. Pointer + focus land on the real element; the focus ring paints on the sibling circle via Tailwind's `peer-focus-visible:` variant." },
+          { tone: "note", text: "The size ladder shares Checkbox's dimensions — same 14/16/20 box widths, same 28/36/44 row heights. Radio's own tokens (--hc-radio-control-*, --hc-radio-row-*, --hc-radio-dot-*) alias the checkbox scale in variables.css." },
           { tone: "note", text: "The whole row is a <label> wrapping the input. Clicking anywhere on the row (circle, label, description) selects the radio without any custom click handler. htmlFor is deliberately omitted to avoid the double-click bug from PR #18." },
           { tone: "note", text: "RadioGroup generates a shared `name` via useId. Every child Radio inherits it, so the browser natively handles arrow-key nav + one-of-many selection — RadioGroup does NOT reimplement arrow handling." },
           { tone: "note", text: "Roving tabIndex is managed via a lightweight registration pattern: each Radio calls group.register(value) in an effect; the group picks the roving-tabbable value as `group.value ?? firstRegistered`. Radio compares its own value against `rovingValue` to set tabIndex 0 or -1." },
           { tone: "note", text: "The Radio component always renders its native input as internally controlled (checked={currentChecked}) — same fix as Checkbox PR #18. Consumer's controlled/uncontrolled/inGroup facades are all resolved above the render." },
           { tone: "note", text: "RadioGroup's `invalid` cascades through context to every child Radio's aria-invalid attribute. Providing `errorMessage` implies invalid=true automatically." },
+          { tone: "note", text: "Styling uses cva + Tailwind v4 utilities that resolve to HC1 tokens. Hover propagates from the root <label> to the child circle via Tailwind's `group-hover:` variant. Deliberately does NOT wrap @radix-ui/react-radio-group — same reasoning as Checkbox (Radix uses <button role='radio'> which would break form serialization and change the forwardRef target)." },
         ]}
       />
 
       <Callout tone="info" title="Extending Radio">
         (1) A future Segmented Control primitive will compose RadioGroup for its selection semantics but present as a horizontal segmented button. Not built here — it's a distinct visual family.
-        (2) A new size should only be added if a genuine layout intent emerges. Update
+        (2) A new size should only be added if a genuine layout intent emerges. Update the
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          tokens/components/checkbox.ts
-        </code>
-        first (Radio inherits from there) and the matching CSS vars in
+          --hc-radio-control-*
+        </code>,
         <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          variables.css
+          --hc-radio-row-*
+        </code>, and
+        <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
+          --hc-radio-dot-*
         </code>
-        before touching Radio.css.
+        vars in variables.css, then add the new key to each of the size variant maps in
+        <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
+          radioRootVariants
+        </code>
+        / Input / Indicator / Dot / Label / Description cva calls inside Radio.tsx.
       </Callout>
     </DocBlock>
   );

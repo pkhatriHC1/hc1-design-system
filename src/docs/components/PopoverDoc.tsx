@@ -1075,16 +1075,24 @@ function NotesBlock() {
     <DocBlock title="Implementation notes">
       <RuleList
         rules={[
-          { tone: "note", text: "Content is rendered into a portal on document.body — same technique Dialog and Tooltip use — so it escapes overflow-hidden ancestors and always paints above the surrounding surface. No z-index gymnastics on the parent required." },
-          { tone: "note", text: "Positioning runs in a useLayoutEffect that measures the trigger + panel before paint, computes the placement (with viewport-fit checks and side-flip fallback), and writes inline top/left. One measure pass per open; the panel mounts with visibility: hidden until measured so no flash at 0,0." },
-          { tone: "note", text: "Positioning re-measures on scroll + resize while open. The arrow position tracks the trigger centre and is clamped to stay inside the panel so it always points at the trigger even when the panel is clamped away from centre by a viewport edge." },
-          { tone: "note", text: "Focus management: on open, focus moves to the first focusable child of Content (falling back to the panel itself with tabIndex=-1). On close, focus restores to the trigger. This is true for BOTH modal and non-modal — Popover content is always focusable, unlike Tooltip." },
-          { tone: "note", text: "Non-modal dismissal is bound to document pointerdown (capture phase) so the popover closes on the leading edge of a click outside — feels tighter than click, matches Radix / floating-ui defaults." },
-          { tone: "note", text: "Modal mode adds a scrim, traps Tab / Shift+Tab inside the panel (Dialog-shape focus trap), and locks body scroll via a shared counter — nested overlays decrement correctly and don't fight each other." },
-          { tone: "note", text: "Trigger uses cloneElement to attach onClick + ref + aria attributes to a single child. The child must forward its ref and spread props to a real DOM element (a plain Button or an <a> works; wrapper components must be forwardRefs that spread props to their inner element)." },
-          { tone: "note", text: "Popover.Close is a compound sub-component (like Dialog.Close). It clones a single child and adds an onClick that closes the popover — compose inside Content for a 'Done' / 'Cancel' button that participates in the same close flow as Escape / outside click." },
+          { tone: "note", text: "Popover wraps @radix-ui/react-popover — Radix owns positioning (via floating-ui), collision avoidance, focus into panel + restore to trigger, Escape / outside-click / modal focus-trap + body scroll lock, and portal to body. We own the visual layer only (panel chrome, arrow fill, entrance transition)." },
+          { tone: "note", text: "Content is portaled to document.body via Radix Portal so it escapes overflow-hidden ancestors and always paints above the surrounding surface." },
+          { tone: "note", text: "Focus management: on open, Radix moves focus into the first focusable child of Content (falling back to the panel itself). On close, focus restores to the trigger. True for BOTH modal and non-modal — Popover content is always focusable, unlike Tooltip." },
+          { tone: "note", text: "Non-modal dismissal is Radix's `onInteractOutside` (leading-edge pointerdown, same feel as floating-ui defaults). `closeOnOutsideClick=false` preventDefaults it." },
+          { tone: "note", text: "Modal mode = Radix `modal={true}` (traps Tab / Shift+Tab, locks body scroll via ReactRemoveScroll, prevents outside interaction) + a scrim we paint ourselves inside the Portal for the visual. `closeOnEscape=false` preventDefaults Radix's Escape handler." },
+          { tone: "note", text: "Trigger uses Radix's asChild + @radix-ui/react-slot to clone its single child and attach onClick + ref + aria-haspopup/expanded/controls cleanly. The child must forward its ref and spread props to a real DOM element." },
+          { tone: "note", text: "Popover.Close uses Radix's Close + asChild — clones a single child and adds an onClick that closes the popover. Compose inside Content for a 'Done' / 'Cancel' button that participates in the same close flow as Escape / outside click." },
         ]}
       />
+
+      <Callout tone="warning" title="Two intentional API micro-differences">
+        <p style={{ margin: 0 }}>
+          <strong>placement=&quot;auto&quot;</strong> maps to <code>side=&quot;bottom&quot;</code> + Radix collision avoidance (flips to opposite when the requested side doesn't fit). Practical result is very close to the original &quot;auto&quot; which also considered left/right based on available space.
+        </p>
+        <p style={{ margin: 0, marginTop: t.space.stack.sm }}>
+          <strong>modal={"{true}"}</strong> uses Radix's modal (focus trap + body scroll lock via ReactRemoveScroll) plus a scrim we paint ourselves in the Portal. Behavior identical to the original.
+        </p>
+      </Callout>
 
       <Callout tone="info" title="Foundation for downstream components">
         Dropdown Menu, User Menu, Date Picker, Color Picker, Filter Menu, Combobox, Command Palette, and Context Menu will all compose this Popover rather than reinventing floating surfaces. They add semantics on top (menu items, keyboard navigation, selection state) but the anchoring, portalling, arrow, focus, and dismissal behavior come from here. Do not fork this primitive.

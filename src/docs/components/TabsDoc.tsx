@@ -900,12 +900,14 @@ function NotesBlock() {
     <DocBlock title="Implementation notes">
       <RuleList
         rules={[
-          { tone: "note", text: "Automatic activation — arrow keys, Home, and End both move focus and fire onValueChange. This matches the WAI-ARIA authoring practice for tab strips whose panel content is cheap to switch." },
-          { tone: "note", text: "Roving tabindex is enforced by the Tab itself — the selected tab has tabIndex=0; the rest have tabIndex=-1. The list is one Tab stop; arrow keys move inside it." },
-          { tone: "note", text: "Tabs and Panels find each other by matching `value`. React's useId generates the shared id prefix on the root; each subcomponent computes its own id from the prefix + its value. Passing string ids as `value` is required — the value is embedded in the DOM id." },
-          { tone: "note", text: "Selection is painted as a 2px bottom-border on the selected tab that sits 1px below the list's own bottom-border (via -1px margin-bottom). The unselected tab reserves the 2px transparent border up front so tabs don't jump 2px when selected." },
-          { tone: "note", text: "Tabs.Panel unmounts inactive panels by default. Pass `keepMounted` for expensive panels (a data grid, a form with local state) — the panel is hidden via `hidden` + `display: none` but remains in the DOM." },
+          { tone: "note", text: "Tabs wraps @radix-ui/react-tabs — Radix owns value state, automatic activation (arrow keys focus AND select — WAI-ARIA authoring practice for cheap-to-switch panels), roving tabindex, and all aria wiring (role='tablist' / 'tab' / 'tabpanel', aria-selected, aria-controls, aria-labelledby). We own the visual layer only." },
+          { tone: "note", text: "Automatic activation — arrow keys, Home, and End both move focus and fire onValueChange. This is Radix's default activationMode." },
+          { tone: "note", text: "Tabs and Panels find each other by matching `value` (Radix's convention). Passing string values is required — Radix embeds the value in the DOM id." },
+          { tone: "note", text: "Selection is painted as a 2px bottom-border on the tab. Radix drives `data-state='active'`; Tailwind's `data-[state=active]:border-b-brand-500` sets the underline color. Unselected tabs keep a 2px transparent bottom-border reserving the space, so tabs don't jump 2px when selected." },
+          { tone: "note", text: "Tabs.Panel maps to Radix Content. Radix unmounts inactive panels by default; passing `keepMounted={true}` maps to Radix's `forceMount` and keeps the panel in the DOM (hidden via `hidden` attribute)." },
           { tone: "note", text: "Overflowing tabs scroll horizontally by default (scrollable=true on Tabs.List). The scrollbar is hidden via CSS — the affordance is the horizontal scroll gesture on touch + the trailing tab edge on desktop." },
+          { tone: "note", text: "Size ladder (sm/md/lg) sets CSS custom properties on the root (--hc-tabs-h, --hc-tabs-pad-x, --hc-tabs-gap, --hc-tabs-font-size, --hc-tabs-icon). Every tab reads those vars — change the size on the root, everything scales." },
+          { tone: "note", text: "useTabsContext is exported as a legacy stub. Radix owns state internally now; consumers who need to observe the active value should use `onValueChange` on the root. Calling setActiveValue on the stub logs a dev warning." },
         ]}
       />
 
