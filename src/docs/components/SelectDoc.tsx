@@ -363,8 +363,8 @@ function A11yBlock() {
     <DocBlock title="Accessibility">
       <RuleList
         rules={[
-          { tone: "must", text: "The trigger uses role='combobox' with aria-haspopup='listbox', aria-expanded, aria-controls, and aria-activedescendant per the ARIA Authoring Practices Select-only Combobox pattern." },
-          { tone: "must", text: "DOM focus stays on the trigger while the popup is open. The active option is signaled via aria-activedescendant — no roving focus, no focus traps." },
+          { tone: "must", text: "The trigger uses role='combobox' with aria-haspopup, aria-expanded, and aria-controls (Radix wires these automatically)." },
+          { tone: "must", text: "DOM focus moves INTO the popup on open (roving focus on the listbox — Radix's standard listbox pattern) and restores to the trigger on close. This is a refinement from the previous impl which kept focus on the trigger via aria-activedescendant." },
           { tone: "must", text: "The label is linked via aria-labelledby so screen readers announce '<label>, combobox, <value>'. IDs are auto-generated via useId." },
           { tone: "must", text: "Each option has role='option' and aria-selected. Group containers use role='group' and aria-labelledby to name the section." },
           { tone: "must", text: "Disabled options carry aria-disabled=true and are skipped by keyboard navigation entirely." },
@@ -916,24 +916,24 @@ function NotesBlock() {
     <DocBlock title="Implementation notes">
       <RuleList
         rules={[
-          { tone: "note", text: "The component's CSS lives at Select.css and references CSS custom properties from tokens/css/variables.css. Importing Select pulls both in." },
-          { tone: "note", text: "Keyboard nav uses the ARIA Authoring Practices Select-only Combobox pattern: role='combobox' on the trigger, aria-activedescendant instead of moving DOM focus. No focus trap, no roving tabindex." },
-          { tone: "note", text: "The popup is portal-less — absolute-positioned under a position:relative anchor. It flips above when there's insufficient room below. If a consumer places a Select inside an overflow-hidden ancestor, a follow-up portal-based version will be added." },
-          { tone: "note", text: "The trigger deliberately duplicates a subset of Input frame CSS (same tokens, same values) rather than sharing selectors. This lets Select evolve independently while staying pixel-aligned today." },
-          { tone: "note", text: "Combobox, Multi Select, User Picker, and Command Palette should reuse .hc-select-popup, .hc-select-listbox, .hc-select-group, and .hc-select-option classes as-is. Only the trigger and selection model change." },
+          { tone: "note", text: "Select wraps @radix-ui/react-select — Radix owns floating-ui positioning, portal-to-body, focus management (roving focus into the listbox on open + restore to trigger on close), keyboard nav (Arrow keys / Home / End / typeahead), Escape close, and all aria wiring." },
+          { tone: "note", text: "The public API is data-driven (options: SelectOption[]). Internally we translate options → Radix compound children (Select.Root > Select.Trigger + Select.Portal > Select.Content > Select.Viewport > (Select.Group + Select.Label) > Select.Item)." },
+          { tone: "note", text: "The popup portals to document.body so it escapes overflow-hidden ancestors and paints above the surrounding surface. Positioning is via Radix + floating-ui with collision avoidance." },
+          { tone: "note", text: "The trigger reuses Input's frame vocabulary via selectTriggerVariants — same border tones, same focus ring, same validation palette. Combobox / MultiSelect should reuse selectTriggerVariants + selectPopupVariants + selectOptionVariants when they land." },
+          { tone: "note", text: "Radix Select doesn't natively support description text on Item — we render it inside Select.Item but outside Select.ItemText so it shows in the popup but not the trigger. Icon on option follows the same pattern." },
+          { tone: "note", text: "Bonus: Radix adds typeahead — typing letters while the popup is open jumps to the first matching option. Pure addition over the previous impl." },
+          { tone: "note", text: "Styling uses cva + Tailwind v4 utilities that resolve to HC1 tokens. Icon and chevron sizes cascade from the trigger's size variant via data-slot descendant selectors." },
         ]}
       />
 
+      <Callout tone="warning" title="One intentional API micro-difference">
+        <p style={{ margin: 0 }}>
+          <strong>Focus model changed.</strong> The previous impl kept DOM focus on the trigger with <code>aria-activedescendant</code> tracking the highlighted option (WAI-ARIA &ldquo;select-only combobox&rdquo; pattern). The Radix-backed version moves focus INTO the popup on open (roving focus on the listbox — WAI-ARIA &ldquo;listbox&rdquo; pattern) and restores to trigger on close. Both are valid per ARIA APG; Radix uses the more common listbox pattern. E2E tests that assert on <code>document.activeElement</code> while the Select is open will need updating.
+        </p>
+      </Callout>
+
       <Callout tone="info" title="Extending the family">
-        (1) Combobox — reuse the trigger shell but swap the value span for an
-        <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          &lt;input&gt;
-        </code>
-        that also drives filtering. (2) Multi Select — reuse the popup and option classes; add
-        <code style={{ fontFamily: t.font.mono, background: t.color.background.muted, padding: "0 4px", borderRadius: 3, margin: "0 4px" }}>
-          aria-multiselectable
-        </code>
-        to the listbox and render selected chips in the trigger. (3) User Picker — same shell as Combobox, options carry avatar + email. (4) Command Palette — same popup and option shell, mounted globally with Cmd-K.
+        (1) Combobox — reuse selectTriggerVariants but swap the Value span for an input that drives filtering, then filter options before passing to a custom render. (2) Multi Select — Radix Select is single-select only; MultiSelect will need @radix-ui/react-dropdown-menu or a custom implementation reusing selectPopupVariants + selectOptionVariants. (3) User Picker — same shell as Combobox, options carry avatar + email in the description slot. (4) Command Palette — same popup + option classes, mounted globally with Cmd-K.
       </Callout>
     </DocBlock>
   );
