@@ -5,6 +5,8 @@ import {
   useMemo,
 } from "react";
 import type { CSSProperties, KeyboardEvent, MouseEvent } from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../../utils/cn";
 import type {
   SortDirection,
   TableBodyProps,
@@ -24,67 +26,25 @@ import type {
   TableToolbarProps,
 } from "./Table.types";
 
-// Design-system CSS variables — imported here so consumers get tokens
-// automatically wherever they mount the Table.
-import "../../tokens/css/variables.css";
-import "./Table.css";
-
-/* ══════ CLASS NAMES ═══════════════════════════════════════════════ */
-
-const CLASS = {
-  root:            "hc-table",
-  density:         (d: TableDensity) => `hc-table--density-${d}`,
-  fullWidth:       "hc-table--full-width",
-  bordered:        "hc-table--bordered",
-  striped:         "hc-table--striped",
-  hover:           "hc-table--hover",
-
-  toolbar:         "hc-table__toolbar",
-  toolbarSearch:   "hc-table__search",
-  toolbarFilters:  "hc-table__filters",
-
-  content:         "hc-table__content",
-  contentSticky:   "hc-table__content--sticky",
-  contentScroll:   "hc-table__content--scroll",
-  contentLoading:  "hc-table__content--loading",
-
-  el:              "hc-table__el",
-  head:            "hc-table__thead",
-  body:            "hc-table__tbody",
-  row:             "hc-table__row",
-  rowClickable:    "hc-table__row--clickable",
-  rowSelected:     "hc-table__row--selected",
-  rowDisabled:     "hc-table__row--disabled",
-
-  headCell:        "hc-table__th",
-  headCellNumeric: "hc-table__th--numeric",
-  headSortBtn:     "hc-table__sort",
-  headSortIndicator: "hc-table__sort-indicator",
-  headSortIndicatorActive: "hc-table__sort-indicator--active",
-
-  cell:            "hc-table__td",
-  cellNumeric:     "hc-table__td--numeric",
-  cellTruncate:    "hc-table__td--truncate",
-  cellLeadingIcon: "hc-table__cell-icon",
-  cellContent:     "hc-table__cell-content",
-
-  empty:           "hc-table__empty",
-  emptyIcon:       "hc-table__empty-icon",
-  emptyTitle:      "hc-table__empty-title",
-  emptyDescription:"hc-table__empty-description",
-  emptyAction:     "hc-table__empty-action",
-
-  loading:         "hc-table__loading",
-  spinner:         "hc-table__spinner",
-  loadingLabel:    "hc-table__loading-label",
-
-  footer:          "hc-table__footer",
-  pagination:      "hc-table__pagination",
-};
-
-function cx(...parts: (string | false | null | undefined)[]) {
-  return parts.filter(Boolean).join(" ");
-}
+/**
+ * HC1 Table — the canonical data-presentation primitive.
+ *
+ * Migrated from Table.css to shadcn-style (cva + Tailwind utilities).
+ * No Radix wrap — Table is a presentational primitive built on native
+ * <table>/<thead>/<tbody>/<tr>/<td>. The prop API, DOM structure, and
+ * a11y wiring are preserved verbatim; every color, height, padding, and
+ * state maps 1:1 to the same --hc-* alias the previous Table.css consumed.
+ *
+ * Density propagates from root → cells via CSS custom properties set
+ * on the root by the `density` cva variant:
+ *   --hc-table-row-h          — row height on <th> and <td>
+ *   --hc-table-cell-pad-x     — horizontal padding on cells
+ *   --hc-table-cell-pad-y     — vertical padding on body cells
+ *   --hc-table-cell-font-size — body cell font size
+ *   --hc-table-cell-icon-size — leading-icon size in cells
+ *
+ * Change density on the root, everything scales. Same contract as before.
+ */
 
 /* ══════ CONTEXT ═══════════════════════════════════════════════════ */
 
@@ -100,21 +60,69 @@ const TableContext = createContext<TableContextValue>({
 
 const useTableContext = () => useContext(TableContext);
 
+/* ══════ CVA — ROOT ════════════════════════════════════════════════ */
+
+const tableRootVariants = cva(
+  cn(
+    "flex flex-col min-w-0 overflow-hidden",
+    "bg-white text-neutral-900 font-sans",
+  ),
+  {
+    variants: {
+      density: {
+        compact: cn(
+          "[--hc-table-row-h:var(--hc-table-row-h-compact)]",
+          "[--hc-table-cell-pad-x:var(--hc-space-8)]",
+          "[--hc-table-cell-pad-y:var(--hc-space-4)]",
+          "[--hc-table-cell-font-size:var(--hc-font-size-14)]",
+          "[--hc-table-cell-icon-size:14px]",
+        ),
+        comfortable: cn(
+          "[--hc-table-row-h:var(--hc-table-row-h-comfortable)]",
+          "[--hc-table-cell-pad-x:var(--hc-space-12)]",
+          "[--hc-table-cell-pad-y:var(--hc-space-8)]",
+          "[--hc-table-cell-font-size:var(--hc-font-size-14)]",
+          "[--hc-table-cell-icon-size:16px]",
+        ),
+        relaxed: cn(
+          "[--hc-table-row-h:var(--hc-table-row-h-relaxed)]",
+          "[--hc-table-cell-pad-x:var(--hc-space-16)]",
+          "[--hc-table-cell-pad-y:var(--hc-space-12)]",
+          "[--hc-table-cell-font-size:var(--hc-font-size-16)]",
+          "[--hc-table-cell-icon-size:18px]",
+        ),
+      },
+      fullWidth: {
+        true:  "w-full",
+        false: "",
+      },
+      bordered: {
+        true:  "border border-neutral-100 rounded-surface shadow-none",
+        false: "",
+      },
+      striped: {
+        /* Zebra rows painted via nth-child descendant selector on tbody rows. */
+        true: "[&_[data-slot=table-tbody]_[data-slot=table-row]:nth-child(even)_[data-slot=table-cell]]:bg-neutral-50",
+        false: "",
+      },
+      hover: {
+        /* Force hover feedback on non-clickable rows via descendant selector. */
+        true: "[&_[data-slot=table-tbody]_[data-slot=table-row]:hover_[data-slot=table-cell]]:bg-neutral-100",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      density: "comfortable",
+      fullWidth: true,
+      bordered: true,
+      striped: false,
+      hover: false,
+    },
+  },
+);
+
 /* ══════ ROOT ══════════════════════════════════════════════════════ */
 
-/**
- * HC1 Table — the canonical data-presentation primitive.
- *
- * Compose with `Table.Toolbar` (top strip), `Table.Content` (the actual
- * table), and `Table.Footer` (bottom strip). Inside the content, use
- * `Table.Header` / `Table.Body` / `Table.Row` / `Table.Head` /
- * `Table.Cell`. Empty and loading states live inside the body area via
- * `Table.Empty` and `Table.Loading`.
- *
- * The outer wrapper is a `<div>` that owns the surface frame; the
- * inner element rendered by `Table.Content` is a real `<table>` so
- * assistive tech gets proper table semantics.
- */
 const TableRoot = forwardRef<HTMLDivElement, TableProps>(function TableRoot(
   {
     density        = "comfortable",
@@ -136,16 +144,6 @@ const TableRoot = forwardRef<HTMLDivElement, TableProps>(function TableRoot(
     [density, striped],
   );
 
-  const rootClass = cx(
-    CLASS.root,
-    CLASS.density(density),
-    fullWidth && CLASS.fullWidth,
-    bordered && CLASS.bordered,
-    striped && CLASS.striped,
-    hover && CLASS.hover,
-    className,
-  );
-
   return (
     <TableContext.Provider value={contextValue}>
       <div
@@ -154,8 +152,18 @@ const TableRoot = forwardRef<HTMLDivElement, TableProps>(function TableRoot(
         role="group"
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
-        className={rootClass}
+        data-slot="table-root"
         style={style as CSSProperties}
+        className={cn(
+          tableRootVariants({
+            density,
+            fullWidth,
+            bordered,
+            striped,
+            hover,
+          } as VariantProps<typeof tableRootVariants>),
+          className,
+        )}
       >
         {children}
       </div>
@@ -171,7 +179,18 @@ const TableToolbar = forwardRef<HTMLDivElement, TableToolbarProps>(function Tabl
   ref,
 ) {
   return (
-    <div ref={ref} className={cx(CLASS.toolbar, className)} {...rest}>
+    <div
+      ref={ref}
+      data-slot="table-toolbar"
+      className={cn(
+        "flex items-center gap-12 min-w-0",
+        "py-12 px-16",
+        "bg-white border-b border-neutral-100",
+        "min-h-[52px]",
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </div>
   );
@@ -183,7 +202,15 @@ const TableSearch = forwardRef<HTMLDivElement, TableSearchProps>(function TableS
   ref,
 ) {
   return (
-    <div ref={ref} className={cx(CLASS.toolbarSearch, className)} {...rest}>
+    <div
+      ref={ref}
+      data-slot="table-search"
+      className={cn(
+        "flex-[1_1_320px] min-w-0 flex items-center",
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </div>
   );
@@ -195,21 +222,23 @@ const TableFilters = forwardRef<HTMLDivElement, TableFiltersProps>(function Tabl
   ref,
 ) {
   return (
-    <div ref={ref} className={cx(CLASS.toolbarFilters, className)} {...rest}>
+    <div
+      ref={ref}
+      data-slot="table-filters"
+      className={cn(
+        "flex-none flex items-center gap-8 ml-auto flex-wrap",
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </div>
   );
 });
 TableFilters.displayName = "Table.Filters";
 
-/* ══════ CONTENT ═══════════════════════════════════════════════════ */
+/* ══════ CONTENT (scroll frame + <table>) ══════════════════════════ */
 
-/**
- * Wraps the actual `<table>` element. Owns scroll behavior for sticky
- * headers and `aria-busy` for loading. The `<table>` is rendered here
- * rather than in the root Card wrapper so that assistive tech gets a
- * clean, unwrapped table.
- */
 const TableContent = forwardRef<HTMLDivElement, TableContentProps>(function TableContent(
   {
     stickyHeader = false,
@@ -223,13 +252,6 @@ const TableContent = forwardRef<HTMLDivElement, TableContentProps>(function Tabl
   ref,
 ) {
   const scroll = stickyHeader || maxHeight != null;
-  const contentClass = cx(
-    CLASS.content,
-    stickyHeader && CLASS.contentSticky,
-    scroll && CLASS.contentScroll,
-    loading && CLASS.contentLoading,
-    className,
-  );
 
   const contentStyle: CSSProperties = {
     ...(style as CSSProperties),
@@ -241,14 +263,37 @@ const TableContent = forwardRef<HTMLDivElement, TableContentProps>(function Tabl
   return (
     <div
       ref={ref}
-      className={contentClass}
+      data-slot="table-content"
+      data-sticky-header={stickyHeader || undefined}
+      data-loading={loading || undefined}
       style={contentStyle}
+      className={cn(
+        "relative min-w-0 overflow-x-auto overflow-y-hidden",
+        scroll && "overflow-y-auto",
+        loading && "[&_[data-slot=table-el]]:opacity-50",
+        className,
+      )}
       {...rest}
     >
       <table
-        className={CLASS.el}
+        data-slot="table-el"
         role="table"
         aria-busy={loading || undefined}
+        className={cn(
+          "w-full font-sans text-neutral-900",
+          /* border-collapse: separate + spacing 0 so per-cell borders + sticky
+             backgrounds work without doubling. */
+          "border-separate border-spacing-0 table-auto",
+          /* Sticky header — cells inside <thead> stick to the top of the
+             scroll container. */
+          stickyHeader && cn(
+            "[&_[data-slot=table-thead]_[data-slot=table-th]]:sticky",
+            "[&_[data-slot=table-thead]_[data-slot=table-th]]:top-0",
+            "[&_[data-slot=table-thead]_[data-slot=table-th]]:z-sticky",
+            "[&_[data-slot=table-thead]_[data-slot=table-th]]:bg-white",
+            "[&_[data-slot=table-thead]_[data-slot=table-th]]:shadow-[var(--hc-table-sticky-shadow)]",
+          ),
+        )}
       >
         {children}
       </table>
@@ -264,7 +309,12 @@ const TableHeader = forwardRef<HTMLTableSectionElement, TableHeaderProps>(functi
   ref,
 ) {
   return (
-    <thead ref={ref} className={cx(CLASS.head, className)} {...rest}>
+    <thead
+      ref={ref}
+      data-slot="table-thead"
+      className={cn("bg-white", className)}
+      {...rest}
+    >
       {children}
     </thead>
   );
@@ -276,7 +326,12 @@ const TableBody = forwardRef<HTMLTableSectionElement, TableBodyProps>(function T
   ref,
 ) {
   return (
-    <tbody ref={ref} className={cx(CLASS.body, className)} {...rest}>
+    <tbody
+      ref={ref}
+      data-slot="table-tbody"
+      className={cn("bg-white", className)}
+      {...rest}
+    >
       {children}
     </tbody>
   );
@@ -314,18 +369,37 @@ const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(function TableRo
   return (
     <tr
       ref={ref}
-      className={cx(
-        CLASS.row,
-        isClickable && CLASS.rowClickable,
-        selected && CLASS.rowSelected,
-        disabled && CLASS.rowDisabled,
-        className,
-      )}
+      data-slot="table-row"
+      data-clickable={isClickable || undefined}
+      data-selected={selected || undefined}
+      data-disabled={disabled || undefined}
       aria-selected={selected || undefined}
       aria-disabled={disabled || undefined}
       tabIndex={isClickable ? 0 : undefined}
       onClick={isClickable ? handleClick : undefined}
       onKeyDown={isClickable ? handleKeyDown : undefined}
+      className={cn(
+        "transition-[background-color] duration-150 ease-standard motion-reduce:duration-0",
+        /* Clickable rows: cursor + focus ring. */
+        isClickable && cn(
+          "cursor-pointer",
+          "outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
+          /* Hover feedback on cells. */
+          "hover:[&_[data-slot=table-cell]]:bg-neutral-100",
+        ),
+        /* Selected: subtle wash + left accent painted with inset shadow on first cell. */
+        selected && cn(
+          "[&_[data-slot=table-cell]]:bg-neutral-100",
+          "[&_[data-slot=table-cell]:first-child]:shadow-[inset_3px_0_0_var(--hc-table-selected-accent)]",
+        ),
+        /* Disabled: dim + no interaction; suppress hover paint. */
+        disabled && cn(
+          "[&_[data-slot=table-cell]]:text-neutral-400",
+          "[&_[data-slot=table-cell]]:cursor-not-allowed",
+          "hover:[&_[data-slot=table-cell]]:bg-white",
+        ),
+        className,
+      )}
       {...rest}
     >
       {children}
@@ -382,19 +456,38 @@ const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(function Tabl
       ref={ref}
       scope="col"
       aria-sort={ariaSort}
-      className={cx(
-        CLASS.headCell,
-        numeric && CLASS.headCellNumeric,
+      data-slot="table-th"
+      data-numeric={numeric || undefined}
+      style={headStyle}
+      className={cn(
+        /* Body */
+        "align-middle h-[var(--hc-table-row-h)]",
+        "py-8 px-[var(--hc-table-cell-pad-x)]",
+        /* Typography */
+        "font-sans text-12 font-semibold leading-[1.4] tracking-[0.06em]",
+        "text-neutral-500",
+        /* Frame */
+        "border-b border-neutral-200 bg-white",
+        "whitespace-nowrap select-none",
+        /* Alignment */
+        numeric ? "text-right [font-variant-numeric:tabular-nums]" : "text-left",
         className,
       )}
-      style={headStyle}
       {...rest}
     >
       {isSortable ? (
         <button
           type="button"
-          className={CLASS.headSortBtn}
+          data-slot="table-sort"
           onClick={handleSort}
+          className={cn(
+            "appearance-none border-0 p-0 m-0 bg-transparent text-inherit cursor-pointer",
+            "font-[inherit] tracking-[inherit]",
+            "inline-flex items-center gap-4 min-h-[24px] min-w-0",
+            numeric && "flex-row-reverse",
+            "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:rounded-control",
+            "hover:text-neutral-900",
+          )}
         >
           <span>{children}</span>
           <SortIndicator direction={sort ?? null} />
@@ -411,11 +504,13 @@ function SortIndicator({ direction }: { direction: SortDirection }) {
   const active = direction !== null;
   return (
     <span
-      className={cx(
-        CLASS.headSortIndicator,
-        active && CLASS.headSortIndicatorActive,
-      )}
       aria-hidden="true"
+      data-slot="table-sort-indicator"
+      data-active={active || undefined}
+      className={cn(
+        "inline-flex items-center shrink-0",
+        active ? "text-brand-500" : "text-neutral-500",
+      )}
     >
       <svg width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
@@ -449,17 +544,43 @@ const TableCell = forwardRef<HTMLTableCellElement, TableCellProps>(function Tabl
   return (
     <td
       ref={ref}
-      className={cx(
-        CLASS.cell,
-        numeric && CLASS.cellNumeric,
-        truncate && CLASS.cellTruncate,
+      data-slot="table-cell"
+      data-numeric={numeric || undefined}
+      className={cn(
+        /* Body */
+        "align-middle h-[var(--hc-table-row-h)]",
+        "py-[var(--hc-table-cell-pad-y)] px-[var(--hc-table-cell-pad-x)]",
+        /* Typography */
+        "text-[length:var(--hc-table-cell-font-size)] leading-[1.4] text-neutral-900",
+        /* Frame */
+        "bg-white min-w-0",
+        /* Row separator via bottom border (border-collapse: separate). */
+        "border-b border-neutral-100",
+        /* Alignment */
+        numeric && "text-right [font-variant-numeric:tabular-nums]",
+        /* Truncate: nowrap + ellipsis. max-w:1px forces truncation inside a
+           flexible table layout — same trick as the original CSS. */
+        truncate && "whitespace-nowrap overflow-hidden text-ellipsis max-w-[1px]",
+        /* Remove final row's border so it sits flush with the surface. */
+        "[[data-slot=table-row]:last-child_&]:border-b-0",
         className,
       )}
       {...rest}
     >
       {leadingIcon ? (
-        <span className={CLASS.cellContent}>
-          <span className={CLASS.cellLeadingIcon} aria-hidden="true">
+        <span
+          data-slot="table-cell-content"
+          className="inline-flex items-center gap-8 min-w-0"
+        >
+          <span
+            data-slot="table-cell-icon"
+            aria-hidden="true"
+            className={cn(
+              "inline-flex items-center justify-center shrink-0 text-neutral-500",
+              "size-[var(--hc-table-cell-icon-size)]",
+              "[&_svg]:size-[var(--hc-table-cell-icon-size)] [&_svg]:block",
+            )}
+          >
             {leadingIcon}
           </span>
           <span>{children}</span>
@@ -474,12 +595,6 @@ TableCell.displayName = "Table.Cell";
 
 /* ══════ EMPTY / LOADING ═══════════════════════════════════════════ */
 
-/**
- * A body-replacement state — render as the single child of `Table.Body`
- * (or in place of the body entirely) when the dataset is empty. The
- * component paints the empty block inside a spanning `<td>` so the
- * `<table>` semantics stay intact.
- */
 const TableEmpty = forwardRef<HTMLDivElement, TableEmptyProps>(function TableEmpty(
   { icon, title, description, action, className, children, ...rest },
   ref,
@@ -487,15 +602,53 @@ const TableEmpty = forwardRef<HTMLDivElement, TableEmptyProps>(function TableEmp
   return (
     <div
       ref={ref}
-      className={cx(CLASS.empty, className)}
       role="status"
+      data-slot="table-empty"
+      className={cn(
+        "flex flex-col items-center justify-center text-center gap-8",
+        "py-32 px-16 min-h-[240px]",
+        "text-neutral-500 bg-white",
+        className,
+      )}
       {...rest}
     >
-      {icon && <span className={CLASS.emptyIcon}>{icon}</span>}
-      {title && <div className={CLASS.emptyTitle}>{title}</div>}
-      {description && <div className={CLASS.emptyDescription}>{description}</div>}
+      {icon && (
+        <span
+          data-slot="table-empty-icon"
+          className={cn(
+            "inline-flex items-center justify-center",
+            "size-[48px] rounded-full bg-neutral-100 text-neutral-500 mb-4",
+            "[&_svg]:block [&_svg]:size-[24px]",
+          )}
+        >
+          {icon}
+        </span>
+      )}
+      {title && (
+        <div
+          data-slot="table-empty-title"
+          className="m-0 text-neutral-900 text-18 font-semibold leading-[1.4]"
+        >
+          {title}
+        </div>
+      )}
+      {description && (
+        <div
+          data-slot="table-empty-description"
+          className="m-0 text-neutral-500 text-14 leading-normal max-w-[48ch]"
+        >
+          {description}
+        </div>
+      )}
       {children}
-      {action && <div className={CLASS.emptyAction}>{action}</div>}
+      {action && (
+        <div
+          data-slot="table-empty-action"
+          className="mt-8 flex gap-8 justify-center flex-wrap"
+        >
+          {action}
+        </div>
+      )}
     </div>
   );
 });
@@ -508,13 +661,27 @@ const TableLoading = forwardRef<HTMLDivElement, TableLoadingProps>(function Tabl
   return (
     <div
       ref={ref}
-      className={cx(CLASS.loading, className)}
       role="status"
       aria-live="polite"
+      data-slot="table-loading"
+      className={cn(
+        "flex flex-col items-center justify-center gap-8",
+        "py-32 px-16 min-h-[240px]",
+        "text-neutral-500 bg-white",
+        className,
+      )}
       {...rest}
     >
-      <span className={CLASS.spinner} aria-hidden="true" />
-      {label && <span className={CLASS.loadingLabel}>{label}</span>}
+      <span
+        aria-hidden="true"
+        className={cn(
+          "block rounded-full size-[28px] border-[2.5px] border-neutral-200 border-t-brand-500",
+          "animate-spin motion-reduce:[animation-duration:2500ms]",
+        )}
+      />
+      {label && (
+        <span className="text-14 text-neutral-500 leading-[1.4]">{label}</span>
+      )}
       {children}
     </div>
   );
@@ -528,7 +695,18 @@ const TableFooter = forwardRef<HTMLDivElement, TableFooterProps>(function TableF
   ref,
 ) {
   return (
-    <div ref={ref} className={cx(CLASS.footer, className)} {...rest}>
+    <div
+      ref={ref}
+      data-slot="table-footer"
+      className={cn(
+        "flex items-center gap-12 flex-wrap min-w-0",
+        "py-12 px-16 min-h-[52px]",
+        "bg-white border-t border-neutral-100",
+        "text-neutral-500 text-14 leading-[1.4]",
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </div>
   );
@@ -540,7 +718,15 @@ const TablePagination = forwardRef<HTMLDivElement, TablePaginationProps>(functio
   ref,
 ) {
   return (
-    <div ref={ref} className={cx(CLASS.pagination, className)} {...rest}>
+    <div
+      ref={ref}
+      data-slot="table-pagination"
+      className={cn(
+        "ml-auto flex items-center gap-8",
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </div>
   );
@@ -580,4 +766,4 @@ Table.Loading    = TableLoading;
 Table.Footer     = TableFooter;
 Table.Pagination = TablePagination;
 
-export { Table, useTableContext };
+export { Table, useTableContext, tableRootVariants };

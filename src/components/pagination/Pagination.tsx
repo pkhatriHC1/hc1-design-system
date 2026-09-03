@@ -6,7 +6,8 @@ import {
   useMemo,
 } from "react";
 import type { CSSProperties, ReactNode } from "react";
-
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../../utils/cn";
 import type {
   PaginationInfoProps,
   PaginationNextProps,
@@ -19,37 +20,25 @@ import type {
   PaginationWindowItem,
 } from "./Pagination.types";
 
-// Design-system CSS variables — imported here so consumers get tokens
-// automatically wherever they mount the Pagination.
-import "../../tokens/css/variables.css";
-import "./Pagination.css";
-
-/* ══════ CLASS NAMES ═══════════════════════════════════════════════ */
-
-const CLASS = {
-  root:      "hc-pagination",
-  size:      (s: PaginationSize) => `hc-pagination--size-${s}`,
-  disabled:  "hc-pagination--disabled",
-  loading:   "hc-pagination--loading",
-
-  info:      "hc-pagination__info",
-  list:      "hc-pagination__list",
-  item:      "hc-pagination__item",
-  page:      "hc-pagination__page",
-  pageCurrent: "hc-pagination__page--current",
-  ellipsis:  "hc-pagination__ellipsis",
-  prev:      "hc-pagination__prev",
-  next:      "hc-pagination__next",
-  navLabel:  "hc-pagination__nav-label",
-  pageSize:  "hc-pagination__page-size",
-  pageSizeLabel: "hc-pagination__page-size-label",
-  pageSizeSelect: "hc-pagination__page-size-select",
-  srOnly:    "hc-pagination__sr-only",
-};
-
-function cx(...parts: (string | false | null | undefined)[]) {
-  return parts.filter(Boolean).join(" ");
-}
+/**
+ * HC1 Pagination — the canonical navigation primitive for paged data.
+ *
+ * Migrated from Pagination.css to shadcn-style (cva + Tailwind utilities).
+ * No Radix wrap — Pagination is a presentational primitive on native
+ * <nav> + <button> + <select>. The prop API, DOM structure, page-window
+ * algorithm, and a11y wiring are preserved verbatim; every color, height,
+ * padding, and state maps 1:1 to the same --hc-* alias the previous
+ * Pagination.css consumed.
+ *
+ * Size propagates from root → subcomponents via CSS custom properties
+ * set on the root by the `size` cva variant:
+ *   --hc-pagination-btn-size    — square page-button height + min-width
+ *   --hc-pagination-font-size   — button + info + select font-size
+ *   --hc-pagination-nav-pad     — horizontal padding on Prev/Next
+ *   --hc-pagination-icon-size   — chevron size inside Prev/Next
+ *
+ * Change size on the root, everything scales.
+ */
 
 /* ══════ CONTEXT ═══════════════════════════════════════════════════ */
 
@@ -140,8 +129,6 @@ export function buildPageWindow(
 
   for (const p of endPages) items.push({ type: "page", page: p });
 
-  // De-dupe (adjacent) — the ends of the sibling window can overlap the
-  // boundary bookends when pageCount is small.
   return dedupeAdjacent(items);
 }
 
@@ -170,17 +157,61 @@ function dedupeAdjacent(items: PaginationWindowItem[]): PaginationWindowItem[] {
   return out;
 }
 
+/* ══════ CVA — ROOT ════════════════════════════════════════════════ */
+
+const paginationRootVariants = cva(
+  cn(
+    "flex items-center justify-between flex-wrap min-w-0 box-border",
+    "font-sans text-neutral-900",
+    "gap-[var(--hc-pagination-outer-gap)]",
+    "text-[length:var(--hc-pagination-font-size)]",
+    /* Outer gap default (16 — between Info / List / PageSize). */
+    "[--hc-pagination-outer-gap:var(--hc-space-16)]",
+  ),
+  {
+    variants: {
+      size: {
+        sm: cn(
+          "[--hc-pagination-btn-size:28px]",
+          "[--hc-pagination-font-size:var(--hc-font-size-12)]",
+          "[--hc-pagination-nav-pad:var(--hc-space-8)]",
+          "[--hc-pagination-icon-size:14px]",
+          "[--hc-pagination-gap:var(--hc-space-4)]",
+        ),
+        md: cn(
+          "[--hc-pagination-btn-size:36px]",
+          "[--hc-pagination-font-size:var(--hc-font-size-14)]",
+          "[--hc-pagination-nav-pad:var(--hc-space-12)]",
+          "[--hc-pagination-icon-size:16px]",
+          "[--hc-pagination-gap:var(--hc-space-4)]",
+        ),
+        lg: cn(
+          "[--hc-pagination-btn-size:44px]",
+          "[--hc-pagination-font-size:var(--hc-font-size-16)]",
+          "[--hc-pagination-nav-pad:var(--hc-space-16)]",
+          "[--hc-pagination-icon-size:18px]",
+          "[--hc-pagination-gap:var(--hc-space-4)]",
+        ),
+      },
+      loading: {
+        true:  "opacity-[0.72]",
+        false: "",
+      },
+      disabled: {
+        true:  "opacity-60",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+      loading: false,
+      disabled: false,
+    },
+  },
+);
+
 /* ══════ ROOT ══════════════════════════════════════════════════════ */
 
-/**
- * HC1 Pagination — the canonical navigation primitive for paged data.
- *
- * Compose with `Pagination.Info`, `Pagination.PageList`,
- * `Pagination.Previous`, `Pagination.Next`, and `Pagination.PageSize`
- * (any subset, in any order). The root is a `<nav>` landmark; the
- * subcomponents read the current page + page count from context and
- * fire `onPageChange` when the user activates a control.
- */
 const PaginationRoot = forwardRef<HTMLElement, PaginationProps>(function PaginationRoot(
   {
     page,
@@ -232,14 +263,16 @@ const PaginationRoot = forwardRef<HTMLElement, PaginationProps>(function Paginat
         aria-label={ariaLabel}
         aria-busy={loading || undefined}
         aria-disabled={disabled || undefined}
-        className={cx(
-          CLASS.root,
-          CLASS.size(size),
-          disabled && CLASS.disabled,
-          loading && CLASS.loading,
+        data-slot="pagination-root"
+        style={style as CSSProperties}
+        className={cn(
+          paginationRootVariants({
+            size,
+            loading,
+            disabled,
+          } as VariantProps<typeof paginationRootVariants>),
           className,
         )}
-        style={style as CSSProperties}
       >
         {children}
       </nav>
@@ -283,15 +316,16 @@ const PaginationInfo = forwardRef<HTMLDivElement, PaginationInfoProps>(function 
       return (
         <>
           Showing{" "}
-          <strong>{fmt(firstItem!)}</strong>
-          –<strong>{fmt(lastItem!)}</strong> of{" "}
-          <strong>{fmt(ctx.totalItems)}</strong>
+          <strong className="text-neutral-900 font-semibold">{fmt(firstItem!)}</strong>
+          –<strong className="text-neutral-900 font-semibold">{fmt(lastItem!)}</strong> of{" "}
+          <strong className="text-neutral-900 font-semibold">{fmt(ctx.totalItems)}</strong>
         </>
       );
     }
     return (
       <>
-        Page <strong>{fmt(ctx.page)}</strong> of <strong>{fmt(ctx.pageCount)}</strong>
+        Page <strong className="text-neutral-900 font-semibold">{fmt(ctx.page)}</strong> of{" "}
+        <strong className="text-neutral-900 font-semibold">{fmt(ctx.pageCount)}</strong>
       </>
     );
   }, [children, render, ctx.page, ctx.pageCount, ctx.pageSize, ctx.totalItems]);
@@ -299,8 +333,14 @@ const PaginationInfo = forwardRef<HTMLDivElement, PaginationInfoProps>(function 
   return (
     <div
       ref={ref}
-      className={cx(CLASS.info, className)}
       aria-live="polite"
+      data-slot="pagination-info"
+      className={cn(
+        "text-neutral-700 min-w-0",
+        "text-[length:var(--hc-pagination-font-size)]",
+        "[font-variant-numeric:tabular-nums]",
+        className,
+      )}
       {...rest}
     >
       {content}
@@ -326,23 +366,28 @@ const PaginationPageList = forwardRef<HTMLUListElement, PaginationPageListProps>
     [ctx.page, ctx.pageCount, ctx.siblingCount, ctx.boundaryCount],
   );
 
-  // If the consumer authors their own children, use those verbatim.
   const auto = children == null;
 
   return (
     <ul
       ref={ref}
-      className={cx(CLASS.list, className)}
+      data-slot="pagination-list"
+      className={cn(
+        "list-none m-0 p-0",
+        "flex items-center flex-wrap min-w-0",
+        "gap-[var(--hc-pagination-gap)]",
+        className,
+      )}
       {...rest}
     >
       {auto
         ? items.map((item, i) =>
             item.type === "ellipsis" ? (
-              <li key={`e-${item.key}-${i}`} className={CLASS.item}>
+              <li key={`e-${item.key}-${i}`} data-slot="pagination-item" className="flex items-center">
                 <Ellipsis />
               </li>
             ) : (
-              <li key={`p-${item.page}`} className={CLASS.item}>
+              <li key={`p-${item.page}`} data-slot="pagination-item" className="flex items-center">
                 <PaginationPage page={item.page} />
               </li>
             ),
@@ -355,11 +400,51 @@ PaginationPageList.displayName = "Pagination.PageList";
 
 function Ellipsis() {
   return (
-    <span className={CLASS.ellipsis} aria-hidden="true">
+    <span
+      data-slot="pagination-ellipsis"
+      aria-hidden="true"
+      className={cn(
+        "inline-flex items-center justify-center select-none",
+        "min-w-[var(--hc-pagination-btn-size)] h-[var(--hc-pagination-btn-size)]",
+        "text-neutral-500",
+        "text-[length:var(--hc-pagination-font-size)]",
+      )}
+    >
       &hellip;
     </span>
   );
 }
+
+/* ══════ CVA — PAGE BUTTON ═════════════════════════════════════════ */
+
+const paginationButtonVariants = cva(
+  cn(
+    "appearance-none m-0 p-0 cursor-pointer select-none",
+    "bg-white text-neutral-900 border border-neutral-200 rounded-control",
+    "min-w-[var(--hc-pagination-btn-size)] h-[var(--hc-pagination-btn-size)]",
+    "px-8",
+    "inline-flex items-center justify-center gap-4",
+    "font-[inherit] font-medium leading-none",
+    "text-[length:var(--hc-pagination-font-size)]",
+    "[font-variant-numeric:tabular-nums]",
+    "transition-[background-color,border-color,color] duration-150 ease-standard motion-reduce:duration-0",
+    /* Hover / active only when not disabled and not current. */
+    "not-disabled:not-data-[current=true]:hover:bg-neutral-100",
+    "not-disabled:not-data-[current=true]:hover:border-neutral-300",
+    "not-disabled:not-data-[current=true]:active:bg-neutral-200",
+    /* Focus ring — 2px brand outline, 2px offset. */
+    "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    /* Disabled */
+    "disabled:cursor-not-allowed disabled:text-neutral-400 disabled:border-neutral-100 disabled:bg-white",
+    /* Current page — brand fill + inverse ink. */
+    "data-[current=true]:bg-brand-500 data-[current=true]:border-brand-500",
+    "data-[current=true]:text-white data-[current=true]:font-semibold",
+    "data-[current=true]:cursor-default",
+    /* Current + disabled: keep brand tint (parent .loading opacity dims the whole thing). */
+    "data-[current=true]:disabled:text-white",
+    "data-[current=true]:disabled:bg-brand-500 data-[current=true]:disabled:border-brand-500",
+  ),
+);
 
 /* ══════ PAGE ══════════════════════════════════════════════════════ */
 
@@ -375,11 +460,8 @@ const PaginationPage = forwardRef<HTMLButtonElement, PaginationPageProps>(functi
     <button
       ref={ref}
       type="button"
-      className={cx(
-        CLASS.page,
-        isCurrent && CLASS.pageCurrent,
-        className,
-      )}
+      data-slot="pagination-page"
+      data-current={isCurrent || undefined}
       onClick={() => {
         if (isDisabled || isCurrent) return;
         ctx.onPageChange?.(page);
@@ -387,6 +469,7 @@ const PaginationPage = forwardRef<HTMLButtonElement, PaginationPageProps>(functi
       disabled={isDisabled}
       aria-current={isCurrent ? "page" : undefined}
       aria-label={ariaLabel ?? (isCurrent ? `Page ${page}, current page` : `Go to page ${page}`)}
+      className={cn(paginationButtonVariants(), className)}
       {...rest}
     >
       {children ?? fmt(page)}
@@ -408,19 +491,27 @@ const PaginationPrevious = forwardRef<HTMLButtonElement, PaginationPreviousProps
     <button
       ref={ref}
       type="button"
-      className={cx(CLASS.page, CLASS.prev, className)}
+      data-slot="pagination-prev"
       onClick={() => {
         if (isDisabled) return;
         ctx.onPageChange?.(ctx.page - 1);
       }}
       disabled={isDisabled}
       aria-label={label}
+      className={cn(
+        paginationButtonVariants(),
+        "px-[var(--hc-pagination-nav-pad)]",
+        /* Chevron sizing lives on the button because the SVG element inside
+           doesn't get its own size utility class. */
+        "[&_svg]:size-[var(--hc-pagination-icon-size)] [&_svg]:block [&_svg]:text-current",
+        className,
+      )}
       {...rest}
     >
       <ChevronLeftIcon />
       {label && (labelHidden
-        ? <span className={CLASS.srOnly}>{label}</span>
-        : <span className={CLASS.navLabel}>{label}</span>
+        ? <span className="sr-only">{label}</span>
+        : <span data-slot="pagination-nav-label" className="font-medium">{label}</span>
       )}
     </button>
   );
@@ -440,18 +531,24 @@ const PaginationNext = forwardRef<HTMLButtonElement, PaginationNextProps>(functi
     <button
       ref={ref}
       type="button"
-      className={cx(CLASS.page, CLASS.next, className)}
+      data-slot="pagination-next"
       onClick={() => {
         if (isDisabled) return;
         ctx.onPageChange?.(ctx.page + 1);
       }}
       disabled={isDisabled}
       aria-label={label}
+      className={cn(
+        paginationButtonVariants(),
+        "px-[var(--hc-pagination-nav-pad)]",
+        "[&_svg]:size-[var(--hc-pagination-icon-size)] [&_svg]:block [&_svg]:text-current",
+        className,
+      )}
       {...rest}
     >
       {label && (labelHidden
-        ? <span className={CLASS.srOnly}>{label}</span>
-        : <span className={CLASS.navLabel}>{label}</span>
+        ? <span className="sr-only">{label}</span>
+        : <span data-slot="pagination-nav-label" className="font-medium">{label}</span>
       )}
       <ChevronRightIcon />
     </button>
@@ -474,16 +571,29 @@ const PaginationPageSize = forwardRef<HTMLDivElement, PaginationPageSizeProps>(f
   const isDisabled = ctx.disabled || ctx.loading;
 
   return (
-    <div ref={ref} className={cx(CLASS.pageSize, className)} {...rest}>
+    <div
+      ref={ref}
+      data-slot="pagination-page-size"
+      className={cn(
+        "inline-flex items-center gap-8 min-w-0",
+        "text-neutral-700",
+        "text-[length:var(--hc-pagination-font-size)]",
+        className,
+      )}
+      {...rest}
+    >
       <label
         htmlFor={selectId}
-        className={cx(CLASS.pageSizeLabel, labelHidden && CLASS.srOnly)}
+        data-slot="pagination-page-size-label"
+        className={cn(
+          "text-inherit font-medium",
+          labelHidden && "sr-only",
+        )}
       >
         {label}
       </label>
       <select
         id={selectId}
-        className={CLASS.pageSizeSelect}
         value={ctx.pageSize}
         onChange={(event) => {
           const next = Number(event.target.value);
@@ -491,6 +601,24 @@ const PaginationPageSize = forwardRef<HTMLDivElement, PaginationPageSizeProps>(f
           ctx.onPageSizeChange?.(next);
         }}
         disabled={isDisabled}
+        data-slot="pagination-page-size-select"
+        className={cn(
+          "appearance-none [-webkit-appearance:none]",
+          "bg-white text-neutral-900 border border-neutral-200 rounded-control cursor-pointer",
+          "h-[var(--hc-pagination-btn-size)]",
+          "pl-12 pr-24",
+          "font-[inherit] font-medium leading-none",
+          "text-[length:var(--hc-pagination-font-size)]",
+          "[font-variant-numeric:tabular-nums]",
+          /* Chevron via inline SVG so no external icon dependency. Same
+             hex (#647880) as the original Pagination.css. */
+          "bg-no-repeat bg-[right_8px_center] bg-[length:14px_14px]",
+          "bg-[url('data:image/svg+xml;utf8,<svg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%2216%22%20height=%2216%22%20viewBox=%220%200%2016%2016%22%20fill=%22none%22><path%20d=%22M4%206%20L8%2010%20L12%206%22%20stroke=%22%23647880%22%20stroke-width=%221.5%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22/></svg>')]",
+          "transition-[background-color,border-color] duration-150 ease-standard motion-reduce:duration-0",
+          "not-disabled:hover:border-neutral-300",
+          "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+          "disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400",
+        )}
       >
         {ctx.pageSizeOptions.map((opt) => (
           <option key={opt} value={opt}>{opt}</option>
@@ -538,4 +666,9 @@ Pagination.Previous = PaginationPrevious;
 Pagination.Next     = PaginationNext;
 Pagination.PageSize = PaginationPageSize;
 
-export { Pagination, usePaginationContext };
+export {
+  Pagination,
+  usePaginationContext,
+  paginationRootVariants,
+  paginationButtonVariants,
+};

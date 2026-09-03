@@ -87,16 +87,16 @@ function AnatomyBlock() {
         >
           <Pagination.Info />
           <Pagination.PageList>
-            <li className="hc-pagination__item"><Pagination.Previous /></li>
+            <li className="flex items-center"><Pagination.Previous /></li>
             {/* PageList auto-generates when it has no children — this block
                 shows all parts side by side. */}
-            <li className="hc-pagination__item"><Pagination.Page page={1} /></li>
-            <li className="hc-pagination__item"><Pagination.Page page={2} /></li>
-            <li className="hc-pagination__item"><Pagination.Page page={3} /></li>
-            <li className="hc-pagination__item"><Pagination.Page page={4} /></li>
-            <li className="hc-pagination__item"><span className="hc-pagination__ellipsis" aria-hidden="true">…</span></li>
-            <li className="hc-pagination__item"><Pagination.Page page={12} /></li>
-            <li className="hc-pagination__item"><Pagination.Next /></li>
+            <li className="flex items-center"><Pagination.Page page={1} /></li>
+            <li className="flex items-center"><Pagination.Page page={2} /></li>
+            <li className="flex items-center"><Pagination.Page page={3} /></li>
+            <li className="flex items-center"><Pagination.Page page={4} /></li>
+            <li className="flex items-center"><span className="inline-flex items-center justify-center select-none min-w-[36px] h-[36px] text-neutral-500" aria-hidden="true">…</span></li>
+            <li className="flex items-center"><Pagination.Page page={12} /></li>
+            <li className="flex items-center"><Pagination.Next /></li>
           </Pagination.PageList>
           <Pagination.PageSize />
         </Pagination>
@@ -253,9 +253,9 @@ function StaticPagination({ page, pageCount, size }: { page: number; pageCount: 
   return (
     <Pagination page={p} pageCount={pageCount} onPageChange={setP} size={size}>
       <Pagination.PageList>
-        <li className="hc-pagination__item"><Pagination.Previous /></li>
+        <li className="flex items-center"><Pagination.Previous /></li>
         <PageWindowChildren page={p} pageCount={pageCount} />
-        <li className="hc-pagination__item"><Pagination.Next /></li>
+        <li className="flex items-center"><Pagination.Next /></li>
       </Pagination.PageList>
     </Pagination>
   );
@@ -271,11 +271,11 @@ function PageWindowChildren({ page, pageCount, siblingCount = 1, boundaryCount =
     <>
       {items.map((item, i) =>
         item.type === "ellipsis" ? (
-          <li key={`e-${item.key}-${i}`} className="hc-pagination__item">
-            <span className="hc-pagination__ellipsis" aria-hidden="true">…</span>
+          <li key={`e-${item.key}-${i}`} className="flex items-center">
+            <span className="inline-flex items-center justify-center select-none min-w-[36px] h-[36px] text-neutral-500" aria-hidden="true">…</span>
           </li>
         ) : (
-          <li key={`p-${item.page}`} className="hc-pagination__item">
+          <li key={`p-${item.page}`} className="flex items-center">
             <Pagination.Page page={item.page} />
           </li>
         ),
@@ -422,9 +422,9 @@ function CompactPagination() {
   return (
     <Pagination page={page} pageCount={20} onPageChange={setPage} size="sm">
       <Pagination.PageList>
-        <li className="hc-pagination__item"><Pagination.Previous labelHidden /></li>
+        <li className="flex items-center"><Pagination.Previous labelHidden /></li>
         <PageWindowChildren page={page} pageCount={20} />
-        <li className="hc-pagination__item"><Pagination.Next labelHidden /></li>
+        <li className="flex items-center"><Pagination.Next labelHidden /></li>
       </Pagination.PageList>
     </Pagination>
   );
@@ -579,9 +579,9 @@ function PlaygroundBlock() {
           >
             {showInfo && <Pagination.Info />}
             <Pagination.PageList>
-              <li className="hc-pagination__item"><Pagination.Previous /></li>
+              <li className="flex items-center"><Pagination.Previous /></li>
               <PageWindowChildren page={safePage} pageCount={pageCount} siblingCount={siblingCount} boundaryCount={boundaryCount} />
-              <li className="hc-pagination__item"><Pagination.Next /></li>
+              <li className="flex items-center"><Pagination.Next /></li>
             </Pagination.PageList>
             {showPageSize && <Pagination.PageSize />}
           </Pagination>
@@ -724,9 +724,9 @@ function PatientListExample() {
         >
           <Pagination.Info />
           <Pagination.PageList>
-            <li className="hc-pagination__item"><Pagination.Previous /></li>
+            <li className="flex items-center"><Pagination.Previous /></li>
             <PageWindowChildren page={page} pageCount={Math.ceil(totalItems / size)} />
-            <li className="hc-pagination__item"><Pagination.Next /></li>
+            <li className="flex items-center"><Pagination.Next /></li>
           </Pagination.PageList>
           <Pagination.PageSize />
         </Pagination>
@@ -741,9 +741,9 @@ function OrdersExample() {
     <Pagination page={page} pageCount={8} onPageChange={setPage} pageSize={20} totalItems={148} aria-label="Orders pagination">
       <Pagination.Info />
       <Pagination.PageList>
-        <li className="hc-pagination__item"><Pagination.Previous /></li>
+        <li className="flex items-center"><Pagination.Previous /></li>
         <PageWindowChildren page={page} pageCount={8} />
-        <li className="hc-pagination__item"><Pagination.Next /></li>
+        <li className="flex items-center"><Pagination.Next /></li>
       </Pagination.PageList>
     </Pagination>
   );
@@ -767,9 +767,9 @@ function AuditLogExample() {
     >
       <Pagination.Info />
       <Pagination.PageList>
-        <li className="hc-pagination__item"><Pagination.Previous /></li>
+        <li className="flex items-center"><Pagination.Previous /></li>
         <PageWindowChildren page={page} pageCount={Math.ceil(totalItems / size)} />
-        <li className="hc-pagination__item"><Pagination.Next /></li>
+        <li className="flex items-center"><Pagination.Next /></li>
       </Pagination.PageList>
       <Pagination.PageSize />
     </Pagination>
@@ -791,9 +791,9 @@ function ReportsExample() {
   return (
     <Pagination page={page} pageCount={3} onPageChange={setPage} aria-label="Reports pagination">
       <Pagination.PageList>
-        <li className="hc-pagination__item"><Pagination.Previous /></li>
+        <li className="flex items-center"><Pagination.Previous /></li>
         <PageWindowChildren page={page} pageCount={3} />
-        <li className="hc-pagination__item"><Pagination.Next /></li>
+        <li className="flex items-center"><Pagination.Next /></li>
       </Pagination.PageList>
     </Pagination>
   );
@@ -818,9 +818,9 @@ function SearchResultsExample() {
       >
         <Pagination.Info />
         <Pagination.PageList>
-          <li className="hc-pagination__item"><Pagination.Previous /></li>
+          <li className="flex items-center"><Pagination.Previous /></li>
           <PageWindowChildren page={page} pageCount={Math.ceil(totalItems / 20)} />
-          <li className="hc-pagination__item"><Pagination.Next /></li>
+          <li className="flex items-center"><Pagination.Next /></li>
         </Pagination.PageList>
       </Pagination>
     </div>
@@ -990,6 +990,8 @@ function NotesBlock() {
           { tone: "note", text: "Pagination.Info renders inside an aria-live='polite' region so screen readers announce range changes without stealing focus. Consumers who want silent updates can wrap Info in a container with aria-live='off'." },
           { tone: "note", text: "Every page button uses `font-variant-numeric: tabular-nums` so column alignment stays clean when the current page toggles between 9 → 10 → 11. Same rule for Info + PageSize select." },
           { tone: "note", text: "Sizes map 1:1 to the Button ladder (28 / 36 / 44). An inline `<Button size='md'>` next to a `<Pagination size='md'>` sits flush without any custom margin — the whole footer row lines up on the same baseline." },
+          { tone: "note", text: "Styling uses cva + Tailwind v4 utilities that resolve to HC1 tokens. Size ladder sets CSS custom properties (--hc-pagination-btn-size, --hc-pagination-font-size, --hc-pagination-nav-pad, --hc-pagination-icon-size) on the root; every subcomponent reads them so a size change on the root scales everything." },
+          { tone: "note", text: "Deliberately no Radix wrap — Pagination is a presentational primitive on native <nav> + <button> + <select>. There's no positioning, no focus trap, no keyboard model beyond browser tab order to abstract." },
         ]}
       />
 

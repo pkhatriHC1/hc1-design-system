@@ -1315,11 +1315,13 @@ function NotesBlock() {
       <RuleList
         rules={[
           { tone: "note", text: "The outer wrapper is a <div role='group'> so the table + toolbar + footer can share a single aria-label describing the whole surface. The inner <table> keeps proper table semantics regardless of what the wrapper renders." },
-          { tone: "note", text: "Row heights and cell paddings are controlled by CSS custom properties set on the root (--hc-table-row-h, --hc-table-cell-pad-x/y). Change density on the root — every row and cell scales." },
-          { tone: "note", text: "Sticky-header behavior is opt-in via stickyHeader + maxHeight on Table.Content. The header is sticky via position: sticky on <th>; the shadow appears once the body scrolls under the header." },
+          { tone: "note", text: "Row heights and cell paddings are controlled by CSS custom properties set on the root by the density cva variant (--hc-table-row-h, --hc-table-cell-pad-x/y, --hc-table-cell-font-size, --hc-table-cell-icon-size). Change density on the root — every row and cell scales." },
+          { tone: "note", text: "Sticky-header behavior is opt-in via stickyHeader + maxHeight on Table.Content. Sticky is applied via a Tailwind descendant selector on the <table> element that targets <th> inside <thead>; the shadow appears once the body scrolls under the header." },
           { tone: "note", text: "Empty and Loading blocks are designed to sit inside a spanning <td> (Table.Row → Table.Cell colSpan) so the outer <table> semantics stay intact. Never render them outside the body." },
           { tone: "note", text: "Sortable columns are controlled — the consumer holds the sort state and passes sort + onSortChange. The Table.Head cycles asc → desc → null on activation and emits the correct aria-sort." },
           { tone: "note", text: "The row selection model is intentionally minimal — a per-row `selected` boolean + the consumer's own state. There is no built-in selection provider because selection belongs to the surface (bulk actions, keyboard model, indeterminate parent checkbox) rather than the primitive." },
+          { tone: "note", text: "Styling uses cva + Tailwind v4 utilities that resolve to HC1 tokens. Row / cell states (hover, selected, disabled) propagate via data-slot descendant selectors so the parent Row can style its child Cells without prop-drilling." },
+          { tone: "note", text: "Deliberately no Radix wrap — Table is a presentational primitive on native <table>/<thead>/<tbody>/<tr>/<td>. There's no state, no positioning, no focus trap to abstract; everything is HTML + CSS." },
         ]}
       />
 
