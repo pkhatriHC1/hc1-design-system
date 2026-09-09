@@ -1,5 +1,4 @@
 import { forwardRef } from "react";
-import { createPortal } from "react-dom";
 import type { CSSProperties } from "react";
 import * as RadixPopover from "@radix-ui/react-popover";
 import { cn } from "../../utils/cn";
@@ -150,21 +149,23 @@ const PopoverContent = forwardRef<HTMLDivElement, PopoverContentProps>(function 
 
   return (
     <>
-      {/* Modal scrim — portaled to body separately so RadixPopover.Portal
-          receives exactly one child (RadixPopover.Content). Radix's Portal
-          uses asChild internally; passing multiple children breaks Slot. */}
-      {modal && createPortal(
-        <div
-          aria-hidden="true"
-          data-slot="popover-scrim"
-          className={cn(
-            "fixed inset-0 z-modal-scrim",
-            "bg-[color:var(--hc-popover-scrim)]",
-            "opacity-0 data-[state=open]:opacity-100",
-            "transition-opacity duration-150 ease-standard motion-reduce:duration-0",
-          )}
-        />,
-        document.body,
+      {/* Modal scrim — wrapped in its OWN RadixPopover.Portal so Radix's
+          Presence mounts/unmounts it in lockstep with the popover state.
+          Two separate Portals (each with one child) avoids the react-slot
+          error that fires when RadixPopover.Portal receives an array. */}
+      {modal && (
+        <RadixPopover.Portal>
+          <div
+            aria-hidden="true"
+            data-slot="popover-scrim"
+            className={cn(
+              "fixed inset-0 z-modal-scrim",
+              "bg-[color:var(--hc-popover-scrim)]",
+              "opacity-0 data-[state=open]:opacity-100",
+              "transition-opacity duration-150 ease-standard motion-reduce:duration-0",
+            )}
+          />
+        </RadixPopover.Portal>
       )}
       <RadixPopover.Portal>
       <RadixPopover.Content
