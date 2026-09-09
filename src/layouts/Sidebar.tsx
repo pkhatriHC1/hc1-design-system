@@ -44,7 +44,7 @@ export function Sidebar({
       </div>
 
       <nav
-        className="flex-1 overflow-y-auto"
+        className="min-h-0 flex-1 overflow-y-auto"
         style={{ padding: `${spacing.inline.lg} ${spacing.inline.sm}` }}
       >
         {CATEGORIES.map(category => {
