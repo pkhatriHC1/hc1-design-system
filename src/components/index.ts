@@ -28,3 +28,6 @@ export * from "./tooltip";
 export * from "./popover";
 export * from "./breadcrumb";
 export * from "./gauge";
+export * from "./progress";
+export * from "./separator";
+export * from "./scroll-area";
