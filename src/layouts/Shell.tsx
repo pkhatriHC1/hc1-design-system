@@ -14,7 +14,7 @@ export function Shell({ sections }: { sections: SectionEntry[] }) {
 
   return (
     <div
-      className="flex h-[100dvh] overflow-hidden"
+      className="flex min-h-[100dvh] items-start"
       style={{
         background: color.background.default,
         color: color.text.primary,
@@ -23,7 +23,7 @@ export function Shell({ sections }: { sections: SectionEntry[] }) {
     >
       <Sidebar sections={sections} activeId={active} />
 
-      <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+      <main className="min-w-0 flex-1 overflow-x-hidden">
         <div
           className="mx-auto"
           style={{

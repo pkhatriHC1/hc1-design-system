@@ -13,7 +13,7 @@ export function Sidebar({
 }) {
   return (
     <aside
-      className="flex h-full w-72 shrink-0 flex-col"
+      className="sticky top-0 flex h-[100dvh] w-72 shrink-0 flex-col"
       style={{
         background: color.background.surface,
         borderRight: `1px solid ${color.border.default}`,
