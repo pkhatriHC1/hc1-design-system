@@ -1,4 +1,5 @@
 import { forwardRef } from "react";
+import { createPortal } from "react-dom";
 import type { CSSProperties } from "react";
 import * as RadixPopover from "@radix-ui/react-popover";
 import { cn } from "../../utils/cn";
@@ -148,23 +149,24 @@ const PopoverContent = forwardRef<HTMLDivElement, PopoverContentProps>(function 
   };
 
   return (
-    <RadixPopover.Portal>
-      {/* Modal scrim — painted inside the Portal, behind Content in the
-          stacking order. Radix's own modal={true} already prevents
-          outside interaction + traps focus; the scrim is purely visual. */}
-      {modal && (
+    <>
+      {/* Modal scrim — portaled to body separately so RadixPopover.Portal
+          receives exactly one child (RadixPopover.Content). Radix's Portal
+          uses asChild internally; passing multiple children breaks Slot. */}
+      {modal && createPortal(
         <div
           aria-hidden="true"
           data-slot="popover-scrim"
           className={cn(
             "fixed inset-0 z-modal-scrim",
             "bg-[color:var(--hc-popover-scrim)]",
-            /* Fade in — matches original hc-popover-scrim-in keyframe. */
             "opacity-0 data-[state=open]:opacity-100",
             "transition-opacity duration-150 ease-standard motion-reduce:duration-0",
           )}
-        />
+        />,
+        document.body,
       )}
+      <RadixPopover.Portal>
       <RadixPopover.Content
         ref={forwardedRef}
         side={side}
@@ -208,7 +210,8 @@ const PopoverContent = forwardRef<HTMLDivElement, PopoverContentProps>(function 
           />
         )}
       </RadixPopover.Content>
-    </RadixPopover.Portal>
+      </RadixPopover.Portal>
+    </>
   );
 });
 PopoverContent.displayName = "Popover.Content";
