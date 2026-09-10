@@ -550,7 +550,7 @@ function ExamplesBlock() {
           <Alert.Description>Cardiology admissions are up 34% week-over-week compared to the 4-week rolling average. Consider reviewing the ED throughput dashboard.</Alert.Description>
           <Alert.Actions>
             <Button size="sm" variant="ghost">Dismiss</Button>
-            <Button size="sm" rightIcon={<ArrowRight />}>Open dashboard</Button>
+            <Button size="sm">Open dashboard <ArrowRight /></Button>
           </Alert.Actions>
         </Alert>
 

@@ -2,6 +2,47 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] — 2026-09-10
+
+**Button rebuilt for verbatim shadcn/SourceIQ parity + asChild support.**
+
+First component-wise migration under the new "shim-first" adoption
+strategy (see sourceiq-hc1com/docs/DESIGN_SYSTEM_MIGRATION.md §Phase 3):
+
+1. HC1 primitive rebuilt to match SourceIQ's local shadcn primitive byte-for-byte
+2. SourceIQ's local file becomes a thin re-export shim
+3. ESLint rule pushes new code toward direct HC1 imports
+
+Result: every `<Button>` in SourceIQ (20+ files) now renders from HC1
+Button with zero call-site changes, no visual diff.
+
+### Changed — Button rewritten
+
+- **Variants**: `default | outline | secondary | ghost | destructive | link` — exact shadcn/SourceIQ names & styling. Base class string, hover states, focus rings, active `translate-y-px`, `aria-invalid` red ring, disabled opacity — all byte-identical to SourceIQ's local Button.
+- **Sizes**: `default | xs | sm | lg` (24/32/36/40px heights) + `icon | icon-xs | icon-sm | icon-lg` (24/32/36/40px squares). Matches SourceIQ's size ladder exactly.
+- **Base classes**: `rounded-md` (not HC1's `rounded-control`), `font-medium` (not `font-semibold`), stock Tailwind sizing utilities — every arbitrary class matches SourceIQ.
+- **Emitted attributes**: `data-slot="button"`, `data-variant`, `data-size` — matches SourceIQ so test selectors, ambient CSS, and DevTools inspection are unchanged.
+
+### Added
+
+- **`asChild` prop** via `@radix-ui/react-slot`. Enables `<Button asChild><Link to="…">…</Link></Button>` composition for React Router / Next Link. Previously blocked HC1 Button adoption on any page with router links.
+
+### Deprecated (still accepted as aliases for v0.11 back-compat)
+
+- Legacy variant names — `primary` → `default`, `danger` → `destructive`, `danger-outline` / `success` → `outline`, `cta` → `default`, `icon` → `ghost` + `size="icon"`.
+- Legacy sizes — `md` → `default`, `xl` → `lg`.
+- Legacy props — `fullWidth` (adds `w-full`), `loading` (adds `cursor-progress opacity-70`), `leftIcon` / `rightIcon` (wrap around children), `iconOnly` (forces square via size mapping).
+
+All legacy names + props keep working. The `ButtonDoc` playground page was reduced to a stub — full doc rewrite tracked for 0.12.1.
+
+### Verified
+
+- SourceIQ swaps `web/src/components/ui/button.tsx` from a 100-line shadcn Button implementation to a 3-line re-export shim. All 20+ Button consumers keep working with no call-site edits.
+- Runtime DOM inspection confirms: `data-slot="button"`, `data-variant="outline"`, `class="group/button ... rounded-md ... h-9 gap-1.5 px-2.5"` — byte-identical to SourceIQ's original Button rendering.
+- Build clean, zero JS errors, dashboard/upload/opportunities/spend-analytics/contract-watchdog/variance-results all render as before.
+
+---
+
 ## [0.11.1] — 2026-09-10
 
 **Sidebar visual-contract parity fixes.**

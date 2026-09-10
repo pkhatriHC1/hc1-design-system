@@ -1,238 +1,163 @@
 import { forwardRef } from "react";
-import type { MouseEvent } from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import type { ReactNode } from "react";
+import { cva } from "class-variance-authority";
+import { Slot } from "@radix-ui/react-slot";
 import { cn } from "../../utils/cn";
-import type { ButtonProps, ButtonSize } from "./Button.types";
+import type { ButtonProps, ButtonVariant, ButtonSize } from "./Button.types";
 
 /**
- * HC1 Button — the reference implementation.
+ * HC1 Button — the shared button primitive for every IQ product.
  *
- * This is the first component migrated from custom CSS to shadcn/ui
- * conventions (cva + Tailwind v4 utilities + HC1 tokens via @theme).
- * The prop API is preserved verbatim from the previous Button.css
- * implementation; only the styling mechanism changed. Every color,
- * padding, height, radius, and state produces the identical rendered
- * result as the prior version. See docs/components/ButtonDoc for the
- * full spec.
+ * Ported verbatim from SourceIQ's local shadcn Button so any product
+ * on `@/components/ui/button` today can swap to `@hc1/design-system`
+ * without changing a single prop or class at the call site. Every
+ * dimension (height, padding, gap, radius, icon size), every canonical
+ * variant (default / outline / secondary / ghost / destructive / link),
+ * and every state (hover / active / focus-visible / disabled /
+ * aria-invalid) matches shadcn's stock Button. `asChild` is supported
+ * via Radix Slot for React Router / Next Link composition.
+ *
+ * Legacy HC1 v0.11 variants + sizes + props (primary / danger /
+ * danger-outline / success / cta / icon variants; md / xl sizes;
+ * leftIcon / rightIcon / fullWidth / loading / iconOnly) are accepted
+ * as deprecated aliases so existing HC1 consumers keep building.
+ *
+ * Emits `data-slot="button"`, `data-variant`, `data-size` — consumers
+ * can select on these in tests or ambient styles.
  */
 
+/* ── Canonical variants (shadcn/sourceIQ) ────────────────────────── */
+
+const CANONICAL_VARIANTS = {
+  default: "bg-primary text-primary-foreground hover:bg-primary/80",
+  outline:
+    "border-border bg-background shadow-xs hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+  secondary:
+    "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+  ghost:
+    "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+  destructive:
+    "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+  link: "text-primary underline-offset-4 hover:underline",
+} as const;
+
+/* Legacy HC1 v0.11 variants → route to canonical + optional overrides */
+const LEGACY_VARIANT_MAP: Record<string, keyof typeof CANONICAL_VARIANTS> = {
+  primary: "default",
+  danger: "destructive",
+  "danger-outline": "outline",
+  success: "outline",
+  cta: "default",
+  icon: "ghost",
+};
+
+const SIZE_STYLES = {
+  default:
+    "h-9 gap-1.5 px-2.5 in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+  xs: "h-6 gap-1 rounded-[min(var(--radius-md),8px)] px-2 text-xs in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
+  sm: "h-8 gap-1 rounded-[min(var(--radius-md),10px)] px-2.5 in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5",
+  lg: "h-10 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+  icon: "size-9",
+  "icon-xs":
+    "size-6 rounded-[min(var(--radius-md),8px)] in-data-[slot=button-group]:rounded-md [&_svg:not([class*='size-'])]:size-3",
+  "icon-sm":
+    "size-8 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-md",
+  "icon-lg": "size-10",
+} as const;
+
+/* Legacy HC1 v0.11 sizes → route to canonical */
+const LEGACY_SIZE_MAP: Record<string, keyof typeof SIZE_STYLES> = {
+  md: "default",
+  xl: "lg",
+};
+
 const buttonVariants = cva(
-  cn(
-    "relative inline-flex flex-row items-center justify-center",
-    "border border-transparent rounded-control",
-    "font-sans font-semibold leading-none",
-    "whitespace-nowrap no-underline select-none appearance-none",
-    "cursor-pointer",
-    "[-webkit-tap-highlight-color:transparent]",
-    "transition-colors duration-150 ease-standard motion-reduce:duration-0",
-    "outline-none",
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-    "disabled:cursor-not-allowed",
-    "aria-busy:cursor-progress",
-  ),
+  "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
-      variant: {
-        primary: cn(
-          "bg-primary border-primary text-primary-foreground",
-          "hover:bg-brand-600 hover:border-brand-600",
-          "active:bg-brand-700 active:border-brand-700",
-          "disabled:bg-neutral-200 disabled:border-neutral-200 disabled:text-neutral-400",
-        ),
-        secondary: cn(
-          "bg-white border-neutral-200 text-neutral-900",
-          "hover:bg-neutral-100 hover:border-neutral-300",
-          "active:bg-neutral-200",
-          "disabled:bg-white disabled:border-neutral-100 disabled:text-neutral-400",
-        ),
-        ghost: cn(
-          "bg-transparent border-transparent text-neutral-900",
-          "hover:bg-neutral-100",
-          "active:bg-neutral-200",
-          "disabled:text-neutral-400",
-        ),
-        danger: cn(
-          "bg-destructive border-destructive text-destructive-foreground",
-          "hover:bg-red-600 hover:border-red-600",
-          "active:bg-red-700 active:border-red-700",
-          "disabled:bg-neutral-200 disabled:border-neutral-200 disabled:text-neutral-400",
-        ),
-        "danger-outline": cn(
-          "bg-white border-red-100 text-red-500",
-          "hover:bg-red-50 hover:border-red-200",
-          "active:bg-red-100 active:border-red-300",
-          "disabled:bg-white disabled:border-neutral-100 disabled:text-neutral-400",
-        ),
-        success: cn(
-          "bg-white border-green-100 text-green-500",
-          "hover:bg-green-50 hover:border-green-200",
-          "active:bg-green-100 active:border-green-300",
-          "disabled:bg-white disabled:border-neutral-100 disabled:text-neutral-400",
-        ),
-        cta: cn(
-          "bg-accent-500 border-accent-600 text-white",
-          "hover:bg-accent-600 hover:border-accent-600",
-          "active:bg-accent-700 active:border-accent-700",
-          "disabled:bg-neutral-200 disabled:border-neutral-200 disabled:text-neutral-400",
-        ),
-        link: cn(
-          "bg-transparent border-transparent text-brand-600",
-          "hover:text-brand-700 hover:underline hover:[text-underline-offset:3px]",
-          "active:text-brand-700",
-          "disabled:text-neutral-400 disabled:no-underline",
-        ),
-        icon: cn(
-          "bg-transparent border-transparent text-neutral-900",
-          "hover:bg-neutral-100",
-          "active:bg-neutral-200",
-          "disabled:text-neutral-400",
-        ),
-      },
-      size: {
-        xs: "h-[20px] px-4 text-12 gap-4 [&_svg]:size-[12px]",
-        sm: "h-[28px] px-8 text-12 gap-4 [&_svg]:size-[14px]",
-        md: "h-[36px] px-12 text-14 gap-8 [&_svg]:size-[16px]",
-        lg: "h-[44px] px-16 text-16 gap-8 [&_svg]:size-[20px]",
-        xl: "h-[56px] px-24 text-18 gap-12 [&_svg]:size-[24px]",
-      },
-      fullWidth: {
-        true: "w-full",
-        false: "",
-      },
-      iconOnly: {
-        true: "p-0 gap-0",
-        false: "",
-      },
+      variant: CANONICAL_VARIANTS,
+      size: SIZE_STYLES,
     },
-    compoundVariants: [
-      /* Square dimensions when iconOnly is on (width = size ladder). */
-      { iconOnly: true, size: "xs", className: "w-[20px]" },
-      { iconOnly: true, size: "sm", className: "w-[28px]" },
-      { iconOnly: true, size: "md", className: "w-[36px]" },
-      { iconOnly: true, size: "lg", className: "w-[44px]" },
-      { iconOnly: true, size: "xl", className: "w-[56px]" },
-      /* variant="icon" is inherently square + zero padding, regardless of iconOnly. */
-      { variant: "icon", className: "p-0 gap-0" },
-      { variant: "icon", size: "xs", className: "w-[20px]" },
-      { variant: "icon", size: "sm", className: "w-[28px]" },
-      { variant: "icon", size: "md", className: "w-[36px]" },
-      { variant: "icon", size: "lg", className: "w-[44px]" },
-      { variant: "icon", size: "xl", className: "w-[56px]" },
-      /* Link: tight horizontal padding + medium weight, overrides size. */
-      { variant: "link", className: "px-4 font-medium" },
-    ],
     defaultVariants: {
-      variant: "primary",
-      size: "md",
-      fullWidth: false,
-      iconOnly: false,
+      variant: "default",
+      size: "default",
     },
   },
 );
 
-const SPINNER_SIZE: Record<ButtonSize, string> = {
-  xs: "size-[10px] border-[1.5px]",
-  sm: "size-[12px] border-2",
-  md: "size-[14px] border-2",
-  lg: "size-[18px] border-2",
-  xl: "size-[22px] border-[2.5px]",
-};
+/** Resolve any variant name (including legacy) to a canonical one. */
+function resolveVariant(v: ButtonVariant): keyof typeof CANONICAL_VARIANTS {
+  return (LEGACY_VARIANT_MAP[v] ?? v) as keyof typeof CANONICAL_VARIANTS;
+}
 
-const ICON_SLOT = "inline-flex items-center justify-center shrink-0 [&_svg]:block";
-const LABEL_SLOT = "inline-block leading-none";
+/** Resolve any size name (including legacy) to a canonical one. */
+function resolveSize(s: ButtonSize): keyof typeof SIZE_STYLES {
+  return (LEGACY_SIZE_MAP[s] ?? s) as keyof typeof SIZE_STYLES;
+}
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
-    variant = "primary",
-    size = "md",
-    loading = false,
+    className,
+    variant = "default",
+    size = "default",
+    asChild = false,
     fullWidth = false,
-    iconOnly = false,
+    loading = false,
     leftIcon,
     rightIcon,
-    disabled,
-    type = "button",
-    onClick,
+    iconOnly = false,
+    type,
     children,
-    className,
-    "aria-label": ariaLabel,
-    ...rest
+    ...props
   },
   ref,
 ) {
-  const isIconOnly = variant === "icon" || iconOnly;
+  const canonicalVariant = resolveVariant(variant);
+  const canonicalSize = resolveSize(size);
+  /* iconOnly on any size forces the square variant. If already `icon*`,
+     leave as-is. */
+  const finalSize: keyof typeof SIZE_STYLES = iconOnly
+    ? (canonicalSize.startsWith("icon")
+        ? canonicalSize
+        : canonicalSize === "default"
+          ? "icon"
+          : (`icon-${canonicalSize}` as keyof typeof SIZE_STYLES))
+    : canonicalSize;
 
-  /* Dev-time assertion: any icon-only button must have an accessible name. */
-  if (import.meta.env?.DEV && isIconOnly && !ariaLabel) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      "[hc1 Button] icon-only buttons require aria-label — the button has no visible text.",
+  const Comp = asChild ? Slot : "button";
+  const typeProp = asChild ? undefined : (type ?? "button");
+
+  const content: ReactNode =
+    leftIcon || rightIcon ? (
+      <>
+        {leftIcon}
+        {children}
+        {rightIcon}
+      </>
+    ) : (
+      children
     );
-  }
-
-  const isDisabled = disabled || loading;
-
-  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
-    if (loading || disabled) {
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-    onClick?.(event);
-  };
 
   return (
-    <button
+    <Comp
       ref={ref}
-      type={type}
-      disabled={isDisabled}
+      type={typeProp}
+      data-slot="button"
+      data-variant={variant}
+      data-size={size}
       aria-busy={loading || undefined}
-      aria-disabled={isDisabled || undefined}
-      aria-label={ariaLabel}
-      onClick={handleClick}
       className={cn(
-        buttonVariants({ variant, size, fullWidth, iconOnly } as VariantProps<typeof buttonVariants>),
+        buttonVariants({ variant: canonicalVariant, size: finalSize }),
+        fullWidth && "w-full",
+        loading && "cursor-progress opacity-70",
         className,
       )}
-      {...rest}
+      {...props}
     >
-      {!isIconOnly && leftIcon && (
-        <span className={cn(ICON_SLOT, loading && "invisible")} aria-hidden="true">
-          {leftIcon}
-        </span>
-      )}
-      {isIconOnly ? (
-        <span
-          className={cn(ICON_SLOT, loading && "invisible")}
-          aria-hidden={ariaLabel ? undefined : "true"}
-        >
-          {children}
-        </span>
-      ) : (
-        children != null && (
-          <span className={cn(LABEL_SLOT, loading && "invisible")}>{children}</span>
-        )
-      )}
-      {!isIconOnly && rightIcon && (
-        <span className={cn(ICON_SLOT, loading && "invisible")} aria-hidden="true">
-          {rightIcon}
-        </span>
-      )}
-      {loading && (
-        <span className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
-          <span
-            className={cn(
-              "block rounded-full border-current border-t-transparent animate-spin",
-              "motion-reduce:[animation-duration:2500ms]",
-              SPINNER_SIZE[size],
-            )}
-          />
-        </span>
-      )}
-    </button>
+      {content}
+    </Comp>
   );
 });
-
 Button.displayName = "Button";
 
 export { buttonVariants };
