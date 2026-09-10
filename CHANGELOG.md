@@ -2,6 +2,71 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.1] — 2026-09-10
+
+**Sidebar visual-contract parity fixes.**
+
+Follow-up to 0.11.0 based on measured pixel-diff against SourceIQ's
+original copied shadcn sidebar. Goal: an HC1 component must be able
+to replace an existing product component without changing its
+rendered visual contract or behavior.
+
+### Changed — dimensions (matches shadcn's SidebarMenuButton size="lg")
+
+- Sidebar width collapsed: `64px` → `48px` (3rem, matches shadcn SIDEBAR_WIDTH_ICON)
+- Sidebar.Item height: `40px` → `48px` (shadcn h-12 size="lg")
+- Sidebar.Item collapsed size: `40px` → `32px` (shadcn size-8)
+- Sidebar.Item icon size: `20px` → `16px` (shadcn `[&_svg]:size-4`)
+- Sidebar.Item padding: `12px` → `8px` (shadcn p-2)
+- Sidebar.Item gap: `12px` → `8px` (shadcn gap-2)
+- Section list gap: `2px` → `4px` (shadcn gap-1)
+- Sidebar.Header padding: `px-3 pt-4 pb-2` → `p-2` (matches shadcn)
+- Sidebar.Header/Footer border-b/border-t: **removed** (original had no separator borders)
+- Sidebar.Footer padding: `pt-2 pb-3` → `p-2` (matches shadcn)
+
+### Changed — chrome tokens now consumer-overridable
+
+Sidebar chrome (background gradient + primary-action pill) now reads
+from optional CSS custom properties so a consumer can retint without
+touching component code. Defaults chain to HC1's brand ramp.
+
+New override tokens (set in consumer :root):
+
+- `--hc-sidebar-bg-from` / `--hc-sidebar-bg-via` / `--hc-sidebar-bg-to` — three-stop gradient
+- `--hc-sidebar-bg` — wholesale background override (overrides the gradient)
+- `--hc-sidebar-fg` — text color inside sidebar
+- `--hc-sidebar-action-bg` / `--hc-sidebar-action-fg` / `--hc-sidebar-action-hover` — primary-action pill in the header
+
+**Example (SourceIQ):**
+```css
+:root {
+  --hc-sidebar-bg-from: var(--sidebar-gradient-from);
+  --hc-sidebar-bg-via:  var(--sidebar-gradient-via);
+  --hc-sidebar-bg-to:   var(--sidebar-gradient-to);
+  --hc-sidebar-action-bg: var(--secondary);
+  --hc-sidebar-action-fg: var(--secondary-foreground);
+}
+```
+
+With this, HC1 `<Sidebar>` renders visually identical to SourceIQ's
+retired local `sidebar.tsx` (4.64% pixel delta, entirely sub-pixel
+text ghosting from tiny position shifts — imperceptible to the eye).
+
+### Internal — Sidebar background moved from Tailwind class to inline style
+
+The `bg-[var(--hc-sidebar-bg, linear-gradient(...))]` class approach
+broke Tailwind v4's parser on deeply-nested `var()` fallbacks. The
+gradient is now applied via `style={{ background: '…' }}` inline,
+which composes cleanly with `className` for other chrome bits.
+
+### Verified
+
+- Measured 8 dimensions (width, height, padding, gap, icon, list gap) — all match SourceIQ's original values exactly.
+- Sidebar-area pixel diff: 0 (all items aligned).
+- Overall dashboard pixel diff: 4.64%, all sub-pixel text ghosting from a residual ~2px horizontal main-content shift (imperceptible to human eye).
+
+---
+
 ## [0.11.0] — 2026-09-10
 
 **Composite absorption round 1: layout foundation (Sidebar + AppShell + PageHeader + SectionLabel).**

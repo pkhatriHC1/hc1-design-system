@@ -181,23 +181,33 @@ const SidebarRoot = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
   const contextValue = existingContext ?? localContext;
   const { collapsed } = contextValue;
 
+  /* Chrome background — fully overridable via CSS vars in a consumer
+     :root. Consumer sets --hc-sidebar-bg-from/via/to (or --hc-sidebar-bg
+     wholesale) to retint. Defaults chain to HC1 brand ramp. Kept as an
+     inline style because Tailwind v4's arbitrary-value parser doesn't
+     handle deeply-nested var() fallbacks reliably. */
+  const chromeStyle = {
+    background:
+      "var(--hc-sidebar-bg, linear-gradient(180deg, var(--hc-sidebar-bg-from, var(--hc-color-brand-700)) 0%, var(--hc-sidebar-bg-via, var(--hc-color-brand-800)) 50%, var(--hc-sidebar-bg-to, var(--hc-color-brand-900)) 100%))",
+  } as const;
+
   const asideEl = (
     <aside
       ref={forwardedRef}
       data-slot="sidebar"
       data-state={collapsed ? "collapsed" : "expanded"}
       aria-label={ariaLabel}
+      style={chromeStyle}
       className={cn(
         /* Fixed height, flex column, chrome */
         "flex h-full shrink-0 flex-col",
-        "text-[color:var(--hc-color-text-inverse)]",
-        /* Gradient chrome using --hc-color-brand-* — consumer can
-           override --hc-sidebar-bg on this element to retint. */
-        "bg-[linear-gradient(180deg,var(--hc-color-brand-700)_0%,var(--hc-color-brand-800)_50%,var(--hc-color-brand-900)_100%)]",
-        /* Width — animated between collapsed (icon-only 64px) and
-           expanded (256px). */
+        "text-[color:var(--hc-sidebar-fg,var(--hc-color-text-inverse))]",
+        /* Width — animated between collapsed (icon-only 48px = 3rem) and
+           expanded (256px = 16rem). Matches shadcn's SIDEBAR_WIDTH /
+           SIDEBAR_WIDTH_ICON so consumers migrating from shadcn's copied
+           sidebar see identical dimensions. */
         "transition-[width] duration-200 ease-standard motion-reduce:duration-0",
-        "w-[256px] data-[state=collapsed]:w-[64px]",
+        "w-[16rem] data-[state=collapsed]:w-[3rem]",
         /* Right border for visual separation from main content */
         "border-r border-[color:var(--hc-color-border-inverse)]",
         className,
@@ -228,10 +238,11 @@ const SidebarHeader = forwardRef<HTMLDivElement, SidebarHeaderProps>(function Si
       ref={forwardedRef}
       data-slot="sidebar-header"
       className={cn(
-        "flex shrink-0 flex-col gap-3",
-        "px-3 pt-4 pb-2",
-        "data-[collapsed=true]:px-2",
-        "border-b border-[color:var(--hc-color-border-inverse)]",
+        /* Padding + gap match shadcn's SidebarHeader p-2 with no
+           separator border — consumers migrating from that primitive
+           see identical header height. Overrideable via className. */
+        "flex shrink-0 flex-col gap-2 p-2",
+        "data-[collapsed=true]:px-1.5",
         className,
       )}
       data-collapsed={collapsed}
@@ -265,11 +276,16 @@ function SidebarHeaderAction({
 }) {
   const buttonClasses = cn(
     "flex items-center justify-center gap-2",
-    "rounded-full bg-[color:var(--hc-color-bg-surface)]",
-    "text-[color:var(--hc-color-text-primary)] font-semibold",
-    "text-[13px] leading-tight",
+    /* Fully overridable via CSS vars — consumer can set
+       --hc-sidebar-action-bg / -fg / -hover on Sidebar or :root
+       to make the primary action match its own brand. Defaults
+       chain to HC1's elevated-surface white pill. */
+    "rounded-full",
+    "bg-[color:var(--hc-sidebar-action-bg,var(--hc-color-bg-surface))]",
+    "text-[color:var(--hc-sidebar-action-fg,var(--hc-color-text-primary))]",
+    "font-semibold text-[13px] leading-tight",
     "transition-[background-color,transform] duration-150 ease-standard motion-reduce:duration-0",
-    "hover:bg-[color:var(--hc-color-bg-elevated)] hover:shadow-sm",
+    "hover:bg-[color:var(--hc-sidebar-action-hover,var(--hc-color-bg-elevated))] hover:shadow-sm",
     "focus:outline-none focus-visible:outline focus-visible:outline-2",
     "focus-visible:outline-[color:var(--hc-color-border-focus)] focus-visible:outline-offset-2",
     "active:translate-y-px",
@@ -354,8 +370,9 @@ const SidebarSection = forwardRef<HTMLDivElement, SidebarSectionProps>(function 
         role="list"
         data-slot="sidebar-section-list"
         className={cn(
-          "m-0 flex list-none flex-col p-0",
-          collapsed ? "px-1 gap-1" : "px-2 gap-0.5",
+          /* Padding + gap match shadcn's SidebarGroupContent + SidebarMenu:
+             p-2 wrapper, gap-1 between items. */
+          "m-0 flex list-none flex-col gap-1 p-2",
         )}
       >
         {children}
@@ -374,13 +391,16 @@ const SidebarItem = forwardRef<HTMLElement, SidebarItemProps>(function SidebarIt
   const { icon, label, active, disabled, badge, tooltip, className, ...rest } = props;
   const { collapsed } = useSidebarContext();
 
+  /* Dimensions preserved from shadcn's SidebarMenuButton size="lg" so
+     consumers migrating from that primitive see byte-identical layout. */
   const commonClasses = cn(
-    "group relative flex items-center gap-3 rounded-lg",
+    "group relative flex items-center gap-2 rounded-md",
     "text-[14px] leading-tight font-medium",
     "no-underline text-[color:var(--hc-color-text-inverse)]",
     "transition-[background-color,opacity] duration-150 ease-standard motion-reduce:duration-0",
-    /* Layout — icon-only when collapsed, icon + label when expanded */
-    collapsed ? "size-10 justify-center px-0" : "h-10 w-full px-3",
+    /* Layout — icon-only 32px square when collapsed (shadcn size-8),
+       48px tall pill when expanded (shadcn h-12 with p-2). */
+    collapsed ? "size-8 justify-center p-2" : "h-12 w-full p-2",
     /* Hover + active states */
     "hover:bg-[color:rgba(255,255,255,0.08)]",
     "aria-[current=page]:bg-[color:rgba(255,255,255,0.12)]",
@@ -395,7 +415,7 @@ const SidebarItem = forwardRef<HTMLElement, SidebarItemProps>(function SidebarIt
   const iconEl = (
     <span
       data-slot="sidebar-item-icon"
-      className="inline-flex shrink-0 [&>svg]:size-5"
+      className="inline-flex shrink-0 [&>svg]:size-4"
       aria-hidden="true"
     >
       {icon}
@@ -501,11 +521,10 @@ const SidebarFooter = forwardRef<HTMLDivElement, SidebarFooterProps>(function Si
       ref={forwardedRef}
       data-slot="sidebar-footer"
       className={cn(
-        "shrink-0",
-        "px-4 pt-2 pb-3",
-        "text-[11px] leading-tight",
-        "text-[color:var(--hc-color-text-inverse)] opacity-60",
-        "border-t border-[color:var(--hc-color-border-inverse)]",
+        /* Matches shadcn's SidebarFooter defaults: flex-col gap-2 p-2. */
+        "flex shrink-0 flex-col gap-2 p-2",
+        "text-[12px] leading-tight",
+        "text-[color:var(--hc-color-text-inverse)] opacity-45",
         className,
       )}
       {...rest}
