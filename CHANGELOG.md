@@ -2,6 +2,58 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] — 2026-09-10
+
+**Compiled distribution + three new components + first real consumer migration proven end-to-end (SourceIQ).**
+
+This release is the first that flips distribution from source-only to a compiled `dist/`. It also lands the first three components requested by the SourceIQ migration (Progress, Separator, ScrollArea) and documents every consumer-side gotcha we hit while validating the migration in a real product.
+
+### Added
+
+- **New components** — `Progress`, `Separator`, `ScrollArea`. Each wraps its Radix primitive (`@radix-ui/react-progress`, `-separator`, `-scroll-area`) and consumes HC1 tokens via `--hc-*` CSS vars. Follow the standard `cva` + Tailwind v4 pattern; API is deliberately close to shadcn's shape so consumers migrating from stock shadcn versions of these components rename imports only.
+- **`tsup` build pipeline** — DS now ships compiled `dist/` with `.js`, `.cjs`, `.d.ts`, `.d.cts`, source maps, and a flat `styles.css`. Configured via `tsup.config.ts`.
+- **`prepare` script** — auto-runs `npm run build` on `npm install`, so consumers installing via git URL (or `file:` in a monorepo) always get a working `dist/` with zero manual steps.
+- **New peer dependencies** — `@radix-ui/react-progress`, `@radix-ui/react-separator`, `@radix-ui/react-scroll-area`. Consumers must install these alongside the existing Radix peers.
+- **README rewrite** — architecture-at-a-glance diagram, explicit "Built on shadcn/ui" section, ten documented architecture decisions (why compiled, why compound components, why options-array Select, why no dark mode yet, etc.), and a Consumer setup section covering the two must-do steps consumers keep hitting.
+
+### Changed
+
+- **Distribution model** — was source-only, now ships compiled `dist/`. `main`, `module`, `types`, and every `exports` conditional in `package.json` point at `./dist/*`. `files` narrowed to `["dist", "README.md", "CHANGELOG.md"]`.
+- **Consumers no longer type-check DS internals.** This eliminates the *"Two different types with this name exist"* class of error entirely — DS's `.d.ts` files reference `react` and defer to the consumer's own `@types/react`, so version drift stops mattering.
+- **`@types/react` bumped to `^19.0.0`** in `devDependencies` (matches React 19 API surface).
+- **Peer `react` / `react-dom` widened to `>=18`** — React 18 and 19 both work; consumer's version wins.
+
+### Consumer-side setup requirements (documented in README §Consumer setup)
+
+Two setup steps every consuming app must perform. Both are one-time.
+
+1. **Vite `resolve.dedupe: ["react", "react-dom", "react/jsx-runtime"]`** — **REQUIRED**. Without this, symlinked or `file:` dep setups produce two React instances (DS's copy + consumer's copy), and the runtime throws *"Invalid hook call"* the moment any DS hook fires. This is the single most common failure we saw during SourceIQ validation.
+2. **npm `overrides` for `@types/react` / `@types/react-dom`** — **RECOMMENDED**. Defense-in-depth against a transitive dep pulling in a different `@types/react` and re-introducing type conflicts.
+
+### Verified end-to-end
+
+- **DS fresh build from clean state** — `rm -rf dist node_modules && npm install` → `prepare` script auto-runs tsup → `dist/` regenerated. ✅
+- **DS typecheck** — `tsc --noEmit` clean, zero errors. ✅
+- **DS `dist/` shape** — every `package.json` export points to a real file; CSS chain `styles.css → tokens/css/variables.css → theme.css + shadcn-bridge.css` intact. ✅
+- **New components exportable from `dist/index.d.ts`** — `Progress`, `Separator`, `ScrollArea` and all their type exports present. ✅
+- **SourceIQ builds cleanly consuming compiled DS** — `eslint . && tsc -b && vite build` exit 0, no workarounds needed (no symlink hacks, no npm overrides other than the recommended defensive ones). ✅
+- **Playground still deploys** — GitHub Pages workflow success, live URL HTTP 200, 53 doc sections render, no overlay regressions, no JS errors. ✅
+- **SourceIQ Data Upload page migrated end-to-end** — Alert, Badge, Button, Input, Tabs all swapped to `@hc1/design-system`; app builds, renders with HC1 palette, no console errors. Documented in `sourceiq-hc1com/docs/DESIGN_SYSTEM_MIGRATION.md`.
+
+### Known follow-ups (surfaced by the SourceIQ migration; not blocking)
+
+- **`Tabs.List` line-underline style** — HC1's Tabs doesn't render a shadcn-style line underline. Design decision needed: add a `variant="line"` prop to `Tabs.List` or accept the visual change.
+- **`Select` migration is a real refactor** for cases with `SelectGroup` / `SelectSeparator` / custom `SelectValue` rendering. Simple flat selects are one-liners; grouped selects need per-usage care.
+- **`Sidebar`, `Chart`, `MultiFileDropZone`** — sourceIQ uses these locally; not yet in DS. Sidebar is tightly coupled to AppShell layout and needs design definition before DS adoption. Chart + MultiFileDropZone stay per-product.
+
+### Not changed
+
+- Token architecture (primitives → aliases → component tokens) — preserved.
+- Every existing component API — preserved. This is an additive release.
+- Semver contract for the 20 pre-existing components — unchanged.
+
+---
+
 ## [0.9.1] — 2026-08-06
 
 **Brand alignment — official HC1 platform palette replaces the scaffolding palette.**
