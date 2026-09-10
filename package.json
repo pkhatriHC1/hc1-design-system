@@ -1,6 +1,6 @@
 {
   "name": "@hc1/design-system",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "HC1 design system \u2014 Radix + Tailwind v4 + cva composition, HC1 tokens. Shared UI package for ClinicalIQ, SourceIQ, HerCare, and future modules.",
   "type": "module",
   "sideEffects": [

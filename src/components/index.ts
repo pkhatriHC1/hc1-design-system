@@ -31,3 +31,7 @@ export * from "./gauge";
 export * from "./progress";
 export * from "./separator";
 export * from "./scroll-area";
+export * from "./section-label";
+export * from "./page-header";
+export * from "./app-shell";
+export * from "./sidebar";

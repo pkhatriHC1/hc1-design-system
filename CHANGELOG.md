@@ -2,6 +2,37 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] — 2026-09-10
+
+**Composite absorption round 1: layout foundation (Sidebar + AppShell + PageHeader + SectionLabel).**
+
+Ships the four highest-leverage composite patterns identified from the SourceIQ pattern audit. First real product migration proves the value: sourceIQ deletes its 703-line copied shadcn `sidebar.tsx` and replaces it with a ~30-line composition using the new DS components.
+
+### Added
+
+- **`<Sidebar>` + `<SidebarProvider>`** — flagship left-nav composite. Compound API with 5 subcomponents (`Sidebar.Header`, `Sidebar.Section`, `Sidebar.Item`, `Sidebar.Footer`, `Sidebar.Trigger`), controlled/uncontrolled collapse, `localStorage` persistence, `Cmd/Ctrl+B` keyboard shortcut, mobile-responsive, active state, badge slot, auto-tooltip when collapsed, `--hc-color-brand-*` gradient chrome (consumer overridable). Standalone `<SidebarProvider>` allows `<Sidebar.Trigger>` to live outside the sidebar (e.g. in an AppShell top bar).
+- **`<AppShell>` + `<AppShell.Main>`** — thin layout wrapper for the standard product page frame (flex row, sidebar + main content column). Auto-wraps with `SidebarProvider` so `Sidebar.Trigger` works from any descendant.
+- **`<PageHeader>`** — page hero strap with `title` + optional `subtitle` + `meta` slot (right-aligned info) + `actions` slot (right-aligned buttons).
+- **`<SectionLabel>`** — small uppercase tracked heading (11px default) with `as` (`div`/`h2`/`h3`/…), `tone` (`muted`/`brand`/`inverse`), `size` (`sm`/`md`/`lg`) props.
+
+### Changed — `dist/styles.css` now declares `@source`
+
+The shipped CSS bundle now includes `@source "./index.js"` and `@source "./index.cjs"` directives. Consumer Tailwind v4 scanners auto-pick-up arbitrary utility classes baked into the compiled DS (e.g. `bg-[linear-gradient(...)]`). Without this, HC1-authored components rendered unstyled in consumer apps because Tailwind never saw the class strings in `node_modules/@hc1/design-system/dist/*.js`.
+
+### Verified
+
+- SourceIQ replaces `web/src/components/layout/app-shell.tsx` (137 lines) to use `<AppShell>` + `<Sidebar>` — total delta: **-807 LOC** (deletes local `sidebar.tsx` at 703 LOC + shrinks composition ~70%).
+- Visual QA: dashboard renders with HC1 sidebar chrome (dark teal gradient), all 6 nav items with icons, active state, section labels, header pill-button, footer meta — no regressions to sourceIQ content palette.
+- Zero JS/React errors on all 6 sourceIQ routes.
+
+### Known follow-ups (not blocking)
+
+- **Sidebar mobile responsive breakpoint** — auto-collapses below `md` planned but not implemented in this release. Consumers control collapse manually for now.
+- **`Sidebar.Item` `asChild` for router integration** — currently renders plain `<a href>`; React Router / Next `<Link>` integration deferred to `0.11.1`.
+- **PageHeader mobile stacking** — 320px viewport should test cleanly; not exhaustively verified.
+
+---
+
 ## [0.10.0] — 2026-09-10
 
 **Compiled distribution + three new components + first real consumer migration proven end-to-end (SourceIQ).**
