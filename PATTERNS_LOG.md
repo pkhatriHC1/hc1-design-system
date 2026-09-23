@@ -22,17 +22,12 @@ Pattern docs stubs live under `src/docs/patterns/`. Pattern CODE lives under `sr
 - [x] `dist/styles.css` `@source` covers `patterns/index.{js,cjs}` so Tailwind picks up arbitrary utility classes baked into patterns
 - [x] `PATTERNS_LOG.md` at repo root
 
-## Phase 1 — Forms & confirmations foundation [not started]
+## Phase 1 — Forms & confirmations foundation [done 2026-09-23]
 
-Highest consumer pain, lowest-risk primitives-already-exist work.
-
-- [ ] `Form`, `FormField`, `FormSection`, `FormActions` — wired to `react-hook-form`
-  - Add `react-hook-form` as optional peer in `package.json`
-  - `FormField` takes `control` + `name`, renders `Label` + control + `FormMessage` with correct `aria-describedby`/`aria-invalid`
-  - Works with existing `Input`, `Textarea`, `Select`, `Checkbox`, `Radio`, `Switch` via slot pattern
-- [ ] `ConfirmDialog` — `Dialog` preset with destructive `Button`, optional typed-name guard (Vercel-style "type PROJECT_NAME to confirm")
-- [ ] `EmptyState` presets — extend `src/components/empty-state/` with `variant="no-data" | "no-results" | "error" | "permission"` shortcuts. Stays a primitive extension, doesn't move to `src/patterns/`.
-- [ ] `Sidebar.Group` + `Sidebar.GroupTrigger` — nested collapsible groups inside existing `src/components/sidebar/`. Primitive extension.
+- [x] `Form`, `FormField`, `FormInput`, `FormTextarea`, `FormSelect`, `FormCheckbox`, `FormSwitch`, `FormRadioGroup`, `FormSection`, `FormActions` — all wired through `react-hook-form` at `src/patterns/form/`. RHF is an OPTIONAL peer dep.
+- [x] `ConfirmDialog` — `src/patterns/confirm-dialog/`. `variant='destructive'` for delete flows, optional `typedGuard` string the user must type to unlock Confirm, async `onConfirm` (button shows loading, dialog stays open on reject).
+- [x] `EmptyState` presets — five shortcuts inside `src/components/empty-state/presets.tsx`: `NoDataEmptyState`, `NoResultsEmptyState`, `ErrorEmptyState`, `PermissionDeniedEmptyState`, `OfflineEmptyState`. Each picks the right `variant`, ships a lucide default icon, exposes a slim primary/secondary action API and slots for override.
+- [x] `Sidebar.Group` — collapsible parent row that mirrors `Sidebar.Item` layout + trailing chevron + animated child list. Uncontrolled `defaultOpen` or controlled `open`/`onOpenChange`. Collapsed-rail behaviour: renders as icon-only with tooltip, children hidden entirely (fan-out popover deliberately out of scope for the primitive).
 
 ## Phase 2 — Primitive gaps that data patterns depend on [not started]
 
@@ -81,6 +76,33 @@ The headline worklist story.
 ---
 
 ## Log
+
+### 2026-09-23 — Phase 1 complete
+All four Phase 1 items landed in one push after the Form pattern kickoff earlier the same day:
+
+- 5 remaining form sugar wrappers (`FormTextarea` / `FormSelect` / `FormCheckbox` / `FormSwitch` / `FormRadioGroup`) — mechanically identical to `FormInput`: forward RHF's `field` into the underlying primitive's controlled props, map `fieldState.error` into whatever error surface the primitive exposes (`errorMessage`, `invalid`).
+- `ConfirmDialog` at `src/patterns/confirm-dialog/` — Dialog preset with the four affordances that actually matter: a destructive variant, a typed-name guard, async confirm with loading state, and safe cancel-during-pending suppression.
+- `EmptyState` presets at `src/components/empty-state/presets.tsx` — five shortcut components (No data / No results / Error / Permission denied / Offline). Each renders the base primitive with the right variant + default icon + minimal action API. Ergonomic wins: `<NoResultsEmptyState query="john" onClear={...} />` and `<ErrorEmptyState onRetry={refetch} />`.
+- `Sidebar.Group` — new subcomponent at the bottom of `src/components/sidebar/Sidebar.tsx`, attached to the compound. Uses `useId` for aria-controls, ChevronRight from lucide as the toggle indicator, matches Sidebar.Item's height/padding token references so nested rows sit flush.
+
+Build clean, typecheck clean, `dist/patterns/index.d.ts` at 15.22 KB (up from 6.92 KB in the kickoff commit). Phase 2 (Combobox, DropdownMenu, Avatar primitives — the gaps that Phase 3 patterns depend on) is next.
+
+### 2026-09-23 — Phase 1 kickoff: Form pattern landed
+`src/patterns/form/` now ships `Form`, `FormField`, `FormInput`, `FormSection`, `FormActions` — the RHF-adapter core of Phase 1's Forms track. Package now declares `react-hook-form ^7.0.0` as an OPTIONAL peer; `tsup.config.ts` marks it external so it isn't bundled. Sugar wrappers for the other form primitives (Textarea, Select, Checkbox, Switch, RadioGroup) are next inside the same folder — same shape as FormInput. Also still open in Phase 1: `ConfirmDialog`, `EmptyState` presets, `Sidebar.Group`.
+
+Consumer usage looks like:
+```tsx
+const form = useForm<{ email: string }>({ defaultValues: { email: "" } });
+<Form {...form}>
+  <FormSection title="Account">
+    <FormInput control={form.control} name="email" label="Email" />
+  </FormSection>
+  <FormActions>
+    <Button variant="outline">Cancel</Button>
+    <Button type="submit">Save</Button>
+  </FormActions>
+</Form>
+```
 
 ### 2026-09-23 — Phase 0 complete
 Scaffold landed:

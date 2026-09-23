@@ -14,6 +14,7 @@
  *     composes multiple primitives on the consumer's behalf.
  *
  * Roadmap + phase tracking lives in ../../PATTERNS_LOG.md.
- * Empty on purpose until the first pattern (Form) lands in Phase 1.
  */
-export {};
+
+export * from "./form";
+export * from "./confirm-dialog";

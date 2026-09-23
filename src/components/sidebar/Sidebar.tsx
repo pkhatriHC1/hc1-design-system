@@ -6,10 +6,12 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useId,
   useMemo,
   useState,
 } from "react";
 import type { MouseEvent, ReactNode } from "react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { SectionLabel } from "../section-label";
 import type {
@@ -17,6 +19,7 @@ import type {
   SidebarHeaderProps,
   SidebarSectionProps,
   SidebarItemProps,
+  SidebarGroupProps,
   SidebarFooterProps,
   SidebarTriggerProps,
 } from "./Sidebar.types";
@@ -509,6 +512,147 @@ const SidebarItem = forwardRef<HTMLElement, SidebarItemProps>(function SidebarIt
 });
 SidebarItem.displayName = "Sidebar.Item";
 
+/* ══════ GROUP ═════════════════════════════════════════════════════ */
+
+const SidebarGroup = forwardRef<HTMLButtonElement, SidebarGroupProps>(function SidebarGroup(
+  {
+    icon,
+    label,
+    badge,
+    active,
+    open: controlledOpen,
+    defaultOpen = false,
+    onOpenChange,
+    tooltip,
+    className,
+    children,
+  },
+  forwardedRef,
+) {
+  const { collapsed } = useSidebarContext();
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : uncontrolledOpen;
+
+  const setOpen = useCallback(
+    (next: boolean) => {
+      if (!isControlled) setUncontrolledOpen(next);
+      onOpenChange?.(next);
+    },
+    [isControlled, onOpenChange],
+  );
+
+  const contentId = useId();
+
+  /* Trigger visuals match Sidebar.Item's commonClasses so a Group row
+     reads as a peer of an Item row (same height, icon slot, hover ring). */
+  const triggerClasses = cn(
+    "group relative flex items-center gap-2 rounded-md",
+    "text-[14px] leading-tight font-medium",
+    "no-underline text-[color:var(--hc-color-text-inverse)]",
+    "transition-[background-color,opacity] duration-150 ease-standard motion-reduce:duration-0",
+    collapsed
+      ? "size-[var(--hc-space-32)] justify-center p-2"
+      : "h-[var(--hc-space-48)] w-full p-2",
+    "hover:bg-[color:rgba(255,255,255,0.08)]",
+    "data-[active]:bg-[color:rgba(255,255,255,0.12)]",
+    "focus:outline-none focus-visible:outline focus-visible:outline-2",
+    "focus-visible:outline-[color:var(--hc-color-bg-surface)] focus-visible:outline-offset-[-2px]",
+    "cursor-pointer",
+    className,
+  );
+
+  const iconEl = (
+    <span
+      data-slot="sidebar-item-icon"
+      className="inline-flex shrink-0 [&>svg]:size-4"
+      aria-hidden="true"
+    >
+      {icon}
+    </span>
+  );
+
+  const labelEl = !collapsed && (
+    <span data-slot="sidebar-item-label" className="min-w-0 flex-1 truncate">
+      {label}
+    </span>
+  );
+
+  const badgeEl = !collapsed && badge != null && (
+    <span data-slot="sidebar-item-badge" className="shrink-0">
+      {badge}
+    </span>
+  );
+
+  const chevronEl = !collapsed && (
+    <ChevronRight
+      aria-hidden="true"
+      data-slot="sidebar-group-chevron"
+      className={cn(
+        "size-4 shrink-0 opacity-70",
+        "transition-transform duration-150 ease-standard motion-reduce:duration-0",
+        open && "rotate-90",
+      )}
+    />
+  );
+
+  const collapsedTooltipEl = collapsed && (
+    <span
+      role="tooltip"
+      data-slot="sidebar-item-tooltip"
+      className={cn(
+        "pointer-events-none absolute left-full top-1/2 z-tooltip ml-2 -translate-y-1/2",
+        "whitespace-nowrap rounded-md px-2 py-1 text-[12px] font-medium",
+        "bg-[color:var(--hc-color-bg-inverse)] text-[color:var(--hc-color-text-inverse)]",
+        "shadow-md",
+        "opacity-0 transition-opacity duration-150 ease-standard motion-reduce:duration-0",
+        "group-hover:opacity-100 group-focus-visible:opacity-100",
+      )}
+    >
+      {tooltip ?? label}
+    </span>
+  );
+
+  return (
+    <li className="list-none">
+      <button
+        ref={forwardedRef}
+        type="button"
+        data-slot="sidebar-group-trigger"
+        data-active={active || undefined}
+        data-open={open || undefined}
+        aria-expanded={open}
+        aria-controls={collapsed ? undefined : contentId}
+        onClick={() => setOpen(!open)}
+        className={triggerClasses}
+      >
+        {iconEl}
+        {labelEl}
+        {badgeEl}
+        {chevronEl}
+        {collapsedTooltipEl}
+      </button>
+      {!collapsed && (
+        <ul
+          id={contentId}
+          role="list"
+          data-slot="sidebar-group-content"
+          hidden={!open}
+          className={cn(
+            /* Child list indents relative to the parent trigger row.
+               The pl matches the Item icon slot width so nested items
+               visually align under the parent's label, not its icon. */
+            "m-0 flex list-none flex-col gap-1 pl-[var(--hc-space-24)] pt-1",
+          )}
+        >
+          {children}
+        </ul>
+      )}
+    </li>
+  );
+});
+SidebarGroup.displayName = "Sidebar.Group";
+
 /* ══════ FOOTER ════════════════════════════════════════════════════ */
 
 const SidebarFooter = forwardRef<HTMLDivElement, SidebarFooterProps>(function SidebarFooter(
@@ -650,6 +794,7 @@ type SidebarCompound = typeof SidebarRootWithAutoContent & {
   Header: typeof SidebarHeader;
   Section: typeof SidebarSection;
   Item: typeof SidebarItem;
+  Group: typeof SidebarGroup;
   Footer: typeof SidebarFooter;
   Trigger: typeof SidebarTrigger;
 };
@@ -658,6 +803,7 @@ const Sidebar = SidebarRootWithAutoContent as SidebarCompound;
 Sidebar.Header = SidebarHeader;
 Sidebar.Section = SidebarSection;
 Sidebar.Item = SidebarItem;
+Sidebar.Group = SidebarGroup;
 Sidebar.Footer = SidebarFooter;
 Sidebar.Trigger = SidebarTrigger;
 

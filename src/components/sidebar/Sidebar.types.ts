@@ -118,6 +118,51 @@ export type SidebarItemProps = SidebarItemCommonProps &
       >)
   );
 
+/* ══════ GROUP ═════════════════════════════════════════════════════ */
+
+/**
+ * A collapsible parent row that holds nested Sidebar.Items (or nested
+ * Sidebar.Groups). Renders like a Sidebar.Item at rest — icon + label +
+ * optional badge — plus a trailing chevron that indicates open state.
+ *
+ * State is controlled (`open` + `onOpenChange`) or uncontrolled (`defaultOpen`).
+ *
+ * Collapsed-sidebar behaviour: the group renders as an icon-only row
+ * (like a collapsed Item) and its children are hidden entirely — there
+ * is no space to fan them out in the rail, and re-implementing that as
+ * a popover is out of scope for the group primitive.
+ */
+export type SidebarGroupProps = {
+  /** Leading icon — matches Sidebar.Item's icon slot. */
+  icon: ReactNode;
+  /** Trigger label. Used as the collapsed-tooltip content by default. */
+  label: string;
+  /**
+   * Optional trailing badge — count / new tag. Hidden when the sidebar
+   * is collapsed (like Sidebar.Item's badge).
+   */
+  badge?: ReactNode;
+  /**
+   * Marks the group as active — reserved for the case where a descendant
+   * item is active. Purely visual; consumers derive it from the router.
+   */
+  active?: boolean;
+  /** Controlled open state. Pair with `onOpenChange`. */
+  open?: boolean;
+  /** Uncontrolled initial open state. @default false */
+  defaultOpen?: boolean;
+  /** Fires whenever the group opens or closes. */
+  onOpenChange?: (open: boolean) => void;
+  /**
+   * Tooltip content shown when the sidebar is collapsed and the trigger
+   * is hovered/focused. Defaults to `label`.
+   */
+  tooltip?: ReactNode;
+  /** Nested Sidebar.Item / Sidebar.Group children. */
+  children: ReactNode;
+  className?: string;
+};
+
 /* ══════ FOOTER ════════════════════════════════════════════════════ */
 
 export type SidebarFooterProps = HTMLAttributes<HTMLDivElement> & {

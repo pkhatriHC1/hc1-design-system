@@ -18,6 +18,7 @@ export default defineConfig({
     "react",
     "react-dom",
     "react/jsx-runtime",
+    "react-hook-form",
     /^@radix-ui\//,
     "class-variance-authority",
     "clsx",
