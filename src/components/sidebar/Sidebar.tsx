@@ -398,9 +398,13 @@ const SidebarItem = forwardRef<HTMLElement, SidebarItemProps>(function SidebarIt
     "text-[14px] leading-tight font-medium",
     "no-underline text-[color:var(--hc-color-text-inverse)]",
     "transition-[background-color,opacity] duration-150 ease-standard motion-reduce:duration-0",
-    /* Layout — icon-only 32px square when collapsed (shadcn size-8),
-       48px tall pill when expanded (shadcn h-12 with p-2). */
-    collapsed ? "size-8 justify-center p-2" : "h-12 w-full p-2",
+    /* Layout — icon-only 32px square when collapsed, 48px tall pill when
+       expanded. Uses --hc-space-* directly instead of Tailwind's size-8 /
+       h-12 utilities: the DS theme.css remaps --spacing-8 / --spacing-12
+       to the pixel token values (8 / 12), so shadcn's convention of
+       "h-12 = 48px" no longer applies inside the DS. Referencing the
+       primitive tokens keeps this pinned to the intended pixel value. */
+    collapsed ? "size-[var(--hc-space-32)] justify-center p-2" : "h-[var(--hc-space-48)] w-full p-2",
     /* Hover + active states */
     "hover:bg-[color:rgba(255,255,255,0.08)]",
     "aria-[current=page]:bg-[color:rgba(255,255,255,0.12)]",
