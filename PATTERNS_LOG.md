@@ -35,13 +35,13 @@ Pattern docs stubs live under `src/docs/patterns/`. Pattern CODE lives under `sr
 - [x] `DropdownMenu` — `src/components/dropdown-menu/`. Thin wrap of `@radix-ui/react-dropdown-menu` on the DS chrome family (same panel style as Popover/Dialog). Compound: `Trigger` / `Content` / `Item` (with `destructive` + `shortcut`) / `CheckboxItem` / `RadioGroup` / `RadioItem` / `Label` / `Separator` / `Group` / `Sub` / `SubTrigger` / `SubContent`. Size ladder on `Content` (sm/md/lg min-widths).
 - [x] `Combobox` — `src/components/combobox/`. Searchable Select on top of `@radix-ui/react-popover`. Client-side filter by default (label + description case-insensitive substring); pass `onSearch` for server-side. Full keyboard nav (Arrow/Home/End/Enter/Escape), aria-activedescendant, loading spinner, group headers, custom filter override. Same validation model as Input.
 
-## Phase 3 — Data-table pattern layer [not started]
+## Phase 3 — Data-table pattern layer [in progress]
 
 The headline worklist story.
 
-- [ ] `FilterBar` pattern — search + Combobox filters + chip row + clear-all
-- [ ] `DataTable` pattern — Table + Toolbar + sort + selection + Pagination + Skeleton + EmptyState composed. Column config API.
-- [ ] `Worklist` preset — `DataTable` opinionated for clinical rows: Avatar + severity badge + row `DropdownMenu`. Clinical density.
+- [x] `FilterBar` pattern — `src/patterns/filter-bar/`. Compositional API (`FilterBar.Search` + `FilterBar.Filter` + `FilterBar.Actions`), auto-rendered Clear-all button via `onClearAll`, filter chips composed into trigger labels ("Severity: Critical").
+- [x] `DataTable` pattern — `src/patterns/data-table/`. Config-driven column API (`DataTableColumn<T>`), three-way sort cycle (asc → desc → null), opt-in checkbox column via `selection` + `onSelectionChange`, opinionated loading skeletons + empty state + pagination footer. Consumer owns pagination + sort state; DataTable never slices or resorts the array.
+- [ ] `Worklist` preset — `DataTable` opinionated for clinical rows: Avatar + severity badge + row `DropdownMenu`. Deferred as a thin follow-up — the `DataTableDoc` "With FilterBar toolbar" section already shows the full worklist composition, so a dedicated preset only saves ~30 LOC per consumer. Revisit if we standardize the exact column shape across ClinicalIQ / SourceIQ / HerCare.
 
 ## Phase 4 — Navigation & shell [not started]
 
@@ -74,6 +74,15 @@ The headline worklist story.
 ---
 
 ## Log
+
+### 2026-09-23 — Phase 3: FilterBar + DataTable landed
+Two of the three Phase 3 items shipped. `Worklist` preset deferred (see above).
+
+- FilterBar at `src/patterns/filter-bar/` — `FilterBar.Search` + `FilterBar.Filter` (Combobox with label chip pattern) + `FilterBar.Actions`. Root's `onClearAll` auto-renders the Clear button so every FilterBar in HC1 clears the same way.
+- DataTable at `src/patterns/data-table/` — the headline worklist. Config-driven columns (`DataTableColumn<T>` with `accessor` + `render` + `sortable` + `width` + `align`), consumer-owned three-way sort cycle, opt-in leading checkbox column with header all/some/none logic, loading skeleton rows, contained EmptyState inside a full-width cell, Pagination footer via the primitive.
+- Doc pages: `FilterBarDoc` + `DataTableDoc` under `pattern-filter-bar` and `pattern-data-table` in the registry. DataTableDoc's "With FilterBar toolbar" section is the live worklist demo — filters + sort + pagination + clear + row DropdownMenu all wired.
+
+Bundle: `dist/patterns/index.d.ts` grew 15.22 KB → 24.09 KB.
 
 ### 2026-09-23 — Phase 2 complete: Avatar, DropdownMenu, Combobox landed
 Three net-new primitives that Phase 3 (FilterBar, DataTable, Worklist) depends on.
