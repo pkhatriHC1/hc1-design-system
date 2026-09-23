@@ -365,6 +365,31 @@
   --hc-color-status-info-bg:        var(--hc-color-brand-50);
   --hc-color-status-info-border:    var(--hc-color-brand-100);
 
+  /* Ergonomic "-muted" aliases — pale-tinted background variants
+     for status pills, banners, and toast surfaces. Products that
+     already write `--success-muted` / `--warning-muted` in their
+     semantic layer can point directly at these. Same value as the
+     corresponding `-bg`, exposed under the more familiar name. */
+  --hc-color-status-success-muted:  var(--hc-color-status-success-bg);
+  --hc-color-status-warning-muted:  var(--hc-color-status-warning-bg);
+  --hc-color-status-error-muted:    var(--hc-color-status-error-bg);
+  --hc-color-status-info-muted:     var(--hc-color-status-info-bg);
+
+  /* ═══ ALIAS: CHART PALETTE (recharts / dashboards) ═══════════════
+     Five-color rotating pool for bar/line/pie/area chart series.
+     Ordering — teal → light-teal → amber → violet → green — is a
+     healthcare-analytics convention where the primary series
+     (spend, volume) uses brand teal and secondary series descend
+     into supporting hues. Every color is an existing DS primitive:
+     no new hex values introduced, no bespoke chart ramp to
+     maintain. Products can override individual entries in :root
+     when a specific series needs a different color. */
+  --hc-color-chart-1: var(--hc-color-brand-500);
+  --hc-color-chart-2: var(--hc-color-brand-300);
+  --hc-color-chart-3: var(--hc-color-accent-400);
+  --hc-color-chart-4: var(--hc-color-violet-500);
+  --hc-color-chart-5: var(--hc-color-green-400);
+
   /* ═══ ALIAS: SPACING ═════════════════════════════════════════════ */
   --hc-space-inline-xs: var(--hc-space-4);
   --hc-space-inline-sm: var(--hc-space-8);

@@ -5,6 +5,7 @@ export default defineConfig({
   entry: {
     index: "src/index.ts",
     "tokens/index": "src/tokens/index.ts",
+    "patterns/index": "src/patterns/index.ts",
     playground: "src/playground.ts",
   },
   format: ["esm", "cjs"],
@@ -38,6 +39,8 @@ export default defineConfig({
         '@import "./tokens/css/variables.css";',
         '@source "./index.js";',
         '@source "./index.cjs";',
+        '@source "./patterns/index.js";',
+        '@source "./patterns/index.cjs";',
         '',
       ].join("\n"),
     );

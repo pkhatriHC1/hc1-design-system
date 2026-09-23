@@ -2,6 +2,123 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] — 2026-09-10
+
+**Chart palette + status-muted aliases (foundation-token gap-fill).**
+
+First DS release driven by the full sourceIQ token audit (see
+`sourceiq-hc1com/docs/DS_TOKEN_MIGRATION.md`). The audit inventoried every
+local `--var: value;` in sourceIQ's `index.css` and mapped each to the
+closest DS primitive using ΔE distance in oklab space. Two gaps needed
+new DS aliases before sourceIQ could migrate cleanly:
+
+1. **Chart palette** — sourceIQ had `--chart-1..5` as bare oklch values with no DS counterpart. Every product that uses recharts had to redefine the same rotation.
+2. **Status "-muted" aliases** — sourceIQ (and typical shadcn products) name pale status backgrounds `--success-muted` / `--warning-muted`, not `--status-success-bg`. Fine, but the naming mismatch meant every product wrote the same aliases in :root.
+
+Both now ship as DS primitives so products stop redefining them.
+
+### Added — `--hc-color-chart-1..5`
+
+Five-color rotating pool for bar/line/pie/area chart series. Every entry is an alias to an existing DS primitive (no new hex values introduced):
+
+- `--hc-color-chart-1` → `--hc-color-brand-500` (primary teal)
+- `--hc-color-chart-2` → `--hc-color-brand-300` (light teal)
+- `--hc-color-chart-3` → `--hc-color-accent-400` (amber)
+- `--hc-color-chart-4` → `--hc-color-violet-500` (violet)
+- `--hc-color-chart-5` → `--hc-color-green-400` (green)
+
+Products point their `--chart-N` at these directly. Individual overrides at the product level still work — a product with a specific series color for "spend" can override `--hc-color-chart-1` in :root without affecting anything else.
+
+### Added — `--hc-color-status-*-muted` aliases
+
+Ergonomic aliases pointing to the existing `-bg` variants:
+
+- `--hc-color-status-success-muted` → `--hc-color-status-success-bg`
+- `--hc-color-status-warning-muted` → `--hc-color-status-warning-bg`
+- `--hc-color-status-error-muted` → `--hc-color-status-error-bg`
+- `--hc-color-status-info-muted` → `--hc-color-status-info-bg`
+
+Same value, exposed under the naming products actually use.
+
+### Verified
+
+- No visual diff in any component — all new tokens are aliases to primitives that were already resolving to the same colors.
+- SourceIQ `index.css` rewrite: every `:root` semantic override now points at a DS primitive (5 semantic + 6 status + 5 chart + 5 sidebar chrome vars — 21 total). Six local `oklch()` values remained as-is: the `.dark` block (DS has no dark ramp yet), the `--radius` root (product-owned), and the spacing scale (stock-Tailwind restoration).
+
+---
+
+## [0.12.2] — 2026-09-10
+
+**Brand-tinted hover states for muted button variants.**
+
+Follow-up to 0.12.1 based on visual feedback: the `outline`, `secondary`,
+and `ghost` variants used a flat neutral hover (`--hc-color-bg-muted`)
+that felt disconnected from HC1 identity. Every product on the DS should
+"feel HC1" on every interaction, not just at rest.
+
+### Changed — hover states now brand-tinted
+
+- **`outline`** hover: `--hc-color-bg-muted` → `--hc-color-brand-50` (#DAEEF0), border → `--hc-color-brand-100`
+- **`secondary`** hover: `--hc-color-bg-muted` → `--hc-color-brand-50` (#DAEEF0), border → `--hc-color-brand-100`
+- **`ghost`** hover: `--hc-color-bg-muted` → `--hc-color-brand-50` (#DAEEF0)
+- All three variants now use `--hc-color-brand-100` for `active:` state, giving a consistent press-down feedback tied to the brand ramp.
+
+`default` (brand fill), `destructive` (severity red), and `link` variants are untouched — they already have strong identity states.
+
+### Rationale
+
+`--hc-color-brand-50` is the palest tint on the HC1 brand teal ramp
+(hex `#DAEEF0`). It sits between white and the primary teal, so hovering
+a neutral button gives a barely-there hint of brand color without
+turning the button into a "second primary". Consumers who want to
+retune per-product can override `--hc-color-brand-50` / `--hc-color-brand-100`
+in `:root`.
+
+### Verified
+
+- Byte-for-byte diff limited to the three variant class strings in `Button.tsx`.
+- All existing consumers (SourceIQ dashboard, contract watchdog, data upload) render at rest identically to 0.12.1. Hover states now match HC1 identity.
+
+---
+
+## [0.12.1] — 2026-09-10
+
+**Button variants now read from `--hc-color-*` primitives (immune to consumer palette drift).**
+
+Follow-up to 0.12.0 based on visual bug report from SourceIQ: the same
+`variant="secondary"` rendered muted-gray in the DS playground but
+teal-tinted inside SourceIQ, because SourceIQ's `:root` overrode
+shadcn's `--secondary` to a brand teal. Reading shadcn semantic vars
+inside the DS makes the DS's own visual contract depend on the
+consumer's palette — the exact drift the DS exists to prevent.
+
+### Changed — variant class strings
+
+- `default`: reads `--hc-color-action-primary` / `--hc-color-action-primary-hover` / `--hc-color-text-on-solid` instead of `--primary` / `--primary-foreground`.
+- `outline`: reads `--hc-color-border-default` / `--hc-color-bg-surface` / `--hc-color-text-primary` / `--hc-color-bg-muted` (hover) instead of `--border` / `--background` / `--foreground` / `--accent`.
+- `secondary`: reads `--hc-color-bg-subtle` / `--hc-color-text-primary` / `--hc-color-border-subtle` instead of `--secondary` / `--secondary-foreground`.
+- `ghost`: reads `--hc-color-text-primary` / `--hc-color-bg-muted` (hover) instead of `--foreground` / `--accent`.
+- `destructive`: reads `--hc-color-severity-critical-*` instead of `--destructive` / `--destructive-foreground`.
+- `link`: reads `--hc-color-text-link` / `--hc-color-text-link-hover` instead of `--primary`.
+
+The base shell (focus ring, aria-invalid ring, disabled opacity) still reads shadcn semantic vars, since those are cross-cutting states rather than variant identity.
+
+### Rationale
+
+`--hc-color-*` primitives are the DS's own tokens. A consumer that
+retints `--secondary` for its own local components is free to do so
+without hijacking DS Button. If a product genuinely wants to retint
+DS Button, it should override `--hc-color-bg-subtle` (or, when we
+ship button-scoped tokens, `--hc-btn-secondary-bg`) — not the shadcn
+semantic layer that also drives the consumer's own primitives.
+
+### Verified
+
+- Same DS Button now renders identically in HC1 playground and inside SourceIQ despite SourceIQ's teal `--secondary` retint.
+- No visual diff in any of the six variants at rest — the primitives resolve to the same colors as the shadcn semantic vars did in the DS playground context.
+
+---
+
 ## [0.12.0] — 2026-09-10
 
 **Button rebuilt for verbatim shadcn/SourceIQ parity + asChild support.**

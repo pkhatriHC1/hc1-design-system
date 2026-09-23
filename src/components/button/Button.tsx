@@ -26,19 +26,47 @@ import type { ButtonProps, ButtonVariant, ButtonSize } from "./Button.types";
  * can select on these in tests or ambient styles.
  */
 
-/* ── Canonical variants (shadcn/sourceIQ) ────────────────────────── */
+/* ── Canonical variants — read from --hc-color-* primitives ─────────
+ *
+ * NEVER read from shadcn semantic vars (--primary, --secondary, --accent,
+ * --destructive, --muted, --border) here. Those vars are consumer-facing
+ * and get retinted by product-local :root overrides (see the sourceIQ
+ * example where --secondary was hijacked to teal). Reading them would
+ * make the SAME `variant="secondary"` render differently in different
+ * products — the exact drift the DS exists to prevent.
+ *
+ * Consumers who want to retint a specific DS variant should override
+ * the HC1 alias tokens (--hc-color-*) — or, when we ship button-scoped
+ * tokens later, --hc-btn-secondary-bg specifically.
+ * ────────────────────────────────────────────────────────────────── */
 
 const CANONICAL_VARIANTS = {
-  default: "bg-primary text-primary-foreground hover:bg-primary/80",
+  /* Brand fill — primary action.
+     Hex fallbacks inside var() are a defensive floor: if a consumer forgets
+     to import the DS token CSS (variables.css), the primary button still
+     renders brand-500 teal + white text, i.e. WCAG-AA-compliant contrast
+     (~5.25:1). Values mirror --hc-color-brand-500/600/700 + white. */
+  default:
+    "bg-[color:var(--hc-color-action-primary,#0D7782)] text-[color:var(--hc-color-text-on-solid,#fff)] border-[color:var(--hc-color-action-primary,#0D7782)] hover:bg-[color:var(--hc-color-action-primary-hover,#086068)] hover:border-[color:var(--hc-color-action-primary-hover,#086068)] active:bg-[color:var(--hc-color-action-primary-active,#044A50)]",
+  /* White pill with subtle border — secondary action (Cancel / Reset / Back).
+     Hover picks up --hc-color-brand-50 (#DAEEF0) — a subtle brand tint so
+     every interaction reinforces HC1 identity without competing with the
+     primary variant. Consumers can retune via the alias token. */
   outline:
-    "border-border bg-background shadow-xs hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+    "border-[color:var(--hc-color-border-default)] bg-[color:var(--hc-color-bg-surface)] text-[color:var(--hc-color-text-primary)] shadow-xs hover:bg-[color:var(--hc-color-brand-50)] hover:border-[color:var(--hc-color-brand-100)] active:bg-[color:var(--hc-color-brand-100)]",
+  /* Muted-neutral surface — supporting action alongside primary.
+     Per shadcn convention: NEUTRAL at rest, subtle brand-teal tint on
+     hover (--hc-color-brand-50). Never becomes a "second brand color". */
   secondary:
-    "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+    "bg-[color:var(--hc-color-bg-subtle)] text-[color:var(--hc-color-text-primary)] border-[color:var(--hc-color-border-subtle)] hover:bg-[color:var(--hc-color-brand-50)] hover:border-[color:var(--hc-color-brand-100)] active:bg-[color:var(--hc-color-brand-100)]",
+  /* Transparent at rest, brand-tinted hover fill — low-emphasis actions. */
   ghost:
-    "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+    "bg-transparent text-[color:var(--hc-color-text-primary)] hover:bg-[color:var(--hc-color-brand-50)] active:bg-[color:var(--hc-color-brand-100)]",
+  /* Subtle red wash + red text — delete/cancel-only actions. */
   destructive:
-    "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-  link: "text-primary underline-offset-4 hover:underline",
+    "bg-[color:var(--hc-color-severity-critical-bg)] text-[color:var(--hc-color-severity-critical-text)] border-[color:var(--hc-color-severity-critical-border)] hover:bg-[color:var(--hc-color-severity-critical-bg-subtle)] focus-visible:border-[color:var(--hc-color-status-error-fg)] focus-visible:ring-[color:var(--hc-color-status-error-bg)]",
+  /* Underline-on-hover link-styled button. */
+  link: "bg-transparent text-[color:var(--hc-color-text-link)] hover:text-[color:var(--hc-color-text-link-hover)] hover:underline underline-offset-4",
 } as const;
 
 /* Legacy HC1 v0.11 variants → route to canonical + optional overrides */
