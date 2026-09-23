@@ -52,11 +52,15 @@ import {
   SwitchDoc,
   TextareaDoc,
   GaugeDoc,
+  ComboboxDoc,
+  DropdownMenuDoc,
+  SidebarDoc,
 } from "./components";
 
 import {
   DashboardPatternDoc,
   FormsDoc,
+  ConfirmDialogDoc,
   TablesDoc,
   FiltersDoc,
   NavigationDoc,
@@ -102,6 +106,9 @@ export const SECTIONS: SectionEntry[] = [
   { id: "card",         label: "Card",         category: "components",  Component: CardDoc },
   { id: "badge",        label: "Badge",        category: "components",  Component: BadgeDoc },
   { id: "avatar",       label: "Avatar",       category: "components",  Component: AvatarDoc },
+  { id: "combobox",     label: "Combobox",     category: "components",  Component: ComboboxDoc },
+  { id: "dropdown-menu", label: "Dropdown Menu", category: "components", Component: DropdownMenuDoc },
+  { id: "sidebar",      label: "Sidebar",      category: "components",  Component: SidebarDoc },
   { id: "alert",        label: "Alert",        category: "components",  Component: AlertDoc },
   { id: "tabs",         label: "Tabs",         category: "components",  Component: TabsDoc },
   { id: "dialog",       label: "Dialog",       category: "components",  Component: DialogDoc },
@@ -123,6 +130,7 @@ export const SECTIONS: SectionEntry[] = [
   // Patterns
   { id: "pattern-dashboard",  label: "Dashboard",  category: "patterns", Component: DashboardPatternDoc },
   { id: "pattern-forms",      label: "Forms",      category: "patterns", Component: FormsDoc },
+  { id: "pattern-confirm-dialog", label: "Confirm Dialog", category: "patterns", Component: ConfirmDialogDoc },
   { id: "pattern-tables",     label: "Tables",     category: "patterns", Component: TablesDoc },
   { id: "pattern-filters",    label: "Filters",    category: "patterns", Component: FiltersDoc },
   { id: "pattern-navigation", label: "Navigation", category: "patterns", Component: NavigationDoc },

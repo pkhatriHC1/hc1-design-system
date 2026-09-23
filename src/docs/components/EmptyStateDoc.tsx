@@ -17,7 +17,14 @@ import {
   Users,
   WifiOff,
 } from "lucide-react";
-import { EmptyState } from "../../components/empty-state";
+import {
+  EmptyState,
+  NoDataEmptyState,
+  NoResultsEmptyState,
+  ErrorEmptyState,
+  PermissionDeniedEmptyState,
+  OfflineEmptyState,
+} from "../../components/empty-state";
 import type {
   EmptyStateLayout,
   EmptyStateVariant,
@@ -44,6 +51,7 @@ export function EmptyStateDoc() {
       <PurposeBlock />
       <AnatomyBlock />
       <CompositionBlock />
+      <PresetsBlock />
       <VariantsBlock />
       <LayoutsBlock />
       <FeaturesBlock />
@@ -202,6 +210,162 @@ function CodeBlock({ title, tone, code }: { title: string; tone: "do" | "dont"; 
       <pre style={{ margin: 0, padding: t.space.inline.md, fontFamily: t.font.mono, fontSize: 12, lineHeight: 1.6, color: t.color.text.primary, whiteSpace: "pre", overflowX: "auto" }}>
         {code}
       </pre>
+    </div>
+  );
+}
+
+/* ══════ Presets ══════════════════════════════════════════════════ */
+
+function PresetsBlock() {
+  return (
+    <DocBlock
+      title="Preset shortcuts"
+      lead="Five opinionated preset components for the scenarios that account for ~80% of empty states in HC1 products. Each picks the right variant, drops in a sensible lucide icon, and exposes a slim primary/secondary action API so a real empty state takes one line instead of ten."
+    >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: t.space.inline.lg,
+        }}
+      >
+        <PresetTile
+          title="<NoDataEmptyState />"
+          hint="Empty collection. Consumer supplies title/description and an action like 'Add patient'."
+          code={`<NoDataEmptyState\n  title="No patients yet"\n  description="Add your first patient to get started."\n  actionLabel="Add patient"\n  onAction={openAdd}\n/>`}
+          preset={
+            <NoDataEmptyState
+              title="No patients yet"
+              description="Add your first patient to get started."
+              actionLabel="Add patient"
+              onAction={() => {}}
+              layout="contained"
+            />
+          }
+        />
+        <PresetTile
+          title="<NoResultsEmptyState />"
+          hint="Filter / search returned nothing. Pass `query` to auto-format the description, `onClear` for the reset action."
+          code={`<NoResultsEmptyState\n  query="john"\n  onClear={() => setQuery("")}\n/>`}
+          preset={
+            <NoResultsEmptyState
+              query="john"
+              onClear={() => {}}
+              layout="contained"
+            />
+          }
+        />
+        <PresetTile
+          title="<ErrorEmptyState />"
+          hint="Surface failed to load. Pass `onRetry` and the DS renders a Retry button with a refresh icon."
+          code={`<ErrorEmptyState onRetry={refetch} />`}
+          preset={
+            <ErrorEmptyState
+              onRetry={() => {}}
+              layout="contained"
+            />
+          }
+        />
+        <PresetTile
+          title="<PermissionDeniedEmptyState />"
+          hint="User lacks access. Pass `resource` for the auto-worded description and `onRequestAccess` for the primary action."
+          code={`<PermissionDeniedEmptyState\n  resource="patient records"\n  onRequestAccess={openRequest}\n/>`}
+          preset={
+            <PermissionDeniedEmptyState
+              resource="patient records"
+              onRequestAccess={() => {}}
+              layout="contained"
+            />
+          }
+        />
+        <PresetTile
+          title="<OfflineEmptyState />"
+          hint="Network / connectivity issue. `onRetry` binds a primary Retry action."
+          code={`<OfflineEmptyState onRetry={reconnect} />`}
+          preset={
+            <OfflineEmptyState
+              onRetry={() => {}}
+              layout="contained"
+            />
+          }
+        />
+      </div>
+
+      <Callout tone="info" title="When to reach for the primitive instead">
+        Presets are shortcuts, not replacements. Use the base {"<EmptyState>"} primitive when you need a bespoke icon (a lucide default won&apos;t do), a Footer link, a two-tier action row, or a custom illustration slot. The presets exist so the 80% case is a one-liner, not so the primitive gets locked away.
+      </Callout>
+    </DocBlock>
+  );
+}
+
+function PresetTile({
+  title,
+  hint,
+  code,
+  preset,
+}: {
+  title: string;
+  hint: string;
+  code: string;
+  preset: ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        border: `1px solid ${t.color.border.subtle}`,
+        borderRadius: t.radius.control,
+        background: t.color.background.default,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        style={{
+          padding: t.space.inline.lg,
+          borderBottom: `1px solid ${t.color.border.subtle}`,
+          background: t.color.background.subtle,
+        }}
+      >
+        {preset}
+      </div>
+      <div style={{ padding: t.space.inline.lg }}>
+        <code
+          style={{
+            fontFamily: t.font.mono,
+            fontWeight: 700,
+            fontSize: 13,
+            color: t.color.action.primary,
+          }}
+        >
+          {title}
+        </code>
+        <div
+          style={{
+            ...t.type.caption,
+            color: t.color.text.secondary,
+            marginTop: t.space.stack.xs,
+          }}
+        >
+          {hint}
+        </div>
+        <pre
+          style={{
+            margin: `${t.space.stack.md} 0 0`,
+            padding: t.space.inline.md,
+            background: t.color.background.subtle,
+            borderRadius: t.radius.control,
+            fontFamily: t.font.mono,
+            fontSize: 12,
+            lineHeight: 1.6,
+            color: t.color.text.primary,
+            whiteSpace: "pre",
+            overflowX: "auto",
+          }}
+        >
+          {code}
+        </pre>
+      </div>
     </div>
   );
 }
