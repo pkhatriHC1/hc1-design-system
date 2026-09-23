@@ -28,6 +28,8 @@ export function SidebarDoc() {
       <PurposeBlock />
       <AnatomyBlock />
       <CollapseBlock />
+      <ActivePathBlock />
+      <AsChildBlock />
       <GroupBlock />
       <PlaygroundBlock />
       <PropsTableBlock />
@@ -182,6 +184,180 @@ function CollapseBlock() {
           </Sidebar>
         </div>
       </div>
+    </DocBlock>
+  );
+}
+
+/* ══════ Active path (auto-active) ══════════════════════════════════ */
+
+function ActivePathBlock() {
+  const [pathname, setPathname] = useState("/reports");
+  const routes = ["/", "/reports", "/patients", "/patients/12", "/settings"];
+
+  return (
+    <DocBlock
+      title="activePath — auto-derive active state"
+      lead="Every product used to hand-wire `active={pathname === '/reports'}` on every Item. Pass `activePath` on the Sidebar root instead — every Item with an `href` (or an asChild child with `to` / `href`) auto-derives its active state. `matchMode='startsWith'` catches nested routes; per-item `matchMode` overrides the default."
+    >
+      <div
+        style={{
+          border: `1px solid ${t.color.border.subtle}`,
+          borderRadius: t.radius.control,
+          background: t.color.background.default,
+          padding: t.space.inline.xl,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            gap: t.space.inline.md,
+            marginBottom: t.space.stack.md,
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          <span style={{ ...t.type.caption, color: t.color.text.tertiary, fontFamily: t.font.mono }}>
+            simulate router pathname
+          </span>
+          {routes.map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => setPathname(r)}
+              style={{
+                fontFamily: t.font.mono,
+                fontSize: 12,
+                padding: `4px 10px`,
+                borderRadius: t.radius.control,
+                border: `1px solid ${t.color.border.default}`,
+                background: r === pathname ? t.color.action.primary : t.color.background.default,
+                color: r === pathname ? t.color.text.inverse : t.color.text.primary,
+                cursor: "pointer",
+              }}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+
+        <div
+          style={{
+            height: 380,
+            display: "flex",
+            gap: t.space.inline.md,
+            padding: t.space.inline.md,
+            background: t.color.background.inverse,
+            borderRadius: t.radius.control,
+          }}
+        >
+          <Sidebar
+            defaultCollapsed={false}
+            persistKey={false}
+            ariaLabel="Auto-active preview"
+            activePath={pathname}
+            matchMode="startsWith"
+          >
+            <Sidebar.Header />
+            <Sidebar.Section>
+              <Sidebar.Item icon={<Home />} label="Overview" href="/" />
+              <Sidebar.Item icon={<BarChart3 />} label="Reports" href="/reports" />
+              <Sidebar.Item icon={<Users />} label="Patients" href="/patients" />
+              <Sidebar.Item icon={<Settings />} label="Settings" href="/settings" />
+            </Sidebar.Section>
+          </Sidebar>
+
+          <div
+            style={{
+              flex: 1,
+              padding: t.space.inline.lg,
+              color: t.color.text.inverse,
+              fontFamily: t.font.mono,
+              fontSize: 12,
+              opacity: 0.7,
+            }}
+          >
+            <div>current pathname: <strong>{pathname}</strong></div>
+            <div>matchMode: <strong>startsWith</strong></div>
+            <div style={{ marginTop: t.space.stack.md, opacity: 0.6 }}>
+              /patients/12 highlights &quot;Patients&quot; because startsWith
+              respects path boundaries — /reports doesn&apos;t match /reports-archive.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Callout tone="info" title="When to reach for startsWith vs. exact">
+        Use <code>startsWith</code> when nested routes should keep the parent nav highlighted (a `/patients/12` detail page still lights up &quot;Patients&quot;). Use <code>exact</code> for top-level routes that should only highlight when the user is at the exact page. Mix them: set a default on the root, override per-Item with <code>matchMode</code>.
+      </Callout>
+    </DocBlock>
+  );
+}
+
+/* ══════ asChild (router Link integration) ═════════════════════════ */
+
+function AsChildBlock() {
+  return (
+    <DocBlock
+      title="asChild — router Link integration"
+      lead="Set `asChild` and pass a single router `<Link>` as the child. The DS clones the element, applies the Item styling + data-attrs, injects the icon + label + badge chrome as its children, and forwards the ref. The router owns navigation (client-side transitions, no full page reloads); the DS owns styling. Works with React Router, Next.js, TanStack Router — anything with a Link component."
+    >
+      <div
+        style={{
+          border: `1px solid ${t.color.border.subtle}`,
+          borderRadius: t.radius.control,
+          background: t.color.background.default,
+          padding: t.space.inline.xl,
+        }}
+      >
+        <pre
+          style={{
+            margin: 0,
+            padding: t.space.inline.lg,
+            fontFamily: t.font.mono,
+            fontSize: 12,
+            lineHeight: 1.6,
+            color: t.color.text.primary,
+            whiteSpace: "pre",
+            overflowX: "auto",
+            background: t.color.background.subtle,
+            borderRadius: t.radius.control,
+          }}
+        >
+{`// React Router / TanStack Router — <Link to="…" />
+import { Link, useLocation } from "react-router-dom";
+
+const { pathname } = useLocation();
+
+<Sidebar activePath={pathname} matchMode="startsWith">
+  <Sidebar.Header />
+  <Sidebar.Section>
+    <Sidebar.Item asChild icon={<Home />} label="Overview">
+      <Link to="/" />
+    </Sidebar.Item>
+    <Sidebar.Item asChild icon={<BarChart3 />} label="Reports">
+      <Link to="/reports" />
+    </Sidebar.Item>
+    <Sidebar.Item asChild icon={<Users />} label="Patients" matchMode="startsWith">
+      <Link to="/patients" />
+    </Sidebar.Item>
+  </Sidebar.Section>
+</Sidebar>
+
+// Next.js — same shape, next/link href instead of to
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+<Sidebar activePath={usePathname()}>
+  <Sidebar.Item asChild icon={<Home />} label="Overview">
+    <Link href="/" />
+  </Sidebar.Item>
+</Sidebar>`}
+        </pre>
+      </div>
+
+      <Callout tone="info" title="What the DS injects">
+        The consumer&apos;s <code>{'<Link />'}</code> is cloned; the DS attaches: <code>className</code> (merged with any existing className on the Link), <code>data-slot=&quot;sidebar-item&quot;</code>, <code>data-active</code>, <code>aria-current=&quot;page&quot;</code> when active, and the icon + label + badge chrome as the Link&apos;s children. Pass the Link with any existing className — the DS merges, doesn&apos;t replace.
+      </Callout>
     </DocBlock>
   );
 }
@@ -381,7 +557,22 @@ const ROOT_PROPS: PropRow[] = [
   { name: "onCollapsedChange", type: "(collapsed: boolean) => void",         def: "—",           desc: "Fires when the trigger, shortcut, or an Item click toggles collapse." },
   { name: "persistKey",        type: "string | false",                       def: "'hc-sidebar-collapsed'", desc: "localStorage key for collapsed state. `false` disables persistence." },
   { name: "keyboardShortcut",  type: "string | false",                       def: "'b'",         desc: "Cmd/Ctrl+<key> toggles collapse. `false` disables the shortcut." },
+  { name: "activePath",        type: "string",                               def: "—",           desc: "Current URL path. Items with an href / asChild `to` auto-derive active state by matching against this value." },
+  { name: "matchMode",         type: "'exact' | 'startsWith'",               def: "'exact'",     desc: "How Item paths are matched against activePath by default. Per-item override available." },
   { name: "ariaLabel",         type: "string",                               def: "'Primary'",   desc: "Accessible name for the <nav> landmark." },
+];
+
+const ITEM_PROPS: PropRow[] = [
+  { name: "icon",         type: "ReactNode",                     def: "—",     desc: "Leading icon slot. Consumer passes any node (typically a lucide icon)." },
+  { name: "label",        type: "string",                        def: "—",     desc: "Row label. Used as the collapsed-tooltip content by default." },
+  { name: "href",         type: "string",                        def: "—",     desc: "Renders the item as an <a href>. Mutually exclusive with onClick and asChild." },
+  { name: "onClick",      type: "(e: MouseEvent) => void",       def: "—",     desc: "Renders the item as a <button>. Mutually exclusive with href and asChild." },
+  { name: "asChild",      type: "true",                          def: "—",     desc: "Clone the single React element child (e.g. a router <Link>) as the item wrapper. DS injects className + data-attrs + icon/label/badge chrome." },
+  { name: "active",       type: "boolean",                       def: "—",     desc: "Explicit active state. Overrides any auto-derivation from activePath." },
+  { name: "matchMode",    type: "'exact' | 'startsWith'",        def: "root's", desc: "Per-item override of the root Sidebar's matchMode. Useful for parent routes that should stay highlighted for descendant paths." },
+  { name: "badge",        type: "ReactNode",                     def: "—",     desc: "Trailing badge. Hidden when the sidebar is collapsed." },
+  { name: "tooltip",      type: "ReactNode",                     def: "label", desc: "Content shown when the sidebar is collapsed and the item is hovered / focused." },
+  { name: "disabled",     type: "boolean",                       def: "false", desc: "Muted opacity; pointer-events off. Still focusable so screen readers can announce it." },
 ];
 
 const GROUP_PROPS: PropRow[] = [
@@ -400,6 +591,10 @@ function PropsTableBlock() {
     <DocBlock title="Props">
       <PropSectionEyebrow>Sidebar (root)</PropSectionEyebrow>
       <PropsTable rows={ROOT_PROPS} />
+      <div style={{ marginTop: t.space.section.sm }}>
+        <PropSectionEyebrow>Sidebar.Item</PropSectionEyebrow>
+        <PropsTable rows={ITEM_PROPS} />
+      </div>
       <div style={{ marginTop: t.space.section.sm }}>
         <PropSectionEyebrow>Sidebar.Group</PropSectionEyebrow>
         <PropsTable rows={GROUP_PROPS} />

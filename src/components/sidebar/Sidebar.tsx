@@ -1,5 +1,6 @@
 import {
   Children,
+  cloneElement,
   createContext,
   forwardRef,
   isValidElement,
@@ -10,7 +11,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import type { MouseEvent, ReactNode } from "react";
+import type { MouseEvent, ReactElement, ReactNode } from "react";
 import { ChevronRight, Menu, X } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { SectionLabel } from "../section-label";
@@ -44,6 +45,10 @@ type SidebarContextValue = {
   collapsed: boolean;
   toggle: () => void;
   setCollapsed: (value: boolean) => void;
+  /** Current URL path — used by Sidebar.Item to auto-derive active state. */
+  activePath?: string;
+  /** Default match mode for Item hrefs against activePath. */
+  matchMode: "exact" | "startsWith";
 };
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
@@ -77,6 +82,8 @@ type SidebarStateOptions = {
   onCollapsedChange?: (collapsed: boolean) => void;
   persistKey?: string | false;
   keyboardShortcut?: string | false;
+  activePath?: string;
+  matchMode?: "exact" | "startsWith";
 };
 
 function useSidebarState({
@@ -85,6 +92,8 @@ function useSidebarState({
   onCollapsedChange,
   persistKey = DEFAULT_PERSIST_KEY,
   keyboardShortcut = "b",
+  activePath,
+  matchMode = "exact",
 }: SidebarStateOptions): SidebarContextValue {
   const [uncontrolled, setUncontrolled] = useState<boolean>(() => {
     if (controlledCollapsed !== undefined) return controlledCollapsed;
@@ -141,8 +150,8 @@ function useSidebarState({
   }, [keyboardShortcut, toggle]);
 
   return useMemo<SidebarContextValue>(
-    () => ({ collapsed, toggle, setCollapsed }),
-    [collapsed, toggle, setCollapsed],
+    () => ({ collapsed, toggle, setCollapsed, activePath, matchMode }),
+    [collapsed, toggle, setCollapsed, activePath, matchMode],
   );
 }
 
@@ -163,6 +172,8 @@ const SidebarRoot = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
     onCollapsedChange,
     persistKey = DEFAULT_PERSIST_KEY,
     keyboardShortcut = "b",
+    activePath,
+    matchMode = "exact",
     ariaLabel = "Primary",
     className,
     children,
@@ -179,6 +190,8 @@ const SidebarRoot = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
     onCollapsedChange,
     persistKey,
     keyboardShortcut,
+    activePath,
+    matchMode,
   });
 
   const contextValue = existingContext ?? localContext;
@@ -424,8 +437,43 @@ const SidebarItem = forwardRef<HTMLElement, SidebarItemProps>(function SidebarIt
   props,
   forwardedRef,
 ) {
-  const { icon, label, active, disabled, badge, tooltip, className, ...rest } = props;
-  const { collapsed } = useSidebarContext();
+  /* className is present on the anchor/button variants but not on the
+     asChild variant of the discriminated union — widen at the
+     destructuring so we can pull it out uniformly. */
+  const {
+    icon,
+    label,
+    active: explicitActive,
+    disabled,
+    badge,
+    tooltip,
+    matchMode: itemMatchMode,
+    className,
+    ...rest
+  } = props as SidebarItemProps & { className?: string };
+  const {
+    collapsed,
+    activePath,
+    matchMode: contextMatchMode,
+  } = useSidebarContext();
+
+  /* Derive the target path from whichever form the item takes so
+     activePath matching works uniformly across href, asChild + Link
+     (React Router `to`), asChild + Next.js Link (`href`), etc. */
+  const asChild = "asChild" in props && props.asChild === true;
+  const targetPath =
+    "href" in props && typeof props.href === "string"
+      ? props.href
+      : asChild && isValidElement(props.children)
+        ? extractPathFromChild(props.children)
+        : undefined;
+
+  const active = deriveActive(
+    explicitActive,
+    activePath,
+    targetPath,
+    itemMatchMode ?? contextMatchMode,
+  );
 
   /* Dimensions preserved from shadcn's SidebarMenuButton size="lg" so
      consumers migrating from that primitive see byte-identical layout. */
@@ -496,6 +544,34 @@ const SidebarItem = forwardRef<HTMLElement, SidebarItemProps>(function SidebarIt
     </span>
   );
 
+  /* asChild — clone the consumer's single React element (usually a
+     router Link) and inject the DS classes + a11y attrs + row content.
+     The child owns navigation; the DS owns styling. */
+  if (asChild && isValidElement(props.children)) {
+    const child = props.children as ReactElement<Record<string, unknown>>;
+    const childClassName =
+      typeof child.props.className === "string" ? child.props.className : undefined;
+    return (
+      <li className="list-none">
+        {cloneElement(
+          child,
+          {
+            ref: forwardedRef,
+            "data-slot": "sidebar-item",
+            "data-active": active || undefined,
+            "aria-current": active ? "page" : undefined,
+            "aria-disabled": disabled || undefined,
+            className: cn(commonClasses, childClassName),
+          },
+          iconEl,
+          labelEl,
+          badgeEl,
+          collapsedTooltipEl,
+        )}
+      </li>
+    );
+  }
+
   /* Anchor form when href is provided; button form otherwise. */
   if ("href" in props && props.href !== undefined) {
     const { href, ...anchorRest } = rest as { href: string };
@@ -544,6 +620,44 @@ const SidebarItem = forwardRef<HTMLElement, SidebarItemProps>(function SidebarIt
   );
 });
 SidebarItem.displayName = "Sidebar.Item";
+
+/* ══════ Active-state derivation helpers ═══════════════════════════ */
+
+/**
+ * Pull a target path out of an asChild child element. Handles the two
+ * common router conventions:
+ *   - React Router / TanStack Router: <Link to="…" />
+ *   - Next.js / plain anchor:        <Link href="…" /> / <a href="…" />
+ * Returns undefined for anything else (button-style children).
+ */
+function extractPathFromChild(el: ReactElement): string | undefined {
+  const props = (el.props ?? {}) as { to?: unknown; href?: unknown };
+  if (typeof props.to === "string") return props.to;
+  if (typeof props.href === "string") return props.href;
+  return undefined;
+}
+
+/**
+ * Resolve the item's active state:
+ *   1. Explicit `active` prop always wins.
+ *   2. If activePath + a target path exist, match per mode.
+ *   3. Otherwise false.
+ */
+function deriveActive(
+  explicit: boolean | undefined,
+  activePath: string | undefined,
+  target: string | undefined,
+  mode: "exact" | "startsWith",
+): boolean {
+  if (typeof explicit === "boolean") return explicit;
+  if (!activePath || !target) return false;
+  if (mode === "exact") return activePath === target;
+  // startsWith — respect path boundaries so "/reports" doesn't
+  // match "/reports-archive". "/" is a special case: only exact
+  // matches, otherwise every path would light it up.
+  if (target === "/") return activePath === "/";
+  return activePath === target || activePath.startsWith(target + "/");
+}
 
 /* ══════ GROUP ═════════════════════════════════════════════════════ */
 

@@ -3,6 +3,7 @@ import type {
   ButtonHTMLAttributes,
   HTMLAttributes,
   MouseEvent,
+  ReactElement,
   ReactNode,
 } from "react";
 
@@ -40,6 +41,26 @@ export type SidebarProps = HTMLAttributes<HTMLElement> & {
    * Accessible name for the `<nav>` landmark. Defaults to "Primary".
    */
   ariaLabel?: string;
+  /**
+   * Current URL path. When set, every Sidebar.Item that has an `href`
+   * auto-derives its `active` state by matching against this value —
+   * consumers stop hand-wiring `active={pathname === '/foo'}` on every
+   * row. An Item's explicit `active` prop still wins if provided.
+   *
+   * Pair with your router: React Router → `useLocation().pathname`,
+   * Next.js → `usePathname()`, TanStack Router → `useRouterState()`.
+   */
+  activePath?: string;
+  /**
+   * How Item hrefs are matched against `activePath` by default.
+   *   exact       — activePath === item.href (default)
+   *   startsWith  — item.href is a prefix of activePath, respecting
+   *                 path boundaries so `/reports` doesn't match `/reports-archive`
+   *
+   * Per-item override available via `SidebarItemProps.matchMode`.
+   * @default 'exact'
+   */
+  matchMode?: "exact" | "startsWith";
 };
 
 /* ══════ HEADER ════════════════════════════════════════════════════ */
@@ -97,11 +118,15 @@ export type SidebarSectionProps = HTMLAttributes<HTMLDivElement> & {
 /* ══════ ITEM ══════════════════════════════════════════════════════ */
 
 /**
- * Common props for both anchor and button item forms.
+ * Common props for anchor / button / asChild item forms.
  */
 type SidebarItemCommonProps = {
   icon: ReactNode;
   label: string;
+  /**
+   * Explicit active state. Overrides any active derivation from the
+   * root's `activePath`. Leave unset to let the DS derive it.
+   */
   active?: boolean;
   disabled?: boolean;
   /**
@@ -114,18 +139,43 @@ type SidebarItemCommonProps = {
    * hovers/focuses the item. Defaults to `label`.
    */
   tooltip?: ReactNode;
+  /**
+   * Per-item override of the root Sidebar's `matchMode`. Useful when
+   * one item wants prefix matching in a mostly-exact sidebar (e.g. the
+   * "Patients" row that should stay highlighted for `/patients/*`
+   * detail routes).
+   */
+  matchMode?: "exact" | "startsWith";
 };
 
 export type SidebarItemProps = SidebarItemCommonProps &
   (
-    | ({ href: string; onClick?: never } & Omit<
+    | ({ href: string; onClick?: never; asChild?: never } & Omit<
         AnchorHTMLAttributes<HTMLAnchorElement>,
         keyof SidebarItemCommonProps | "href"
       >)
-    | ({ onClick?: (event: MouseEvent<HTMLButtonElement>) => void; href?: never } & Omit<
+    | ({ onClick?: (event: MouseEvent<HTMLButtonElement>) => void; href?: never; asChild?: never } & Omit<
         ButtonHTMLAttributes<HTMLButtonElement>,
         keyof SidebarItemCommonProps | "onClick"
       >)
+    | {
+        /**
+         * Render as a Radix Slot-like clone of a single React element
+         * child. Use to plug in a router `<Link>` (React Router,
+         * Next.js, TanStack Router) — the DS clones the element,
+         * applies the item styling + data-attrs, injects the icon +
+         * label + badge chrome as its children, and forwards the ref.
+         *
+         * When `asChild` is true, the child element owns navigation
+         * (the DS doesn't render an `<a href>` or a `<button>`), and
+         * pattern matching for `activePath` uses the child's `href` /
+         * `to` prop.
+         */
+        asChild: true;
+        children: ReactElement;
+        href?: never;
+        onClick?: never;
+      }
   );
 
 /* ══════ GROUP ═════════════════════════════════════════════════════ */
