@@ -2,6 +2,11 @@ import type { HTMLAttributes, ReactNode } from "react";
 
 export type PageHeaderProps = Omit<HTMLAttributes<HTMLDivElement>, "title"> & {
   /**
+   * Optional breadcrumb strip rendered above the title. Compose HC1's
+   * Breadcrumb primitive inside so link styling stays consistent.
+   */
+  breadcrumb?: ReactNode;
+  /**
    * The page title. Rendered as an h1 by default; override the element
    * via `titleAs` if the surrounding document structure dictates a
    * different level.
@@ -28,4 +33,11 @@ export type PageHeaderProps = Omit<HTMLAttributes<HTMLDivElement>, "title"> & {
    * Mutually exclusive with `meta`.
    */
   actions?: ReactNode;
+  /**
+   * Optional tab strip rendered at the bottom of the header (below
+   * title + description). Compose HC1's Tabs primitive inside — the
+   * PageHeader handles the surrounding spacing + bottom divider so
+   * the tabs read as part of the page chrome, not the page body.
+   */
+  tabs?: ReactNode;
 };

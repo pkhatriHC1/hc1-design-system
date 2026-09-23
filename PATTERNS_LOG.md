@@ -43,11 +43,11 @@ The headline worklist story.
 - [x] `DataTable` pattern — `src/patterns/data-table/`. Config-driven column API (`DataTableColumn<T>`), three-way sort cycle (asc → desc → null), opt-in checkbox column via `selection` + `onSelectionChange`, opinionated loading skeletons + empty state + pagination footer. Consumer owns pagination + sort state; DataTable never slices or resorts the array.
 - [ ] `Worklist` preset — `DataTable` opinionated for clinical rows: Avatar + severity badge + row `DropdownMenu`. Deferred as a thin follow-up — the `DataTableDoc` "With FilterBar toolbar" section already shows the full worklist composition, so a dedicated preset only saves ~30 LOC per consumer. Revisit if we standardize the exact column shape across ClinicalIQ / SourceIQ / HerCare.
 
-## Phase 4 — Navigation & shell [not started]
+## Phase 4 — Navigation & shell [done 2026-09-23]
 
-- [ ] `AppShell` full — `Header`, `Sidebar`, `Main`, `Footer` slots. Extends existing `src/components/app-shell/` (primitive extension, not pattern).
-- [ ] `PageHeader` compound — `Breadcrumb`, `Title`, `Description`, `Tabs`, `Actions` slots. Extends existing `src/components/page-header/`.
-- [ ] `CommandPalette` pattern — `Dialog` + `Combobox` + recent items + keyboard shortcuts. Depends on Phase 2 Combobox.
+- [x] `AppShell` full — `src/components/app-shell/`. Added `AppShell.Header` (optional top bar, full-width, shrink-to-content, bottom divider) and `AppShell.Footer` (optional bottom bar, top divider). Root now walks children by displayName so JSX order doesn't matter — Header sits above the Sidebar + Main row, Footer sits below.
+- [x] `PageHeader` — `src/components/page-header/`. Added `breadcrumb` and `tabs` props alongside the existing title/subtitle/meta/actions. Breadcrumb strip renders above the title; Tabs strip renders at the bottom of the header on the content divider (Tabs above = top-level nav = Sidebar's job; Tabs below = within-page nav = PageHeader's slot). Kept the existing prop API for backward compat; compound subcomponents deferred (add if a consumer needs them).
+- [x] `CommandPalette` — `src/patterns/command-palette/`. Dialog + search input + filterable command list. Config-driven `CommandItem` array (label + description + icon + shortcut + group + keywords + action + disabled), first-seen group order, client-side substring filter with keywords support, custom `filter` override for fuzzy match. Keyboard: type-to-search, ArrowUp/Down navigate (disabled skipped), Home/End jump, Enter runs. DS doesn't bind ⌘K — consumers own the shortcut so the palette coexists with other Cmd+K listeners.
 
 ## Phase 5 — Dashboards [not started]
 
@@ -74,6 +74,17 @@ The headline worklist story.
 ---
 
 ## Log
+
+### 2026-09-23 — Phase 4 complete: AppShell + PageHeader extensions, CommandPalette
+Two primitive extensions and one net-new pattern.
+
+- AppShell got Header + Footer slots. Layout is now Header / [Sidebar + Main] / Footer, distributed by displayName so JSX order is free.
+- PageHeader got breadcrumb + tabs props. Backward-compat: existing title/subtitle/meta/actions still work. Compound subcomponents intentionally deferred — the prop-driven API covers the 90% case, and Sidebar-style compound would be over-engineering for a single-row header.
+- CommandPalette (src/patterns/command-palette/) — the ⌘K pattern. Dialog + search + filterable command list with groups, keywords, shortcuts, disabled rows, custom filter. Consumer owns the shortcut binding so the palette can coexist with other Cmd+K listeners.
+
+Doc pages: AppShellDoc + PageHeaderDoc under components, CommandPaletteDoc under patterns. Registry updated with app-shell, page-header, pattern-command-palette entries.
+
+Bundle: `dist/patterns/index.d.ts` grew 24.09 → 27.15 KB (just CommandPalette; the AppShell/PageHeader changes land in the main index).
 
 ### 2026-09-23 — Phase 3: FilterBar + DataTable landed
 Two of the three Phase 3 items shipped. `Worklist` preset deferred (see above).

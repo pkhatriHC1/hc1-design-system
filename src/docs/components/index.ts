@@ -7,6 +7,8 @@ export * from "./AvatarDoc";
 export * from "./ComboboxDoc";
 export * from "./DropdownMenuDoc";
 export * from "./SidebarDoc";
+export * from "./AppShellDoc";
+export * from "./PageHeaderDoc";
 export * from "./AlertDoc";
 export * from "./TabsDoc";
 export * from "./DialogDoc";

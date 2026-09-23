@@ -3,6 +3,7 @@ export * from "./FormsDoc";
 export * from "./ConfirmDialogDoc";
 export * from "./FilterBarDoc";
 export * from "./DataTableDoc";
+export * from "./CommandPaletteDoc";
 export * from "./TablesDoc";
 export * from "./FiltersDoc";
 export * from "./NavigationDoc";

@@ -55,6 +55,8 @@ import {
   ComboboxDoc,
   DropdownMenuDoc,
   SidebarDoc,
+  AppShellDoc,
+  PageHeaderDoc,
 } from "./components";
 
 import {
@@ -63,6 +65,7 @@ import {
   ConfirmDialogDoc,
   FilterBarDoc,
   DataTableDoc,
+  CommandPaletteDoc,
   TablesDoc,
   FiltersDoc,
   NavigationDoc,
@@ -111,6 +114,8 @@ export const SECTIONS: SectionEntry[] = [
   { id: "combobox",     label: "Combobox",     category: "components",  Component: ComboboxDoc },
   { id: "dropdown-menu", label: "Dropdown Menu", category: "components", Component: DropdownMenuDoc },
   { id: "sidebar",      label: "Sidebar",      category: "components",  Component: SidebarDoc },
+  { id: "app-shell",    label: "App Shell",    category: "components",  Component: AppShellDoc },
+  { id: "page-header",  label: "Page Header",  category: "components",  Component: PageHeaderDoc },
   { id: "alert",        label: "Alert",        category: "components",  Component: AlertDoc },
   { id: "tabs",         label: "Tabs",         category: "components",  Component: TabsDoc },
   { id: "dialog",       label: "Dialog",       category: "components",  Component: DialogDoc },
@@ -135,6 +140,7 @@ export const SECTIONS: SectionEntry[] = [
   { id: "pattern-confirm-dialog", label: "Confirm Dialog", category: "patterns", Component: ConfirmDialogDoc },
   { id: "pattern-filter-bar", label: "Filter Bar", category: "patterns", Component: FilterBarDoc },
   { id: "pattern-data-table", label: "Data Table", category: "patterns", Component: DataTableDoc },
+  { id: "pattern-command-palette", label: "Command Palette", category: "patterns", Component: CommandPaletteDoc },
   { id: "pattern-tables",     label: "Tables",     category: "patterns", Component: TablesDoc },
   { id: "pattern-filters",    label: "Filters",    category: "patterns", Component: FiltersDoc },
   { id: "pattern-navigation", label: "Navigation", category: "patterns", Component: NavigationDoc },

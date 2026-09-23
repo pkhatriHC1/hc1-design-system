@@ -4,8 +4,9 @@ import type { PageHeaderProps } from "./PageHeader.types";
 
 /**
  * HC1 PageHeader — the standard hero strap that sits at the top of
- * every product page: title + optional subtitle on the left, optional
- * meta or actions slot on the right.
+ * every product page: optional breadcrumb + title + optional
+ * subtitle on the left, optional meta / actions on the right, optional
+ * tabs row at the bottom.
  *
  * Used to be reinvented on every route with slightly different
  * spacing choices; centralizing keeps every page consistent and lets
@@ -13,7 +14,7 @@ import type { PageHeaderProps } from "./PageHeader.types";
  */
 
 export const PageHeader = forwardRef<HTMLDivElement, PageHeaderProps>(function PageHeader(
-  { title, titleAs = "h1", subtitle, meta, actions, className, ...rest },
+  { breadcrumb, title, titleAs = "h1", subtitle, meta, actions, tabs, className, ...rest },
   forwardedRef,
 ) {
   return (
@@ -21,46 +22,67 @@ export const PageHeader = forwardRef<HTMLDivElement, PageHeaderProps>(function P
       ref={forwardedRef}
       data-slot="page-header"
       className={cn(
-        "mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between",
+        "mb-6 flex flex-col",
+        tabs ? "gap-4" : "gap-3",
         className,
       )}
       {...rest}
     >
-      <div className="min-w-0 flex-1">
-        {createElement(
-          titleAs,
-          {
-            "data-slot": "page-header-title",
-            className: cn(
-              "m-0 mb-0.5",
-              "font-bold text-[color:var(--hc-color-text-primary)]",
-              "text-[24px] leading-[1.2] tracking-tight",
-              "[font-family:var(--hc-font-sans)]",
-            ),
-          },
-          title,
-        )}
-        {subtitle && (
-          <p
-            data-slot="page-header-subtitle"
-            className={cn(
-              "m-0",
-              "text-[14px] leading-[1.5]",
-              "text-[color:var(--hc-color-text-tertiary)]",
-            )}
+      {breadcrumb && (
+        <div data-slot="page-header-breadcrumb" className="min-w-0">
+          {breadcrumb}
+        </div>
+      )}
+
+      <div
+        data-slot="page-header-row"
+        className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
+      >
+        <div className="min-w-0 flex-1">
+          {createElement(
+            titleAs,
+            {
+              "data-slot": "page-header-title",
+              className: cn(
+                "m-0 mb-0.5",
+                "font-bold text-[color:var(--hc-color-text-primary)]",
+                "text-[24px] leading-[1.2] tracking-tight",
+                "[font-family:var(--hc-font-sans)]",
+              ),
+            },
+            title,
+          )}
+          {subtitle && (
+            <p
+              data-slot="page-header-subtitle"
+              className={cn(
+                "m-0",
+                "text-[14px] leading-[1.5]",
+                "text-[color:var(--hc-color-text-tertiary)]",
+              )}
+            >
+              {subtitle}
+            </p>
+          )}
+        </div>
+
+        {(meta || actions) && (
+          <div
+            data-slot="page-header-aside"
+            className="flex shrink-0 items-center gap-2"
           >
-            {subtitle}
-          </p>
+            {meta}
+            {actions}
+          </div>
         )}
       </div>
 
-      {(meta || actions) && (
+      {tabs && (
         <div
-          data-slot="page-header-aside"
-          className="flex shrink-0 items-center gap-2"
+          data-slot="page-header-tabs"
+          className="-mb-[1px] border-b border-[color:var(--hc-color-border-subtle)]"
         >
-          {meta}
-          {actions}
+          {tabs}
         </div>
       )}
     </div>
