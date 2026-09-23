@@ -29,13 +29,11 @@ Pattern docs stubs live under `src/docs/patterns/`. Pattern CODE lives under `sr
 - [x] `EmptyState` presets — five shortcuts inside `src/components/empty-state/presets.tsx`: `NoDataEmptyState`, `NoResultsEmptyState`, `ErrorEmptyState`, `PermissionDeniedEmptyState`, `OfflineEmptyState`. Each picks the right `variant`, ships a lucide default icon, exposes a slim primary/secondary action API and slots for override.
 - [x] `Sidebar.Group` — collapsible parent row that mirrors `Sidebar.Item` layout + trailing chevron + animated child list. Uncontrolled `defaultOpen` or controlled `open`/`onOpenChange`. Collapsed-rail behaviour: renders as icon-only with tooltip, children hidden entirely (fan-out popover deliberately out of scope for the primitive).
 
-## Phase 2 — Primitive gaps that data patterns depend on [not started]
+## Phase 2 — Primitive gaps that data patterns depend on [done 2026-09-23]
 
-Net-new primitives so Phase 3 has building blocks.
-
-- [ ] `Combobox` primitive — searchable Select. Base for FilterBar + Command palette.
-- [ ] `DropdownMenu` primitive — row actions, header overflow. Replaces ad-hoc `Popover` menus.
-- [ ] `Avatar` primitive — worklist rows, user chips, comment threads.
+- [x] `Avatar` — `src/components/avatar/`. Circle/square, 5-size ladder (xs/sm/md/lg/xl matching Button+Input), image-with-graceful-fallback via `@radix-ui/react-avatar`, initials auto-derived from `name`, optional presence dot (online/away/busy/offline). Also ships `AvatarGroup` with `max` overflow behaviour.
+- [x] `DropdownMenu` — `src/components/dropdown-menu/`. Thin wrap of `@radix-ui/react-dropdown-menu` on the DS chrome family (same panel style as Popover/Dialog). Compound: `Trigger` / `Content` / `Item` (with `destructive` + `shortcut`) / `CheckboxItem` / `RadioGroup` / `RadioItem` / `Label` / `Separator` / `Group` / `Sub` / `SubTrigger` / `SubContent`. Size ladder on `Content` (sm/md/lg min-widths).
+- [x] `Combobox` — `src/components/combobox/`. Searchable Select on top of `@radix-ui/react-popover`. Client-side filter by default (label + description case-insensitive substring); pass `onSearch` for server-side. Full keyboard nav (Arrow/Home/End/Enter/Escape), aria-activedescendant, loading spinner, group headers, custom filter override. Same validation model as Input.
 
 ## Phase 3 — Data-table pattern layer [not started]
 
@@ -76,6 +74,17 @@ The headline worklist story.
 ---
 
 ## Log
+
+### 2026-09-23 — Phase 2 complete: Avatar, DropdownMenu, Combobox landed
+Three net-new primitives that Phase 3 (FilterBar, DataTable, Worklist) depends on.
+
+- `Avatar` at `src/components/avatar/` — 5-size ladder aligned to Button/Input, circle+square, initials auto-derived, presence dot in 4 tones, plus `AvatarGroup` with overflow `max`. Uses `@radix-ui/react-avatar` for the image → fallback cascade.
+- `DropdownMenu` at `src/components/dropdown-menu/` — full compound wrap of `@radix-ui/react-dropdown-menu` (12 subcomponents). Same panel chrome as Popover/Dialog for family consistency. `Item.destructive` for delete rows, `Item.shortcut` for right-aligned ⌘K hints, nested submenus, checkbox + radio item styles.
+- `Combobox` at `src/components/combobox/` — searchable Select. Built on `@radix-ui/react-popover` + hand-rolled filter + keyboard nav (no `cmdk` dep). `onSearch` opt-in for server-side. Client-side default filter matches label + description, custom override supported. Full validation model (error/warning/success + helper text) mirroring Input.
+
+Two Radix packages added as OPTIONAL peer deps + devDeps: `@radix-ui/react-avatar ^1.1.0`, `@radix-ui/react-dropdown-menu ^2.1.0`. RHF stays optional too. `dist/index.d.ts` grew ~15KB (Avatar + DropdownMenu + Combobox types).
+
+Phase 3 (FilterBar → DataTable → Worklist) is next — the "worklist story" that the audit called out as the single highest-leverage data pattern.
 
 ### 2026-09-23 — Phase 1 complete
 All four Phase 1 items landed in one push after the Form pattern kickoff earlier the same day:

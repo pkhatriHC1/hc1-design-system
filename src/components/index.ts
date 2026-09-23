@@ -6,7 +6,10 @@
  * Standards → Component Checklist.
  */
 
+export * from "./avatar";
 export * from "./button";
+export * from "./combobox";
+export * from "./dropdown-menu";
 export * from "./input";
 export * from "./select";
 export * from "./card";
