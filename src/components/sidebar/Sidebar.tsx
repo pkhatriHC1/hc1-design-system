@@ -11,7 +11,7 @@ import {
   useState,
 } from "react";
 import type { MouseEvent, ReactNode } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Menu, X } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { SectionLabel } from "../section-label";
 import type {
@@ -231,10 +231,10 @@ SidebarRoot.displayName = "Sidebar";
 /* ══════ HEADER ════════════════════════════════════════════════════ */
 
 const SidebarHeader = forwardRef<HTMLDivElement, SidebarHeaderProps>(function SidebarHeader(
-  { brand, action, className, children, ...rest },
+  { brand, action, showToggle = true, className, children, ...rest },
   forwardedRef,
 ) {
-  const { collapsed } = useSidebarContext();
+  const { collapsed, toggle } = useSidebarContext();
 
   return (
     <div
@@ -251,16 +251,49 @@ const SidebarHeader = forwardRef<HTMLDivElement, SidebarHeaderProps>(function Si
       data-collapsed={collapsed}
       {...rest}
     >
-      {brand && (
+      {(showToggle || brand) && (
         <div
-          data-slot="sidebar-brand"
+          data-slot="sidebar-header-row"
           className={cn(
-            "flex items-center gap-2 px-2",
-            "text-[16px] font-bold leading-tight",
-            "text-[color:var(--hc-color-text-inverse)]",
+            "flex items-center gap-2",
+            collapsed ? "justify-center" : "justify-start",
           )}
         >
-          {brand}
+          {showToggle && (
+            <button
+              type="button"
+              data-slot="sidebar-toggle"
+              aria-label={collapsed ? "Open sidebar" : "Close sidebar"}
+              aria-expanded={!collapsed}
+              onClick={toggle}
+              className={cn(
+                /* Ghost-icon-button — square, transparent, brand-tinted hover */
+                "inline-flex shrink-0 items-center justify-center",
+                "size-[var(--hc-space-32)] rounded-md",
+                "text-[color:var(--hc-color-text-inverse)]",
+                "transition-[background-color] duration-150 ease-standard motion-reduce:duration-0",
+                "hover:bg-[color:rgba(255,255,255,0.08)]",
+                "focus:outline-none focus-visible:outline focus-visible:outline-2",
+                "focus-visible:outline-[color:var(--hc-color-bg-surface)] focus-visible:outline-offset-[-2px]",
+                "[&>svg]:size-5",
+              )}
+            >
+              {collapsed ? <Menu aria-hidden /> : <X aria-hidden />}
+            </button>
+          )}
+          {brand && !collapsed && (
+            <div
+              data-slot="sidebar-brand"
+              className={cn(
+                "flex min-w-0 flex-1 items-center gap-2",
+                "text-[16px] font-bold leading-tight",
+                "text-[color:var(--hc-color-text-inverse)]",
+                "truncate",
+              )}
+            >
+              {brand}
+            </div>
+          )}
         </div>
       )}
       {action && <SidebarHeaderAction action={action} collapsed={collapsed} />}

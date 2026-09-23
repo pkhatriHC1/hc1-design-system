@@ -60,13 +60,23 @@ export type SidebarHeaderAction = {
 
 export type SidebarHeaderProps = HTMLAttributes<HTMLDivElement> & {
   /**
-   * Brand mark. When the sidebar is collapsed, only the first character
-   * of the string form is shown; ReactNode form is hidden entirely.
-   * Pass whatever composition of logo/text your product needs.
+   * Built-in toggle button rendered at the top-left of the header. Shows
+   * an X icon when expanded, a Menu (hamburger) icon when collapsed;
+   * clicking flips the sidebar's collapsed state via the shared context.
+   * Set `false` when the trigger lives elsewhere (e.g. in an AppShell
+   * top bar via SidebarTrigger) so there's no duplicate control.
+   * @default true
+   */
+  showToggle?: boolean;
+  /**
+   * Optional brand mark. Not shown by default — most HC1 products only
+   * render the built-in toggle in the header. Opt in by passing a node
+   * (logo, initials, product name). Hidden entirely when the sidebar
+   * is collapsed.
    */
   brand?: ReactNode;
   /**
-   * Optional primary action pinned below the brand (e.g. "New batch",
+   * Optional primary action pinned below the header row (e.g. "New batch",
    * "Add Files to Analyze"). Full-width when expanded; icon-only when
    * collapsed.
    */

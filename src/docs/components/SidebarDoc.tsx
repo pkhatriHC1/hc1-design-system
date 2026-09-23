@@ -82,7 +82,7 @@ function AnatomyBlock() {
             ariaLabel="Documentation preview"
           >
             <Sidebar.Header
-              brand="ClinicalIQ"
+              
               action={{ label: "New batch", icon: <LayoutGrid />, onClick: () => {} }}
             />
             <Sidebar.Section title="Workspace">
@@ -110,7 +110,7 @@ function AnatomyBlock() {
           gap: t.space.inline.md,
         }}
       >
-        <Part name="Header"  desc="Brand + optional primary action (e.g. 'New batch'). When collapsed, brand shrinks to a single letter and action becomes an icon square." />
+        <Part name="Header"  desc="Built-in toggle button (X when expanded, hamburger when collapsed) + optional brand + optional primary action. Toggle uses the shared context to flip collapse state; brand is opt-in (most products just show the toggle)." />
         <Part name="Section" desc="Titled group of items. Title renders as an uppercase strap; hidden when the sidebar is collapsed." />
         <Part name="Item"    desc="A single nav row. Renders as an anchor (`href`) or a button (`onClick`). Owns icon, label, active state, badge, and collapsed-mode tooltip." />
         <Part name="Group"   desc="New in 0.13 — collapsible parent row that reveals nested Items on click. Trailing chevron rotates on open." />
@@ -169,7 +169,7 @@ function CollapseBlock() {
         >
           <Sidebar defaultCollapsed persistKey={false} ariaLabel="Collapsed preview">
             <Sidebar.Header
-              brand="ClinicalIQ"
+              
               action={{ label: "New batch", icon: <LayoutGrid />, onClick: () => {} }}
             />
             <Sidebar.Section>
@@ -215,7 +215,7 @@ function GroupBlock() {
           }}
         >
           <Sidebar defaultCollapsed={false} persistKey={false} ariaLabel="Group preview">
-            <Sidebar.Header brand="ClinicalIQ" />
+            <Sidebar.Header  />
             <Sidebar.Section>
               <Sidebar.Item icon={<Home />} label="Overview" href="#" />
               <Sidebar.Group icon={<Users />} label="Patients" defaultOpen active badge={<Badge variant="info">32</Badge>}>
@@ -287,7 +287,7 @@ function PlaygroundBlock() {
               ariaLabel="Playground preview"
             >
               <Sidebar.Header
-                brand="ClinicalIQ"
+                
                 action={{ label: "New batch", icon: <LayoutGrid />, onClick: () => {} }}
               />
               <Sidebar.Section title="Workspace">
