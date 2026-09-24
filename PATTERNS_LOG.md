@@ -55,11 +55,11 @@ The headline worklist story.
 - [x] `ChartCard` — `src/patterns/chart-card/`. Card frame with title + description + actions + fixed-height body wrapping any Recharts chart in ResponsiveContainer. Built-in loading skeleton (bar-shaped) and empty state. `recharts` declared as OPTIONAL peer dep so products without charts don't pay the bundle cost.
 - [x] `DashboardHero` template — `src/patterns/dashboard-hero/`. Vertical stack: header (PageHeader) / kpis (KpiRow) / primary chart (2/3 wide) + secondary chart (1/3). Collapses to single-column on narrow. Extra content drops in `children` below the chart row.
 
-## Phase 6 — Clinical / HC1-specific patterns [not started]
+## Phase 6 — Clinical / HC1-specific patterns [done 2026-09-24]
 
-- [ ] `PatientIdentityStrip` — compact patient header: name + MRN + severity + actions
-- [ ] `AiInsightCard` — `Card` on violet AI tokens, provenance line, accept/dismiss actions. Only sanctioned use of the violet ramp (see `FOUNDATION.md` §8).
-- [ ] `SeverityLegend` — badge row keyed to severity aliases
+- [x] `SeverityLegend` — `src/patterns/severity-legend/`. Color-key row keyed 1:1 to `--hc-color-severity-*` tokens. Configurable levels + labels + orientation (horizontal wraps / vertical for map sidebars) + compact mode. Uses `role="list"` for AT.
+- [x] `AiInsightCard` — `src/patterns/ai-insight-card/`. Ships the DS's ONLY sanctioned use of the violet AI tokens (`--hc-color-ai-*`, `--hc-color-violet-*`). Title + description + provenance strap + Accept/Dismiss buttons + optional extraActions. Left accent bar (inset box-shadow) + violet-50 wash + sparkles icon in a violet-100 circle make AI content unambiguously identifiable to the user. Loading state pulses violet placeholders so users see an AI moment is arriving.
+- [x] `PatientIdentityStrip` — `src/patterns/patient-identity-strip/`. Persistent header for every route inside a patient chart. Avatar + name + MRN + severity Badge (with SeverityLevel → Badge variant mapping baked in) + configurable meta pairs + right-aligned actions. Compact mode for embedding inside Cards / Dialogs. Severity is optional so the strip also fits anonymized / non-clinical views.
 
 ## Phase 7 — B-tier + cleanup [not started]
 
@@ -74,6 +74,17 @@ The headline worklist story.
 ---
 
 ## Log
+
+### 2026-09-24 — Phase 6 complete: SeverityLegend, AiInsightCard, PatientIdentityStrip
+The clinical / HC1-specific layer — three patterns that carry the domain-specific visual language across products.
+
+- SeverityLegend at `src/patterns/severity-legend/` — the color-key row every clinical surface needs. Keyed 1:1 to the five `--hc-color-severity-*` token groups so consumers never restyle a swatch. Ships horizontal / vertical / compact / localized / subset variants.
+- AiInsightCard at `src/patterns/ai-insight-card/` — the DS's ONLY sanctioned use of the violet AI tokens per FOUNDATION.md §8. Every AI moment in HC1 products routes through this component so users can identify AI-generated content at a glance. Provenance line is required by the docs guidance (model + version + confidence) — no anonymous AI recommendations.
+- PatientIdentityStrip at `src/patterns/patient-identity-strip/` — the persistent identity chip pinned to every route inside a patient chart. Avatar + name + MRN + severity Badge + meta pairs + actions. Compact mode for Card / Dialog embedding.
+
+Doc pages: SeverityLegendDoc + AiInsightCardDoc + PatientIdentityStripDoc all under patterns. Registry entries added.
+
+Bundle: `dist/patterns/index.d.ts` grew 35.48 → 41.40 KB.
 
 ### 2026-09-24 — Phase 5 complete: KpiCard/KpiRow, ChartCard, DashboardHero
 Dashboards layer landed — the pattern every landing view opens with.

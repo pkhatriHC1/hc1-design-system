@@ -24,3 +24,6 @@ export * from "./command-palette";
 export * from "./kpi-card";
 export * from "./chart-card";
 export * from "./dashboard-hero";
+export * from "./severity-legend";
+export * from "./ai-insight-card";
+export * from "./patient-identity-strip";
