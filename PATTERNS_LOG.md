@@ -61,19 +61,34 @@ The headline worklist story.
 - [x] `AiInsightCard` — `src/patterns/ai-insight-card/`. Ships the DS's ONLY sanctioned use of the violet AI tokens (`--hc-color-ai-*`, `--hc-color-violet-*`). Title + description + provenance strap + Accept/Dismiss buttons + optional extraActions. Left accent bar (inset box-shadow) + violet-50 wash + sparkles icon in a violet-100 circle make AI content unambiguously identifiable to the user. Loading state pulses violet placeholders so users see an AI moment is arriving.
 - [x] `PatientIdentityStrip` — `src/patterns/patient-identity-strip/`. Persistent header for every route inside a patient chart. Avatar + name + MRN + severity Badge (with SeverityLevel → Badge variant mapping baked in) + configurable meta pairs + right-aligned actions. Compact mode for embedding inside Cards / Dialogs. Severity is optional so the strip also fits anonymized / non-clinical views.
 
-## Phase 7 — B-tier + cleanup [not started]
+## Phase 7 — B-tier + cleanup [patterns done 2026-09-24; cleanup deferred]
 
-- [ ] `Wizard` / `Stepper` pattern
-- [ ] `InlineEdit` pattern (read ↔ edit toggle)
-- [ ] `CardGrid` pattern (responsive gallery)
-- [ ] `DetailPage` template
-- [ ] `BulkActionBar` pattern
-- [ ] Delete dead code in `src/layouts/`: `Sidebar.tsx`, `SidebarLink.tsx`, `PageHeader.tsx`, `SectionHeader.tsx` (superseded by `src/components/{sidebar, page-header, section-label}`). Migrate `DesignSystemPlayground.tsx` off `layouts/Shell` first.
-- [ ] Populate stubs under `src/docs/patterns/` with real usage examples per pattern.
+- [x] `Wizard` — `src/patterns/wizard/`. Numbered step indicator + Back/Next/Finish nav. Completed steps show checkmarks and are clickable to jump back; future steps aren't (linear flow). `canAdvance` gates Next.
+- [x] `InlineEdit` — `src/patterns/inline-edit/`. Read ↔ edit toggle. Hover reveals edit icon; Enter saves (Cmd+Enter for multiline), Escape cancels. `renderValue` hook for custom read-mode formatters.
+- [x] `CardGrid` — `src/patterns/card-grid/`. Responsive grid wrapper for tile-shaped Cards. 2..6 columns, auto-drops on tablet/phone.
+- [x] `DetailPage` template — `src/patterns/detail-page/`. Identity strap → PageHeader (with tabs) → 2-column body with main + optional right rail. Repurposes the existing `template-detail` registry entry.
+- [x] `BulkActionBar` — `src/patterns/bulk-action-bar/`. Sticky selection strap for DataTable. Renders conditionally on `selectedCount > 0` from the consumer side.
+- [ ] Delete dead code in `src/layouts/` — DEFERRED. `Sidebar.tsx` / `SidebarLink.tsx` / `PageHeader.tsx` / `SectionHeader.tsx` are still imported by `src/layouts/Shell.tsx` which the playground depends on. Migration path: rewrite Shell on top of `AppShell` + `components/sidebar` + `components/page-header` + `components/section-label` first, then delete.
+- [ ] Populate registry stubs — DEFERRED. `pattern-tables`, `pattern-filters`, `pattern-navigation` still point at 7-line `ComingSoonCard` stubs even though DataTable / FilterBar cover most of the intended surface. Either remove the stub entries or write topic-level pattern docs.
 
 ---
 
 ## Log
+
+### 2026-09-24 — Phase 7: B-tier patterns shipped; cleanup deferred
+Five patterns landed. The two cleanup checklist items (delete dead layouts / repurpose stubs) are deferred with rationale — dead-code deletion needs the playground's Shell to be migrated onto DS primitives first.
+
+- Wizard at `src/patterns/wizard/` — numbered step indicator + Back/Next/Finish. Completed steps get checkmarks and are clickable; future steps aren't (linear flow). `canAdvance` gates Next for form validation.
+- InlineEdit at `src/patterns/inline-edit/` — read/edit toggle. Enter saves single-line, Cmd/Ctrl+Enter saves multiline, Escape cancels both. `renderValue` hook for custom read-mode formatters (dates, badges).
+- CardGrid at `src/patterns/card-grid/` — responsive grid wrapper. columns={2..6}, tablet/phone breakpoints, minTileWidth for finer density control.
+- BulkActionBar at `src/patterns/bulk-action-bar/` — sticky selection strap for DataTable. Inline / sticky variants. Consumer renders conditionally on selection.length > 0.
+- DetailPage template at `src/patterns/detail-page/` — identity → PageHeader (with tabs) → 2/3+1/3 body split. Repurposes existing `template-detail` registry entry.
+
+Doc pages under patterns: WizardDoc, InlineEditDoc, CardGridDoc, BulkActionBarDoc. DetailPageDoc rewritten from stub in templates category.
+
+Deferred: (1) delete src/layouts/ dead files — Shell.tsx depends on them, migration needs its own pass. (2) Repurpose or delete pattern-tables/pattern-filters/pattern-navigation stubs — DataTable and FilterBar cover the intended surface.
+
+Bundle: dist/patterns/index.d.ts grew 41.40 → 50.02 KB.
 
 ### 2026-09-24 — Phase 6 complete: SeverityLegend, AiInsightCard, PatientIdentityStrip
 The clinical / HC1-specific layer — three patterns that carry the domain-specific visual language across products.

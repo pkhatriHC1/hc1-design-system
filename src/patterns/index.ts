@@ -27,3 +27,8 @@ export * from "./dashboard-hero";
 export * from "./severity-legend";
 export * from "./ai-insight-card";
 export * from "./patient-identity-strip";
+export * from "./wizard";
+export * from "./inline-edit";
+export * from "./card-grid";
+export * from "./bulk-action-bar";
+export * from "./detail-page";
