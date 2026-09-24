@@ -21,3 +21,6 @@ export * from "./confirm-dialog";
 export * from "./filter-bar";
 export * from "./data-table";
 export * from "./command-palette";
+export * from "./kpi-card";
+export * from "./chart-card";
+export * from "./dashboard-hero";

@@ -49,11 +49,11 @@ The headline worklist story.
 - [x] `PageHeader` — `src/components/page-header/`. Added `breadcrumb` and `tabs` props alongside the existing title/subtitle/meta/actions. Breadcrumb strip renders above the title; Tabs strip renders at the bottom of the header on the content divider (Tabs above = top-level nav = Sidebar's job; Tabs below = within-page nav = PageHeader's slot). Kept the existing prop API for backward compat; compound subcomponents deferred (add if a consumer needs them).
 - [x] `CommandPalette` — `src/patterns/command-palette/`. Dialog + search input + filterable command list. Config-driven `CommandItem` array (label + description + icon + shortcut + group + keywords + action + disabled), first-seen group order, client-side substring filter with keywords support, custom `filter` override for fuzzy match. Keyboard: type-to-search, ArrowUp/Down navigate (disabled skipped), Home/End jump, Enter runs. DS doesn't bind ⌘K — consumers own the shortcut so the palette coexists with other Cmd+K listeners.
 
-## Phase 5 — Dashboards [not started]
+## Phase 5 — Dashboards [done 2026-09-24]
 
-- [ ] `KpiRow` + `KpiCard` — metric + delta + optional sparkline
-- [ ] `ChartCard` — `Card` + Recharts wrapper + built-in Empty/Loading. Recharts becomes an optional peer dep, subpath-lazy.
-- [ ] `DashboardHero` template — KPI row + primary chart + drill-down slot
+- [x] `KpiCard` + `KpiRow` — `src/patterns/kpi-card/`. Label + value + optional delta + optional sparkline + optional icon. Delta auto-colors as success / error based on `positive` semantics (up-is-good vs down-is-good). Sparkline is a hand-rolled SVG polyline — no Recharts dep. KpiRow is a responsive grid (2/3/4/5/6 columns → auto-drops on tablet/phone).
+- [x] `ChartCard` — `src/patterns/chart-card/`. Card frame with title + description + actions + fixed-height body wrapping any Recharts chart in ResponsiveContainer. Built-in loading skeleton (bar-shaped) and empty state. `recharts` declared as OPTIONAL peer dep so products without charts don't pay the bundle cost.
+- [x] `DashboardHero` template — `src/patterns/dashboard-hero/`. Vertical stack: header (PageHeader) / kpis (KpiRow) / primary chart (2/3 wide) + secondary chart (1/3). Collapses to single-column on narrow. Extra content drops in `children` below the chart row.
 
 ## Phase 6 — Clinical / HC1-specific patterns [not started]
 
@@ -74,6 +74,20 @@ The headline worklist story.
 ---
 
 ## Log
+
+### 2026-09-24 — Phase 5 complete: KpiCard/KpiRow, ChartCard, DashboardHero
+Dashboards layer landed — the pattern every landing view opens with.
+
+- KpiCard at `src/patterns/kpi-card/` — label + value + delta + sparkline + icon. Delta color is automatic based on `positive` semantics; up-is-good metrics (revenue, uptime) get green on up-trends, down-is-good metrics (wait time, error rate) get green on down-trends. Sparkline is a hand-rolled SVG polyline so KpiCard has zero external deps.
+- KpiRow at `src/patterns/kpi-card/KpiRow.tsx` — responsive grid wrapper. Configurable column count with sensible tablet/phone breakpoints.
+- ChartCard at `src/patterns/chart-card/` — Card frame + fixed-height body wrapping any Recharts chart in ResponsiveContainer. Built-in loading (bar skeleton) + empty state (contained EmptyState). Recharts declared as an OPTIONAL peer dep + external in tsup.
+- DashboardHero at `src/patterns/dashboard-hero/` — template composing PageHeader + KpiRow + primary/secondary chart cards. 2/3 + 1/3 chart split on wide, stacked on narrow. Extra content drops in `children`.
+
+Doc pages: KpiCardDoc + ChartCardDoc under patterns; DashboardPatternDoc rewritten from ComingSoon stub to the full DashboardHero doc. Registry entries `pattern-kpi-card`, `pattern-chart-card` added; `pattern-dashboard` now points at the real template.
+
+preview/package.json + vite.config.ts updated with the new peer deps (Radix Avatar, DropdownMenu, react-hook-form, recharts) that the docs use — the preview site imports from `src/` so it needs everything the DS source imports.
+
+Bundle: `dist/patterns/index.d.ts` grew 27.15 → 35.48 KB.
 
 ### 2026-09-23 — Phase 4 complete: AppShell + PageHeader extensions, CommandPalette
 Two primitive extensions and one net-new pattern.
