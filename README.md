@@ -6,7 +6,8 @@ Built on the [**shadcn/ui**](https://ui.shadcn.com) composition model — Radix 
 
 - **Live playground:** https://pkhatrihc1.github.io/hc1-design-system/
 - **Repo:** https://github.com/pkhatriHC1/hc1-design-system
-- **Current version:** `0.10.0`
+- **Current version:** `0.13.0`
+- **Public surface:** 32 components (`@hc1/design-system`) + 24 opinionated patterns (`@hc1/design-system/patterns`) + tokens + styles subpaths.
 
 ---
 
@@ -73,10 +74,11 @@ Products already using shadcn/ui (SourceIQ, ClinicalIQ, HerCare) migrate by swap
 
 | File | Purpose |
 |---|---|
-| `dist/index.js`   | ESM entry — components + tokens namespace |
+| `dist/index.js`   | ESM entry — 32 components + `tokens` namespace |
 | `dist/index.cjs`  | CJS entry |
 | `dist/index.d.ts` | TypeScript types (ESM) |
 | `dist/index.d.cts`| TypeScript types (CJS) |
+| `dist/patterns/*` | `./patterns` subpath — 24 opinionated compositions (Form, DataTable, ChartCard, PageTemplate, …) |
 | `dist/tokens/*`   | `./tokens` subpath — TS + types |
 | `dist/playground.*`| `./playground` subpath — dev-only doc app |
 | `dist/styles.css` | `./styles` subpath — HC1 tokens + shadcn bridge |
@@ -90,8 +92,8 @@ Products already using shadcn/ui (SourceIQ, ClinicalIQ, HerCare) migrate by swap
 
 **How consumers install:**
 
-- **Private Artifactory (target state):** `npm install @hc1/design-system@^0.10` with `.npmrc` pointing `@hc1:registry=https://hc1repo.jfrog.io/…`
-- **Git URL (current):** `"@hc1/design-system": "github:pkhatriHC1/hc1-design-system#v0.10.0"` — the `prepare` script auto-runs `tsup` on install, so `dist/` always exists.
+- **Private Artifactory (target state):** `npm install @hc1/design-system@^0.13` with `.npmrc` pointing `@hc1:registry=https://hc1repo.jfrog.io/…`
+- **Git URL (current):** `"@hc1/design-system": "github:pkhatriHC1/hc1-design-system#v0.13.0"` — the `prepare` script auto-runs `tsup` on install, so `dist/` always exists.
 - **Local file: dep (monorepo dev):** `"@hc1/design-system": "file:../hc1-design-system"` — same auto-build via `prepare`.
 
 ---
@@ -109,7 +111,12 @@ Peer dependencies (must be present in the consumer):
 - `class-variance-authority ^0.7`
 - `clsx ^2.1`
 - `tailwind-merge ^3.6`
-- `@radix-ui/react-dialog`, `-popover`, `-select`, `-slot`, `-tabs`, `-tooltip`, `-progress`, `-separator`, `-scroll-area`
+- `@radix-ui/react-avatar`, `-dialog`, `-dropdown-menu`, `-popover`, `-select`, `-slot`, `-tabs`, `-tooltip`, `-progress`, `-separator`, `-scroll-area`
+
+**Optional peers (only needed for specific `@hc1/design-system/patterns` exports):**
+
+- `react-hook-form ^7` — required by `<Form>` / `<FormInput>` / etc. Products that don't build forms can skip.
+- `recharts ^2 || ^3` — required by `<ChartCard>`. Products without charts can skip.
 
 Runtime dep (installed automatically): `lucide-react`.
 
@@ -202,19 +209,38 @@ import { DesignSystemPlayground } from "@hc1/design-system/playground";
 
 ### `@hc1/design-system` (root)
 
-**25 components**, one named export each:
+**32 components**, one named export each:
 
 | | | | |
 |---|---|---|---|
-| `Alert` | `Badge` | `Breadcrumb` | `Button` |
-| `Card` | `Checkbox` | `Dialog` | `Drawer` |
-| `EmptyState` | `Gauge` | `Input` | `Pagination` |
-| `Popover` | `Progress` *(new in 0.10)* | `Radio` | `ScrollArea` *(new in 0.10)* |
-| `Select` | `Separator` *(new in 0.10)* | `Skeleton` | `Switch` |
-| `Table` | `Tabs` | `Textarea` | `Toast` |
-| `Tooltip` | | | |
+| `Alert` | `AppShell` | `Avatar` | `Badge` |
+| `Breadcrumb` | `Button` | `Card` | `Checkbox` |
+| `Combobox` | `Dialog` | `Drawer` | `DropdownMenu` |
+| `EmptyState` | `Gauge` | `Input` | `PageHeader` |
+| `Pagination` | `Popover` | `Progress` | `Radio` |
+| `ScrollArea` | `SectionLabel` | `Select` | `Separator` |
+| `Sidebar` | `Skeleton` | `Switch` | `Table` |
+| `Tabs` | `Textarea` | `Toast` | `Tooltip` |
 
 Plus the `tokens` namespace: `import { tokens } from "@hc1/design-system"` → `tokens.primitives`, `tokens.aliases`, etc.
+
+`EmptyState` also ships five preset shortcut components — `NoDataEmptyState`, `NoResultsEmptyState`, `ErrorEmptyState`, `PermissionDeniedEmptyState`, `OfflineEmptyState` — that pick the right variant + default icon for the four scenarios that account for ~80% of empty states.
+
+### `@hc1/design-system/patterns`
+
+**24 opinionated compositions** covering the surfaces every HC1 product rebuilds — forms, worklists, dashboards, detail pages, clinical patterns:
+
+| Category | Exports |
+|---|---|
+| **Forms** (`react-hook-form` peer) | `Form`, `FormField`, `FormInput`, `FormTextarea`, `FormSelect`, `FormCheckbox`, `FormSwitch`, `FormRadioGroup`, `FormSection`, `FormActions` |
+| **Confirmations** | `ConfirmDialog` (destructive tone + typed-name guard + async pending state) |
+| **Data** | `FilterBar`, `DataTable`, `BulkActionBar` |
+| **Global search** | `CommandPalette` (⌘K palette with commands, groups, keywords, shortcuts) |
+| **Dashboards** (`recharts` peer for ChartCard) | `KpiCard`, `Grid` (responsive tile grid), `ChartCard`, `PageTemplate` (dashboard + detail-page layout) |
+| **Clinical / HC1-specific** | `SeverityLegend`, `AiInsightCard` (only sanctioned violet AI-token use), `PatientIdentityStrip` |
+| **B-tier** | `Wizard`, `InlineEdit` |
+
+**Why patterns are a separate subpath:** they're OPINIONATED (density, spacing, layout, slot policy) while the main `@hc1/design-system` export is UNOPINIONATED primitives. Patterns iterate faster than primitives — the subpath split means changes to `<DataTable>` don't force a primitives semver bump. See `PATTERNS_LOG.md` for the roadmap + decisions.
 
 ### `@hc1/design-system/tokens`
 
@@ -318,17 +344,30 @@ hc1-design-system/
 ├── ARCHITECTURE.md        — deep-dive on the token + layering model
 ├── FOUNDATION.md          — the engineering + design constitution
 ├── BRAND_AUDIT.md         — v3 palette rationale
+├── PATTERNS_LOG.md        — patterns roadmap + phase log + decisions
 ├── dist/                  — build output (gitignored; regenerated by tsup)
 ├── src/
 │   ├── index.ts           — root public API
 │   ├── playground.ts      — /playground subpath entry
 │   ├── DesignSystemPlayground.tsx
-│   ├── components/        — 25 component folders (public via root)
+│   ├── components/        — 32 component folders (public via root)
 │   │   ├── button/{Button.tsx, Button.types.ts, index.ts}
-│   │   ├── progress/
-│   │   ├── separator/
-│   │   ├── scroll-area/
+│   │   ├── avatar/        — 0.13 addition
+│   │   ├── combobox/      — 0.13 addition
+│   │   ├── dropdown-menu/ — 0.13 addition
+│   │   ├── sidebar/       — 0.11 addition
+│   │   ├── app-shell/     — 0.11 addition
+│   │   ├── page-header/   — 0.11 addition
+│   │   ├── section-label/ — 0.11 addition
 │   │   └── index.ts
+│   ├── patterns/          — 24 pattern folders (public via /patterns)
+│   │   ├── form/          — RHF adapter + 6 sugar wrappers + FormSection/Actions
+│   │   ├── data-table/    — DataTable
+│   │   ├── filter-bar/    — FilterBar
+│   │   ├── chart-card/    — ChartCard (Recharts wrapper)
+│   │   ├── page-template/ — PageTemplate (dashboard + detail-page)
+│   │   ├── ...            — 10 more pattern folders
+│   │   └── index.ts       — public via /patterns
 │   ├── tokens/            — primitives, aliases, components, CSS
 │   │   ├── index.ts       — public via /tokens
 │   │   └── css/
@@ -339,12 +378,11 @@ hc1-design-system/
 │   ├── layouts/           — internal (playground chrome)
 │   ├── utils/             — internal (cn, playground helpers)
 │   ├── foundations/       — internal (playground content)
-│   ├── patterns/          — internal (playground content)
 │   └── docs/              — internal (playground doc pages + registry)
 └── preview/               — Vite app that renders the playground for GH Pages
 ```
 
-Only `components`, `tokens`, `styles`, and `playground` are covered by the `exports` map in `package.json`. Everything else is internal — do not reach into `src/hooks`, `src/utils`, etc.
+Only `components`, `patterns`, `tokens`, `styles`, and `playground` are covered by the `exports` map in `package.json`. Everything else is internal — do not reach into `src/hooks`, `src/utils`, etc.
 
 ---
 
@@ -378,6 +416,16 @@ git push
 5. Update this README's component table.
 6. Update `CHANGELOG.md` with the addition.
 
+**Adding a pattern (`@hc1/design-system/patterns`):**
+
+1. First check `PATTERNS_LOG.md` — the roadmap has 7 phases and each pattern lives inside one. Ad-hoc additions should either fit a phase or extend the log.
+2. Create `src/patterns/<name>/{Name.tsx, index.ts}` — compose DS primitives, encode HC1 opinions (density, spacing, slot policy).
+3. Add `export * from "./<name>";` in `src/patterns/index.ts`.
+4. Add matching `src/docs/patterns/<Name>Doc.tsx` playground page under the `patterns` category in the registry.
+5. If the pattern requires a peer dep (`react-hook-form`, `recharts`), declare it in `peerDependencies` + set `peerDependenciesMeta.<dep>.optional = true` in `package.json`, and add it to the tsup `external` list.
+6. Update this README's patterns table.
+7. Add a dated log entry under `## Log` in `PATTERNS_LOG.md`.
+
 ---
 
 ## Dependencies
@@ -394,7 +442,15 @@ No dependency on ClinicalIQ, SourceIQ, or any product. The package is independen
 
 ## Versioning strategy
 
-**Current release: `0.10.0` — pre-1.0.** The public API is stable-in-intent but has not yet survived a full product migration, so any `0.x.y` → `0.x.z` change may still break consumers. Pin exact versions during the migration window.
+**Current release: `0.13.0` — pre-1.0.** The public API is stable-in-intent but has not yet survived a full product migration, so any `0.x.y` → `0.x.z` change may still break consumers. Pin exact versions during the migration window.
+
+**Since 0.10 the surface has grown substantially:**
+
+- `0.11` — `Sidebar`, `AppShell`, `PageHeader`, `SectionLabel` added.
+- `0.12` — `Button` rebuilt for shadcn/SourceIQ parity + `asChild`.
+- `0.13` — `Avatar`, `Combobox`, `DropdownMenu` primitives + the full `@hc1/design-system/patterns` subpath with 24 opinionated compositions (Form / DataTable / ChartCard / PageTemplate / CommandPalette / clinical patterns / …).
+
+See `CHANGELOG.md` for the full log and `PATTERNS_LOG.md` for the patterns roadmap.
 
 **1.0.0 will ship only when all four gates are cleared:**
 
