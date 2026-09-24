@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Archive, ChevronRight, Star } from "lucide-react";
-import { DetailPage, PatientIdentityStrip } from "../../patterns";
+import { PageTemplate, PatientIdentityStrip } from "../../patterns";
 import { PageHeader } from "../../components/page-header";
 import { Breadcrumb } from "../../components/breadcrumb";
 import { Tabs } from "../../components/tabs";
@@ -31,9 +31,9 @@ export function DetailPageDoc() {
 function PurposeBlock() {
   return (
     <DocBlock
-      eyebrow="Template · DetailPage"
-      title="DetailPage — the standard record-detail template"
-      lead="DetailPage is the layout every record-detail route in HC1 opens with: an optional identity strap (patient / resource identity) → PageHeader (breadcrumb + title + tabs + actions) → two-column body with main content and an optional right rail. Consumer fills the slots; the DS handles the vertical spacing and responsive collapse."
+      eyebrow="Template · PageTemplate — Detail Page shape"
+      title="Detail Page — the standard record-detail template"
+      lead="A detail page is a PageTemplate with a PatientIdentityStrip in the eyebrow slot, a PageHeader (breadcrumb + title + tabs + actions) in the header slot, main content as children, and a metadata Card in the aside. Consumer fills the slots; the DS handles the vertical spacing and responsive collapse. Same primitive powers the Dashboard shape — see that doc for the KPI + charts composition."
     />
   );
 }
@@ -51,8 +51,8 @@ function LiveBlock() {
           padding: t.space.inline.xl,
         }}
       >
-        <DetailPage
-          identity={
+        <PageTemplate
+          eyebrow={
             <PatientIdentityStrip
               name="Alicia Reyes"
               mrn="MRN-000431"
@@ -106,7 +106,7 @@ function LiveBlock() {
               }
             />
           }
-          sidebar={
+          aside={
             <Card>
               <Card.Header>
                 <Card.Title>Care team</Card.Title>
@@ -129,11 +129,11 @@ function LiveBlock() {
             </Card.Header>
             <Card.Content>
               <div style={{ ...t.type.body, color: t.color.text.secondary }}>
-                Main tab content renders here. Charts, tables, timelines, lists — DetailPage doesn&apos;t care what fills the main region.
+                Main tab content renders here. Charts, tables, timelines, lists — PageTemplate doesn&apos;t care what fills the main region.
               </div>
             </Card.Content>
           </Card>
-        </DetailPage>
+        </PageTemplate>
       </div>
     </DocBlock>
   );
@@ -143,7 +143,7 @@ function LiveBlock() {
 
 function SlotsBlock() {
   return (
-    <DocBlock title="Slots" lead="Four optional slots — the DS renders whichever ones you pass. Skip `sidebar` and `main` stretches full-width. Skip `identity` for non-record routes (docs pages, admin panels).">
+    <DocBlock title="Slots" lead="PageTemplate's five slots — eyebrow / header / widgets / children / aside. For a detail page: put PatientIdentityStrip in eyebrow, PageHeader (with tabs) in header, main content as children, metadata Card in aside. Skip aside and children stretches full-width; skip eyebrow for non-record routes.">
       <div
         style={{
           border: `1px dashed ${t.color.border.strong}`,
@@ -162,17 +162,17 @@ function SlotsBlock() {
             color: t.color.text.tertiary,
           }}
         >
-          <SlotBox>identity · PatientIdentityStrip (opt)</SlotBox>
+          <SlotBox>eyebrow · PatientIdentityStrip (opt)</SlotBox>
           <SlotBox>header · PageHeader (title + breadcrumb + tabs + actions)</SlotBox>
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
-            <SlotBox>main (children) · 2/3 width on wide</SlotBox>
-            <SlotBox>sidebar · 1/3 width</SlotBox>
+            <SlotBox>children · main content · 2/3 width on wide</SlotBox>
+            <SlotBox>aside · metadata Card · 1/3 width</SlotBox>
           </div>
         </div>
       </div>
 
-      <Callout tone="info" title="Composition with DashboardHero">
-        DetailPage and DashboardHero share the same 2/3 + 1/3 chart-row shape. DetailPage adds an identity strap on top and puts the tabs inside the header; DashboardHero uses the main region for KPIs + charts.
+      <Callout tone="info" title="Same primitive powers dashboards">
+        A dashboard is a PageTemplate with the same shape but different slot content — <code>widgets</code> for a KPI Grid, primary chart as children, secondary chart in aside. See the Dashboard template doc for that composition.
       </Callout>
     </DocBlock>
   );
@@ -201,10 +201,11 @@ function SlotBox({ children }: { children: ReactNode }) {
 type PropRow = { name: string; type: string; def: string; desc: string };
 
 const PROPS: PropRow[] = [
-  { name: "identity", type: "ReactNode", def: "—",  desc: "Optional identity strap — typically a PatientIdentityStrip." },
+  { name: "eyebrow",  type: "ReactNode", def: "—",  desc: "Top strap — typically a PatientIdentityStrip for record-detail routes." },
   { name: "header",   type: "ReactNode", def: "—",  desc: "PageHeader — breadcrumb + title + tabs + actions." },
-  { name: "sidebar",  type: "ReactNode", def: "—",  desc: "Right rail — metadata card, related records, timeline." },
+  { name: "widgets",  type: "ReactNode", def: "—",  desc: "Optional widget row (KPI Grid, filter chips). Detail pages usually skip this." },
   { name: "children", type: "ReactNode", def: "—",  desc: "Main content region — the tab body typically." },
+  { name: "aside",    type: "ReactNode", def: "—",  desc: "Right rail — metadata card, related records, timeline. 1/3 width; stacks below children on narrow." },
   { name: "gap",      type: "number",    def: "24", desc: "Vertical gap between regions in px." },
 ];
 
@@ -287,7 +288,7 @@ function NotesBlock() {
         rules={[
           { tone: "must",   text: "Render the identity strap on every route inside a patient chart. Clinicians look at it to confirm the record every few minutes." },
           { tone: "should", text: "Match the sidebar to the tab. The 'Overview' tab's sidebar might show care team; the 'Labs' tab's sidebar might show recent trends. Sidebar content that never changes is a Card, not a sidebar." },
-          { tone: "note",   text: "DetailPage is a template — no content opinions, no chrome. It's a layout wrapper around DS primitives." },
+          { tone: "note",   text: "PageTemplate is a template — no content opinions, no chrome. The detail-page shape is a specific composition of PatientIdentityStrip + PageHeader + Card inside the template's slots." },
         ]}
       />
     </DocBlock>

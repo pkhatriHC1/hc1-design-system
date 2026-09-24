@@ -75,6 +75,16 @@ The headline worklist story.
 
 ## Log
 
+### 2026-09-24 — Post-audit consolidation: merged two duplicate pairs
+Read-only audit of the pattern surface flagged two overlapping pairs. Both merged:
+
+- **`KpiRow` + `CardGrid` → `Grid`** at `src/patterns/grid/`. Consumers pick a responsive model: `columns={N}` for a fixed wide-screen column count with Tailwind tablet/phone breakpoints (KpiRow's old behavior), or `minTileWidth={px}` for CSS auto-fit where tiles flow to fit the viewport (CardGrid's old behavior). Both knobs coexist; setting `minTileWidth` opts into auto-fit and `columns` becomes a semantic hint. Doc renamed to `pattern-grid`.
+- **`DashboardHero` + `DetailPage` → `PageTemplate`** at `src/patterns/page-template/`. Same 2/3 + 1/3 body split, generic slot names (`eyebrow` / `header` / `widgets` / `children` / `aside`) that fit both dashboard and record-detail shapes. Existing `pattern-dashboard` and `template-detail` registry entries now both point at PageTemplate compositions — dashboard demo puts KPI Grid in `widgets` + charts in `children`/`aside`; detail demo puts PatientIdentityStrip in `eyebrow` + metadata Card in `aside`.
+
+Pattern count: 26 → 24 named top-level exports. Bundle: `dist/patterns/index.d.ts` 50.02 → 49.07 KB (small drop from consolidation).
+
+Everything else from the audit's "keep as-is" list stayed: token-enforcing thin wrappers (SeverityLegend, FormSection, FormActions, BulkActionBar), the per-primitive form sugar wrappers, and the Form re-export of FormProvider — all justified because they encode HC1 opinions in one place. Let real product usage decide the rest.
+
 ### 2026-09-24 — Phase 7: B-tier patterns shipped; cleanup deferred
 Five patterns landed. The two cleanup checklist items (delete dead layouts / repurpose stubs) are deferred with rationale — dead-code deletion needs the playground's Shell to be migrated onto DS primitives first.
 

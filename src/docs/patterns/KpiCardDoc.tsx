@@ -7,7 +7,7 @@ import {
   Stethoscope,
   Users,
 } from "lucide-react";
-import { KpiCard, KpiRow } from "../../patterns";
+import { Grid, KpiCard } from "../../patterns";
 import {
   DocPage,
   DocBlock,
@@ -38,7 +38,7 @@ function PurposeBlock() {
     <DocBlock
       eyebrow="Pattern · KpiCard"
       title="KpiCard — the standard metric card"
-      lead="KpiCard is the metric chip every dashboard opens with — label + value + optional delta + optional sparkline + optional icon. The delta auto-colors as success or error based on whether the metric moved in the direction the consumer flagged as 'positive'. Pair with KpiRow for a responsive grid."
+      lead="KpiCard is the metric chip every dashboard opens with — label + value + optional delta + optional sparkline + optional icon. The delta auto-colors as success or error based on whether the metric moved in the direction the consumer flagged as 'positive'. Pair with Grid for a responsive grid."
     />
   );
 }
@@ -48,11 +48,11 @@ function PurposeBlock() {
 function BasicBlock() {
   return (
     <DocBlock title="Basic" lead="Label + value is the minimum. Everything else is optional.">
-      <KpiRow columns={3}>
+      <Grid columns={3}>
         <KpiCard label="Patients" value="342" />
         <KpiCard label="Revenue" value="$9.8M" icon={<DollarSign />} />
         <KpiCard label="Uptime" value="99.8%" icon={<Activity />} />
-      </KpiRow>
+      </Grid>
     </DocBlock>
   );
 }
@@ -65,7 +65,7 @@ function DeltaBlock() {
       title="Delta — up/down + positive semantics"
       lead="Pass `positive` to tell the DS which direction is 'good' for this metric. Growth metrics (revenue, patients seen) are positive-up; cost metrics (wait time, error rate) are positive-down. The DS picks the color."
     >
-      <KpiRow columns={3}>
+      <Grid columns={3}>
         <KpiCard
           label="Revenue"
           value="$9.8M"
@@ -84,7 +84,7 @@ function DeltaBlock() {
           delta={{ value: 3, direction: "up", positive: "down", label: "this week" }}
           icon={<AlertTriangle />}
         />
-      </KpiRow>
+      </Grid>
 
       <Callout tone="info" title="What color means">
         Green means the metric moved the way the consumer wants it to. Red means it moved against them. Neutral means the direction wasn&apos;t declared or the metric is flat. Never override the color with a `style` prop — the semantic mapping is the whole point.
@@ -101,7 +101,7 @@ function SparklineBlock() {
       title="Sparkline"
       lead="Pass an array of numbers for a small inline chart in the corner. Hand-rolled SVG polyline — no Recharts dependency for the tiny visual. Color follows the delta semantics: green when trending positive, red when negative, brand teal otherwise."
     >
-      <KpiRow columns={3}>
+      <Grid columns={3}>
         <KpiCard
           label="Weekly signups"
           value="1,204"
@@ -120,7 +120,7 @@ function SparklineBlock() {
           sparkline={[80, 82, 84, 83, 85, 86, 86]}
           delta={{ value: 0, direction: "flat", label: "week over week" }}
         />
-      </KpiRow>
+      </Grid>
     </DocBlock>
   );
 }
@@ -133,7 +133,7 @@ function StatesBlock() {
       title="Loading + Clickable"
       lead="`loading` swaps the value out for skeletons while data lands. `onClick` turns the whole card into a button — hover feedback, focus ring, press animation."
     >
-      <KpiRow columns={2}>
+      <Grid columns={2}>
         <KpiCard label="Revenue" value="$9.8M" loading />
         <KpiCard
           label="Patients"
@@ -142,7 +142,7 @@ function StatesBlock() {
           delta={{ value: 12, direction: "up", label: "vs last month" }}
           onClick={() => alert("clicked → drill into patients")}
         />
-      </KpiRow>
+      </Grid>
     </DocBlock>
   );
 }
@@ -152,15 +152,15 @@ function StatesBlock() {
 function RowBlock() {
   return (
     <DocBlock
-      title="KpiRow — responsive grid"
+      title="Grid — responsive tile grid"
       lead="Wraps KpiCards in a responsive grid. `columns` sets the wide-screen column count; the row auto-drops to 2 columns on tablets and 1 column on phones."
     >
-      <KpiRow columns={4}>
+      <Grid columns={4}>
         <KpiCard label="Revenue" value="$9.8M" icon={<DollarSign />} delta={{ value: 12, direction: "up", label: "vs last mo" }} />
         <KpiCard label="Patients" value="342" icon={<Users />} delta={{ value: 5, direction: "up", label: "vs last mo" }} />
         <KpiCard label="Avg wait" value="14min" icon={<Clock />} delta={{ value: 8, direction: "down", positive: "down", label: "vs last mo" }} />
         <KpiCard label="Clinicians" value="86" icon={<Stethoscope />} delta={{ value: 2, direction: "up", label: "vs last mo" }} />
-      </KpiRow>
+      </Grid>
     </DocBlock>
   );
 }
@@ -201,7 +201,7 @@ function PropsTableBlock() {
         <PropsTable rows={DELTA_PROPS} />
       </div>
       <div style={{ marginTop: t.space.section.sm }}>
-        <PropSectionEyebrow>KpiRow</PropSectionEyebrow>
+        <PropSectionEyebrow>Grid</PropSectionEyebrow>
         <PropsTable rows={ROW_PROPS} />
       </div>
     </DocBlock>

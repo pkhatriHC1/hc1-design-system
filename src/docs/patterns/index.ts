@@ -11,7 +11,7 @@ export * from "./AiInsightCardDoc";
 export * from "./PatientIdentityStripDoc";
 export * from "./WizardDoc";
 export * from "./InlineEditDoc";
-export * from "./CardGridDoc";
+export * from "./GridDoc";
 export * from "./BulkActionBarDoc";
 export * from "./TablesDoc";
 export * from "./FiltersDoc";

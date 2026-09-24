@@ -14,9 +14,9 @@ import {
 import { Clock, DollarSign, Filter, RefreshCw, Users } from "lucide-react";
 import {
   ChartCard,
-  DashboardHero,
+  Grid,
   KpiCard,
-  KpiRow,
+  PageTemplate,
 } from "../../patterns";
 import { PageHeader } from "../../components/page-header";
 import { Button } from "../../components/button";
@@ -72,9 +72,9 @@ export function DashboardPatternDoc() {
 function PurposeBlock() {
   return (
     <DocBlock
-      eyebrow="Template · DashboardHero"
-      title="DashboardHero — the standard dashboard landing template"
-      lead="DashboardHero is the vertical layout every HC1 dashboard opens with: PageHeader on top, KpiRow below, then a two-column chart row with a primary chart (2/3 width) and a secondary chart or drill-down (1/3 width). Consumer fills the slots; the DS handles the spacing + responsive collapse."
+      eyebrow="Template · PageTemplate — Dashboard shape"
+      title="Dashboard — the standard landing template"
+      lead="A dashboard is a PageTemplate with a PageHeader in the header slot, a KPI Grid in the widgets slot, a primary ChartCard as children (main region), and a secondary ChartCard as aside. Consumer fills the slots; the DS handles the spacing + responsive collapse. Same primitive powers the Detail Page shape — see that doc for the record-detail composition."
     />
   );
 }
@@ -85,7 +85,7 @@ function LiveBlock() {
   return (
     <DocBlock
       title="Full example"
-      lead="A real dashboard composed from PageHeader + KpiRow (4 metrics) + primary bar chart + secondary pie chart."
+      lead="A real dashboard composed from PageHeader + Grid of 4 KpiCards + primary bar chart + secondary pie chart, all inside a PageTemplate."
     >
       <div
         style={{
@@ -95,7 +95,7 @@ function LiveBlock() {
           padding: t.space.inline.xl,
         }}
       >
-        <DashboardHero
+        <PageTemplate
           header={
             <PageHeader
               title="ClinicalIQ overview"
@@ -114,8 +114,8 @@ function LiveBlock() {
               }
             />
           }
-          kpis={
-            <KpiRow columns={4}>
+          widgets={
+            <Grid columns={4}>
               <KpiCard
                 label="Revenue"
                 value="$9.8M"
@@ -139,20 +139,9 @@ function LiveBlock() {
                 value="99.8%"
                 delta={{ value: 0, direction: "flat", label: "vs last month" }}
               />
-            </KpiRow>
+            </Grid>
           }
-          primary={
-            <ChartCard title="Monthly reports" description="Last 6 months, all departments">
-              <BarChart data={MONTHLY} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid stroke="var(--hc-color-border-subtle)" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} tickLine={false} />
-                <YAxis tick={{ fontSize: 11 }} tickLine={false} />
-                <Tooltip />
-                <Bar dataKey="value" fill="var(--hc-color-chart-1)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ChartCard>
-          }
-          secondary={
+          aside={
             <ChartCard title="Reports by dept" description="Current quarter">
               <PieChart>
                 <Pie data={PIE} dataKey="value" nameKey="name" outerRadius={60} paddingAngle={2}>
@@ -165,7 +154,17 @@ function LiveBlock() {
               </PieChart>
             </ChartCard>
           }
-        />
+        >
+          <ChartCard title="Monthly reports" description="Last 6 months, all departments">
+            <BarChart data={MONTHLY} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid stroke="var(--hc-color-border-subtle)" vertical={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 11 }} tickLine={false} />
+              <YAxis tick={{ fontSize: 11 }} tickLine={false} />
+              <Tooltip />
+              <Bar dataKey="value" fill="var(--hc-color-chart-1)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ChartCard>
+        </PageTemplate>
       </div>
     </DocBlock>
   );
@@ -177,7 +176,7 @@ function SlotsBlock() {
   return (
     <DocBlock
       title="Slots"
-      lead="Four optional slots — the DS renders whichever ones you pass. Skip `secondary` and `primary` stretches full-width; skip both and the chart row disappears entirely."
+      lead="PageTemplate's five slots — eyebrow / header / widgets / main children / aside. For a dashboard: skip eyebrow, put PageHeader in header, KPI Grid in widgets, primary chart as children, secondary chart in aside. Skip aside and children stretches full-width."
     >
       <div
         style={{
@@ -198,16 +197,16 @@ function SlotsBlock() {
           }}
         >
           <SlotBox>header · PageHeader</SlotBox>
-          <SlotBox>kpis · KpiRow</SlotBox>
+          <SlotBox>widgets · Grid of KpiCards</SlotBox>
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
-            <SlotBox>primary · ChartCard (2/3 width on wide)</SlotBox>
-            <SlotBox>secondary · ChartCard (1/3 width)</SlotBox>
+            <SlotBox>children · primary ChartCard (2/3 width on wide)</SlotBox>
+            <SlotBox>aside · secondary ChartCard (1/3 width)</SlotBox>
           </div>
         </div>
       </div>
 
-      <Callout tone="info" title="Anything else? Use children">
-        DashboardHero renders any additional children below the primary/secondary chart row. Drop a Table, a second KpiRow, or a nested DashboardHero in the children slot for more content.
+      <Callout tone="info" title="Same primitive powers detail pages">
+        The record-detail shape uses the same PageTemplate with different slot content — <code>eyebrow</code> for the PatientIdentityStrip, <code>aside</code> for a metadata Card. See the Detail Page template doc for that composition.
       </Callout>
     </DocBlock>
   );
@@ -236,12 +235,12 @@ function SlotBox({ children }: { children: ReactNode }) {
 type PropRow = { name: string; type: string; def: string; desc: string };
 
 const PROPS: PropRow[] = [
-  { name: "header",    type: "ReactNode", def: "—",  desc: "Top strap — typically an HC1 PageHeader." },
-  { name: "kpis",      type: "ReactNode", def: "—",  desc: "KPI row — typically an HC1 KpiRow." },
-  { name: "primary",   type: "ReactNode", def: "—",  desc: "Primary chart card. 2/3 width on wide screens when secondary is present." },
-  { name: "secondary", type: "ReactNode", def: "—",  desc: "Secondary chart / drill-down. 1/3 width; stacks below primary on narrow viewports." },
-  { name: "children",  type: "ReactNode", def: "—",  desc: "Anything below the chart row (tables, lists, secondary KpiRows)." },
-  { name: "gap",       type: "number",    def: "24", desc: "Vertical gap between regions in px." },
+  { name: "eyebrow",  type: "ReactNode", def: "—",  desc: "Top strap above the header. Skip for a plain dashboard; use for a nested-context strap." },
+  { name: "header",   type: "ReactNode", def: "—",  desc: "Header slot — typically an HC1 PageHeader." },
+  { name: "widgets",  type: "ReactNode", def: "—",  desc: "Widget row below the header — Grid of KpiCards, filter chips, stats callouts." },
+  { name: "children", type: "ReactNode", def: "—",  desc: "Main content — the primary chart card. 2/3 width when aside is present, full-width otherwise." },
+  { name: "aside",    type: "ReactNode", def: "—",  desc: "Right rail — secondary chart or drill-down. 1/3 width; stacks below children on narrow." },
+  { name: "gap",      type: "number",    def: "24", desc: "Vertical gap between regions in px." },
 ];
 
 function PropsBlock() {
@@ -323,8 +322,8 @@ function NotesBlock() {
         rules={[
           { tone: "must",  text: "Use consistent ChartCard heights across the primary + secondary slots so the row reads as balanced." },
           { tone: "should", text: "For dashboards with 3+ charts, use `children` to drop additional ChartCard rows below the primary/secondary row rather than cramming everything into one line." },
-          { tone: "should", text: "Match the KpiRow columns count to the visible KPI count — a 4-column row with 3 KpiCards leaves an awkward gap." },
-          { tone: "note",   text: "DashboardHero is a template, not a primitive — it enforces layout but doesn't own any content. Everything inside is a composition of PageHeader / KpiRow / ChartCard." },
+          { tone: "should", text: "Match the Grid columns count to the visible KPI count — a 4-column Grid with 3 KpiCards leaves an awkward gap." },
+          { tone: "note",   text: "PageTemplate is a template, not a primitive — it enforces layout but doesn't own any content. The dashboard shape is a specific composition of PageHeader + Grid + KpiCard + ChartCard inside the template's slots." },
         ]}
       />
     </DocBlock>
