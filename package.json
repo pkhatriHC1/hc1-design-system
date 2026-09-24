@@ -1,5 +1,5 @@
 {
-  "name": "@hc1/design-system",
+  "name": "@hc1com/design-system",
   "version": "0.13.0",
   "description": "HC1 design system — Radix + Tailwind v4 + cva composition, HC1 tokens. Shared UI package for ClinicalIQ, SourceIQ, HerCare, and future modules.",
   "type": "module",
@@ -42,6 +42,19 @@
     "README.md",
     "CHANGELOG.md"
   ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hc1com/hc1-design-system.git"
+  },
+  "homepage": "https://pkhatrihc1.github.io/hc1-design-system/",
+  "bugs": {
+    "url": "https://github.com/hc1com/hc1-design-system/issues"
+  },
+  "license": "UNLICENSED",
   "peerDependencies": {
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-dialog": "^1.1.23",

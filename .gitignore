@@ -28,3 +28,6 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+
+# npm registry auth — token; never commit
+.npmrc

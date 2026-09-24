@@ -1,0 +1,99 @@
+name: Publish to GitHub Packages
+
+# Triggers:
+#   - Push a semver tag (v1.2.3, v0.13.0, etc.) → publish that version.
+#   - Manual run from the Actions tab → optional dry-run mode.
+#
+# What it does:
+#   1. Verifies the tag (e.g. v0.13.0) matches package.json's version field.
+#      Prevents "tag says 0.13.0 but published 0.13.1" drift.
+#   2. Runs `npm ci` — the `prepare` script builds dist/ during install.
+#   3. Runs `npm publish --ignore-scripts` — publishes the already-built dist/
+#      without re-running `prepublishOnly` (which would build a second time).
+#
+# Auth:
+#   Uses the ephemeral GITHUB_TOKEN with `packages: write` permission — no
+#   PAT setup needed. The `actions/setup-node` step writes a .npmrc for us.
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry-run only (build + npm publish --dry-run)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@hc1com'
+
+      - name: Verify tag matches package.json version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag v$TAG_VERSION does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+          echo "Tag v$TAG_VERSION matches package.json version $PKG_VERSION"
+
+      - name: Install dependencies + build (via prepare hook)
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify dist exists
+        run: |
+          test -f dist/index.js       || (echo "::error::dist/index.js missing"       && exit 1)
+          test -f dist/index.d.ts     || (echo "::error::dist/index.d.ts missing"     && exit 1)
+          test -f dist/patterns/index.js || (echo "::error::dist/patterns/index.js missing" && exit 1)
+          test -f dist/styles.css     || (echo "::error::dist/styles.css missing"     && exit 1)
+          echo "dist/ shipped: $(du -sh dist | cut -f1)"
+
+      - name: Publish (dry-run)
+        if: ${{ inputs.dry_run == true }}
+        run: npm publish --dry-run --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish
+        if: ${{ inputs.dry_run != true }}
+        run: npm publish --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Publish result"
+            echo ""
+            echo "- **Tag**: \`${GITHUB_REF_NAME}\`"
+            echo "- **Package**: \`$(node -p "require('./package.json').name")\`"
+            echo "- **Version**: \`$(node -p "require('./package.json').version")\`"
+            echo "- **Registry**: \`https://npm.pkg.github.com\`"
+            echo "- **Dry-run**: \`${{ inputs.dry_run || 'false' }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

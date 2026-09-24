@@ -1,0 +1,30 @@
+# =============================================================================
+# @hc1com/design-system — .npmrc template
+# =============================================================================
+#
+# Copy this file to `.npmrc` (which is .gitignored) and set your GitHub PAT to
+# publish or install privately. The .npmrc that lives beside package.json is
+# used by npm both for publishing (needs write:packages) AND for the local
+# `npm install` step of dev (needs read:packages for private consumers).
+#
+# GENERATE A TOKEN
+#   https://github.com/settings/tokens (classic)
+#   Scopes required for PUBLISHING: write:packages + read:packages + repo
+#   Scopes required for INSTALLING:  read:packages (+ repo if the pkg is private)
+#
+# USAGE — LOCAL PUBLISH
+#   1. cp .npmrc.example .npmrc
+#   2. export GITHUB_TOKEN=<paste your PAT here>
+#   3. npm publish
+#
+# USAGE — CONSUMER APP INSTALL
+#   Consumer app copies this same file to .npmrc, sets GITHUB_TOKEN in their
+#   environment (or in their CI's secrets), and runs `npm install`.
+#
+# CI (this repo's Actions publish workflow) does NOT use this file — it
+# configures the registry via actions/setup-node using GITHUB_TOKEN from
+# secrets automatically.
+# =============================================================================
+
+@hc1com:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
