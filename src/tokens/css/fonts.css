@@ -1,0 +1,90 @@
+/* ─────────────────────────────────────────────────────────────────────
+ * HC1 self-hosted web fonts.
+ *
+ * Geist (sans) + Geist Mono (mono), weights 400 / 500 / 600 / 700.
+ * Files live alongside this stylesheet at ./fonts/*.woff2 so the DS
+ * ships fonts inside its package — every consumer gets them for free
+ * via `import "@hc1com/design-system/styles"` with no Google Fonts
+ * link or additional install.
+ *
+ * SOURCE
+ *   Woff2 files sourced from @fontsource/geist + @fontsource/geist-mono
+ *   (latin subset, normal style) and copied into src/tokens/css/fonts/.
+ *   Fontsource itself is a devDependency used only to acquire the files;
+ *   consumers do not pull it in.
+ *
+ * LOAD ORDER
+ *   variables.css @imports this file FIRST, before theme.css +
+ *   shadcn-bridge.css, so the @font-face declarations are registered
+ *   before any token-driven CSS references var(--hc-font-sans).
+ *
+ * font-display: swap
+ *   Text paints immediately in the fallback (system-ui), then re-paints
+ *   in Geist when the woff2 arrives. Prevents FOIT (invisible text) on
+ *   slow connections. Matches the DS motion-reduce philosophy: never
+ *   block the user on chrome.
+ * ─────────────────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/geist-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/geist-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./fonts/geist-latin-600-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/geist-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/geist-mono-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/geist-mono-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./fonts/geist-mono-latin-600-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/geist-mono-latin-700-normal.woff2") format("woff2");
+}

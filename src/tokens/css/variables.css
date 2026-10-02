@@ -24,6 +24,7 @@
  *   top + :root below is spec-compliant and semantically correct.
  * ─────────────────────────────────────────────────────────────────── */
 
+@import "./fonts.css";
 @import "./theme.css";
 @import "./shadcn-bridge.css";
 
@@ -186,8 +187,8 @@
   --hc-radius-full: 9999px;
 
   /* ═══ PRIMITIVE TYPOGRAPHY ═══════════════════════════════════════ */
-  --hc-font-sans: "Source Sans Pro", system-ui, -apple-system, sans-serif;
-  --hc-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --hc-font-sans: "Geist", system-ui, -apple-system, sans-serif;
+  --hc-font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --hc-font-size-10: 10px;
   --hc-font-size-12: 12px;

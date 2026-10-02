@@ -10,8 +10,8 @@
  */
 
 export const fontFamily = {
-  sans: "'Source Sans Pro', system-ui, -apple-system, sans-serif",
-  mono: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+  sans: "'Geist', system-ui, -apple-system, sans-serif",
+  mono: "'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
 } as const;
 
 export const fontSize = {

@@ -189,9 +189,11 @@
      weight enum (font-regular / font-medium etc.), letter-spacing
      (tracking-tighter etc.), line-height (leading-tight etc.).
 
-     FONT STACK — ported verbatim from primitives/typography.ts. The
-     package does NOT self-host the font faces; each consuming app loads
-     Source Sans Pro / JetBrains Mono itself (matches current contract). */
+     FONT STACK — ported verbatim from primitives/typography.ts. Font
+     faces (Geist + Geist Mono, weights 400/500/600/700) are self-hosted
+     by the DS; see fonts.css. Consumers get them automatically via
+     `import "@hc1com/design-system/styles"` — no Google Fonts link or
+     extra install required. */
   --font-sans: var(--hc-font-sans);
   --font-mono: var(--hc-font-mono);
 

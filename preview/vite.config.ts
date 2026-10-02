@@ -5,6 +5,11 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   base: "/hc1-design-system/",
   plugins: [react(), tailwindcss()],
+  server: {
+    fs: {
+      allow: [".."],
+    },
+  },
   resolve: {
     dedupe: [
       "react",
