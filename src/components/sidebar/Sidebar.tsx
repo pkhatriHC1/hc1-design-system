@@ -479,7 +479,7 @@ const SidebarItem = forwardRef<HTMLElement, SidebarItemProps>(function SidebarIt
      consumers migrating from that primitive see byte-identical layout. */
   const commonClasses = cn(
     "group relative flex items-center gap-2 rounded-md",
-    "text-[14px] leading-tight font-medium",
+    "text-16 leading-normal font-medium",
     "no-underline text-[color:var(--hc-color-text-inverse)]",
     "transition-[background-color,opacity] duration-150 ease-standard motion-reduce:duration-0",
     /* Layout — icon-only 32px square when collapsed, 48px tall pill when
@@ -695,7 +695,7 @@ const SidebarGroup = forwardRef<HTMLButtonElement, SidebarGroupProps>(function S
      reads as a peer of an Item row (same height, icon slot, hover ring). */
   const triggerClasses = cn(
     "group relative flex items-center gap-2 rounded-md",
-    "text-[14px] leading-tight font-medium",
+    "text-16 leading-normal font-medium",
     "no-underline text-[color:var(--hc-color-text-inverse)]",
     "transition-[background-color,opacity] duration-150 ease-standard motion-reduce:duration-0",
     collapsed
