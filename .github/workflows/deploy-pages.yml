@@ -16,6 +16,10 @@ concurrency:
 
 jobs:
   build-and-deploy:
+    # Docs site is canonical at pkhatrihc1.github.io/hc1-design-system/.
+    # The hc1com mirror has Pages disabled by design; skip there instead of
+    # failing every push with "Get Pages site failed".
+    if: github.repository == 'pkhatriHC1/hc1-design-system'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

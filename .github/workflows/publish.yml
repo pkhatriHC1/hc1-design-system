@@ -36,6 +36,10 @@ concurrency:
 
 jobs:
   publish:
+    # Package is scoped @hc1com — only the hc1com repo's ambient
+    # GITHUB_TOKEN has packages:write on that org. Publishing from the
+    # pkhatriHC1 mirror returns 403, so skip there and let hc1com do it.
+    if: github.repository == 'hc1com/hc1-design-system'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
