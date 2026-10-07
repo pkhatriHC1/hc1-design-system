@@ -18,7 +18,7 @@
  *   text        — primary → tertiary ladder + inverse + link
  *   action      — primary + secondary + accent (amber) + danger
  *   cta         — execute / irreversible only. Amber. Never the default.
- *   ai          — AI-generated content only. Violet. Never decorative.
+ *   ai          — AI-generated content + AI feature surfaces. Brand amber.
  *   severity    — state-scoped medical status (critical/high/medium/low/normal).
  *   status      — event-scoped feedback (success/info/warning/error).
  *
@@ -28,7 +28,7 @@
  *   Same underlying palette, different semantic scope. Do not merge.
  */
 
-import { brand, accent, violet, neutral, green, yellow, red, blue, white } from "../primitives/colors";
+import { brand, accent, neutral, green, yellow, red, blue, white } from "../primitives/colors";
 
 export const background = {
   default:  white,
@@ -83,14 +83,16 @@ export const action = {
 } as const;
 
 /**
- * CTA — execute / irreversible actions. Amber. Reserved.
+ * CTA — hero actions. Amber. On-brand.
  *
- * Use for: "Publish", "Send", "Approve", "Finalize", "Delete" — actions
- * that cannot be undone by clicking again. Never use as the default
- * action; the primary action is `action.primary` (teal).
+ * Three legitimate uses:
+ *   1. Execute / irreversible — "Publish", "Send", "Approve", "Pay"
+ *   2. Primary entry points   — "Upload", "Add Files to Analyze"
+ *   3. Signature feature launchers — "IQ Assistant", AI tools
  *
- * See FOUNDATION.md §8. The amber-500 anchor is contrast-adjusted from
- * the previous bright #F58126 to carry white text at ≥4.5:1 contrast.
+ * At most TWO cta surfaces per view. Never on Cancel / Reset / Back.
+ * The amber-500 anchor is contrast-adjusted from the previous bright
+ * #F58126 to carry white text at ≥4.5:1. See FOUNDATION.md §8.
  */
 export const cta = {
   default:  accent[500],
@@ -100,24 +102,29 @@ export const cta = {
 } as const;
 
 /**
- * AI — AI-generated content moments ONLY.
+ * AI — AI-generated content + AI feature surfaces.
  *
- * Reserved for surfaces where the product is showing a clinician a
- * genuine AI-generated result: suggested care plan, anomaly detected,
- * summarized report. Never decorative. Never brand chrome. Never for
- * a section banner that has no AI content behind it.
+ * HC1 AI is on-brand amber, not the industry violet convention. Use
+ * `default` as a fill color (white text on amber works at ≥4.5:1);
+ * use `text` as ink when AI accents appear on white (caption, chip
+ * label, icon stroke, provenance line). Same fill-vs-ink split the
+ * DS already uses for severity-high.
  *
- * See FOUNDATION.md §8: "using the AI gradient decoratively devalues
- * the signal so that when a real AI moment appears, the clinician has
- * already tuned it out."
+ * Hero AI launcher = cta variant (solid amber fill).
+ * AI-generated content card = subtleBg + text (pale amber tint + dark ink).
+ * Full-bleed AI moment = gradient (brand teal → amber).
+ *
+ * See FOUNDATION.md §8. Still a signal, not chrome — do not paint
+ * amber on surfaces where no AI content sits behind it.
  */
 export const ai = {
-  default:      violet[500],
-  hover:        violet[600],
-  subtleBg:     violet[50],
-  gradientFrom: violet[700],
-  gradientVia:  violet[500],
-  gradientTo:   brand[300],
+  default:      accent[500],
+  hover:        accent[600],
+  text:         accent[700],
+  subtleBg:     accent[50],
+  gradientFrom: brand[500],
+  gradientVia:  accent[400],
+  gradientTo:   accent[300],
 } as const;
 
 /**

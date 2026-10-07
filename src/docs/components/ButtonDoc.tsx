@@ -55,7 +55,7 @@ const VARIANT_HINT: Record<ButtonVariant, string> = {
   default:         "Brand teal fill · white ink · the main action on a screen",
   outline:         "White pill · subtle border · secondary action next to a primary",
   secondary:       "Muted-neutral fill · quiet supporting action",
-  cta:             "Amber fill · white ink · execute / irreversible action (Publish, Send, Approve, Pay) · at most one per surface",
+  cta:             "Amber fill · white ink · hero action — execute (Publish/Send/Pay), primary entry (Upload), or signature feature (IQ Assistant). Max 2 per view.",
   ghost:           "Transparent at rest · brand-tinted hover · low-emphasis actions",
   destructive:     "Subtle red wash + red ink · delete / remove / cancel-only",
   link:            "Underline-on-hover · reads as a link but sits in a button slot",

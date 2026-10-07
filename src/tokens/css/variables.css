@@ -68,10 +68,11 @@
   --hc-color-accent-900: #291402;
   --hc-color-accent-950: #291402; /* placeholder — v3 has no 950 */
 
-  /* violet — RESERVED FOR AI MOMENTS ONLY.
-     Consumed exclusively through --hc-color-ai-*. Do not use violet
-     for a supporting color, a decorative accent, or any non-AI role.
-     See FOUNDATION.md §8. */
+  /* violet — SUPPORTING UTILITY (chart series, decorative accents).
+     Retained as a utility family for data-viz (chart-4) and any
+     product that needs a cool accent distinct from brand teal. No
+     longer reserved for AI moments — HC1 AI uses brand amber via
+     --hc-color-ai-*. See FOUNDATION.md §8. */
   --hc-color-violet-50:  #E7DEF8;
   --hc-color-violet-100: #D0BFF1;
   --hc-color-violet-200: #B29AE7;
@@ -296,17 +297,21 @@
   --hc-color-cta-active:  var(--hc-color-accent-700);
   --hc-color-cta-border:  var(--hc-color-accent-600);
 
-  /* ═══ ALIAS: AI (AI-generated content moments only) ══════════════
-     Reserved for surfaces where the product is showing a clinician
-     a genuine AI-generated result: suggested care plan, anomaly
-     detected, summarized report. Never decorative, never brand
-     chrome. See FOUNDATION.md §8. */
-  --hc-color-ai-default:       var(--hc-color-violet-500);
-  --hc-color-ai-hover:         var(--hc-color-violet-600);
-  --hc-color-ai-subtle-bg:     var(--hc-color-violet-50);
-  --hc-color-ai-gradient-from: var(--hc-color-violet-700);
-  --hc-color-ai-gradient-via:  var(--hc-color-violet-500);
-  --hc-color-ai-gradient-to:   var(--hc-color-brand-300);
+  /* ═══ ALIAS: AI (AI-generated content + AI feature surfaces) ═════
+     Brand amber family — HC1's AI accent is on-brand, not borrowed
+     from the industry violet convention. Use `-default` as a fill
+     (white text on amber works at ≥4.5:1); use `-text` as ink when
+     an AI accent appears on a white background (caption, chip label,
+     icon stroke, provenance line). The two shades split the same way
+     severity-high does — amber for fills, dark amber for ink.
+     See FOUNDATION.md §8. */
+  --hc-color-ai-default:       var(--hc-color-accent-500);
+  --hc-color-ai-hover:         var(--hc-color-accent-600);
+  --hc-color-ai-text:          var(--hc-color-accent-700);
+  --hc-color-ai-subtle-bg:     var(--hc-color-accent-50);
+  --hc-color-ai-gradient-from: var(--hc-color-brand-500);
+  --hc-color-ai-gradient-via:  var(--hc-color-accent-400);
+  --hc-color-ai-gradient-to:   var(--hc-color-accent-300);
 
   /* ═══ ALIAS: SEVERITY (state-scoped medical status) ══════════════
      Five tiers. Each carries text + bg + bg-subtle + border. Icon

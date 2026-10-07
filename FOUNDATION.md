@@ -199,11 +199,12 @@ If a screen has an orange badge, the badge is signalling *execute / irreversible
 Colour categories:
 
 - **Primary** (teal) — the action the user is expected to take. There is at most one primary action per view.
-- **Secondary** (violet, muted greys) — supporting actions, secondary emphasis, chrome.
+- **Secondary** (muted greys) — supporting actions, secondary emphasis, chrome.
+- **CTA** (amber) — hero actions: execute/irreversible (Publish, Send, Pay), primary entry points (Upload), signature feature launchers (IQ Assistant). At most two CTAs per view.
 - **Neutral** (greys) — text, borders, backgrounds. The vast majority of every screen is neutral.
 - **Status** (red, amber, yellow, green) — severity, feedback, state. Every use of a status colour must correspond to a real state; never use red because "this looks like an important spot," only because the state is critical.
 
-**The AI gradient** (violet-to-teal on the `IntelligenceHeader`) is reserved for moments where the product is showing a clinician a genuine AI-generated result — a suggested care plan, an anomaly detected, a summarized report. Using it decoratively — as a header background, as a section banner, as brand chrome — devalues the signal so that when a real AI moment appears, the clinician has already tuned it out.
+**AI uses brand amber**, consistent with HC1's palette rather than borrowing the industry violet convention. Hero AI entry points (the IQ Assistant launcher, intelligence surface headers) use a solid amber fill — `<Button variant="cta">` or `--hc-color-ai-default`. AI-generated content surfaces (suggested care plan cards, detected anomalies, summarized reports) pair a pale amber tint background (`--hc-color-ai-subtle-bg`) with dark amber ink (`--hc-color-ai-text`), the same fill-vs-ink split used for severity-high. AI accent text on white uses `--hc-color-ai-text` directly. The signal still has to earn itself — do not paint amber as a decorative header, a section banner, or brand chrome when no AI content sits behind it. Devalue the signal, and the clinician tunes out before a real AI moment appears.
 
 **No product-brand accent colours.** Every product uses the same palette. Modules are distinguished by *content and layout*, not by giving each product its own coloured chrome. If you find yourself reaching for a colour to "differentiate the module," you are working around a real information-hierarchy problem — fix the hierarchy instead.
 

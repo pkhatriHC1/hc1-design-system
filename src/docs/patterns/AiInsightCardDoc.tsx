@@ -31,7 +31,7 @@ function PurposeBlock() {
     <DocBlock
       eyebrow="Pattern · AiInsightCard"
       title="AiInsightCard — the sanctioned AI-generated moment"
-      lead="AiInsightCard is the ONLY component in the DS that uses the violet AI-token family. Reserved for surfaces where the product is showing a clinician a genuine AI-generated result: a suggested care plan, an anomaly the model flagged, a summarized report. The violet frame + sparkles icon + provenance line make AI content unambiguously identifiable to the user."
+      lead="AiInsightCard renders in the brand amber AI-token family — pale amber tint background, dark amber ink, same fill-vs-ink split the DS uses for severity-high. Reserved for surfaces where the product is showing a clinician a genuine AI-generated result: a suggested care plan, an anomaly the model flagged, a summarized report. The amber frame + sparkles icon + provenance line make AI content unambiguously identifiable."
     />
   );
 }
@@ -156,7 +156,7 @@ function VariantsBlock() {
 
 function StatesBlock() {
   return (
-    <DocBlock title="Loading" lead="While the model is computing the insight, `loading` swaps the body for pulsing violet placeholders — the frame stays so users know an AI moment is arriving.">
+    <DocBlock title="Loading" lead="While the model is computing the insight, `loading` swaps the body for pulsing amber placeholders — the frame stays so users know an AI moment is arriving.">
       <AiInsightCard
         title="Analyzing patient history…"
         loading
@@ -174,13 +174,13 @@ const PROPS: PropRow[] = [
   { name: "title",         type: "ReactNode",   def: "—",           desc: "Card heading — the recommendation or insight, phrased actively." },
   { name: "description",   type: "ReactNode",   def: "—",           desc: "1-2 sentences explaining the reasoning." },
   { name: "provenance",    type: "ReactNode",   def: "—",           desc: "Model name + version + confidence. Renders in a muted strap." },
-  { name: "icon",          type: "ReactNode",   def: "<Sparkles />", desc: "Optional icon override. Rendered in a violet-tinted circle." },
+  { name: "icon",          type: "ReactNode",   def: "<Sparkles />", desc: "Optional icon override. Rendered in an amber-tinted circle." },
   { name: "onAccept",      type: "() => void",  def: "—",           desc: "Accept handler. Renders an Accept Button in the action row." },
   { name: "acceptLabel",   type: "string",      def: "'Accept'",    desc: "Label on the Accept button." },
   { name: "onDismiss",     type: "() => void",  def: "—",           desc: "Dismiss handler. Renders a ghost Dismiss Button." },
   { name: "dismissLabel",  type: "string",      def: "'Dismiss'",   desc: "Label on the Dismiss button." },
   { name: "extraActions",  type: "ReactNode",   def: "—",           desc: "Extra buttons after Dismiss + Accept (view reasoning, report issue)." },
-  { name: "loading",       type: "boolean",     def: "false",       desc: "Replaces body with pulsing violet placeholders." },
+  { name: "loading",       type: "boolean",     def: "false",       desc: "Replaces body with pulsing amber placeholders." },
 ];
 
 function PropsBlock() {
@@ -260,11 +260,11 @@ function NotesBlock() {
     <DocBlock title="Notes">
       <RuleList
         rules={[
-          { tone: "must",  text: "Use ONLY for AI-generated content. Violet is reserved for AI moments — see FOUNDATION.md §8. Never use AiInsightCard for a plain notification, alert, or product callout." },
+          { tone: "must",  text: "Use ONLY for AI-generated content. The amber AI treatment is reserved for AI moments — see FOUNDATION.md §8. Never use AiInsightCard for a plain notification, alert, or product callout." },
           { tone: "must",  text: "Always include a provenance line. Model name + version + confidence tell clinicians how to weigh the recommendation. Anonymous AI recommendations undermine trust." },
           { tone: "should", text: "Phrase the title actively — 'Recommend chest X-ray', not 'Chest X-ray recommendation'. Users scan titles for verbs to decide whether to act." },
           { tone: "should", text: "Keep the description to 1-2 sentences. Longer insights should link to a full report page via extraActions ('Open full report')." },
-          { tone: "note",   text: "The violet frame is drawn with an inset box-shadow on the left, --hc-color-violet-200 border, and --hc-color-ai-subtle-bg background. Do not restyle the frame or icon color — the visual language is what makes AI content unambiguously identifiable." },
+          { tone: "note",   text: "The amber frame is drawn with an inset box-shadow on the left using --hc-color-ai-default, an --hc-color-accent-200 border, and an --hc-color-ai-subtle-bg background. Icon circle uses --hc-color-accent-100 + --hc-color-ai-text. Do not restyle the frame or icon color — the visual language is what makes AI content unambiguously identifiable." },
         ]}
       />
 

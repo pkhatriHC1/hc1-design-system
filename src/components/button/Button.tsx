@@ -65,12 +65,14 @@ const CANONICAL_VARIANTS = {
   /* Subtle red wash + red text — delete/cancel-only actions. */
   destructive:
     "bg-[color:var(--hc-color-severity-critical-bg)] text-[color:var(--hc-color-severity-critical-text)] border-[color:var(--hc-color-severity-critical-border)] hover:bg-[color:var(--hc-color-severity-critical-bg-subtle)] focus-visible:border-[color:var(--hc-color-status-error-fg)] focus-visible:ring-[color:var(--hc-color-status-error-bg)]",
-  /* Amber CTA — execute / irreversible actions.
-     Reserved for actions that cannot be undone by clicking again:
-     Publish, Send, Approve, Finalize, Pay. NEVER the default primary.
-     At most one `cta` per surface. Anchor is contrast-adjusted to
-     carry white text at ≥4.5:1 (--hc-color-accent-500 = #B75E0B).
-     Hex fallbacks mirror --hc-color-cta-default/hover/active + white. */
+  /* Amber CTA — hero actions. Three legitimate uses:
+       1. Execute / irreversible — Publish, Send, Approve, Pay
+       2. Primary entry points   — Upload, Add Files to Analyze
+       3. Signature feature launchers — IQ Assistant, AI tools
+     At most TWO `cta` per view. Never on Cancel / Reset / Back.
+     Anchor is contrast-adjusted to carry white text at ≥4.5:1
+     (--hc-color-accent-500 = #B75E0B). Hex fallbacks mirror
+     --hc-color-cta-default/hover/active + white. */
   cta:
     "bg-[color:var(--hc-color-cta-default,#B75E0B)] text-[color:var(--hc-color-text-on-solid,#fff)] border-[color:var(--hc-color-cta-border,#914A08)] hover:bg-[color:var(--hc-color-cta-hover,#914A08)] hover:border-[color:var(--hc-color-cta-hover,#914A08)] active:bg-[color:var(--hc-color-cta-active,#703906)]",
   /* Underline-on-hover link-styled button. */
