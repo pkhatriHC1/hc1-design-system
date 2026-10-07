@@ -22,9 +22,12 @@ import { Input } from "../../components/input";
  * Variant defaults to `default`. Set `variant="destructive"` for
  * delete / remove / discard confirmations — Confirm renders in the red
  * destructive style so the affordance reads correctly at a glance.
+ * Set `variant="cta"` for execute / irreversible non-destructive
+ * confirmations (Publish, Send, Approve, Pay) — Confirm renders in
+ * the amber CTA style.
  */
 
-export type ConfirmDialogVariant = "default" | "destructive";
+export type ConfirmDialogVariant = "default" | "destructive" | "cta";
 
 export type ConfirmDialogProps = {
   /** Controlled open state. */
@@ -46,6 +49,7 @@ export type ConfirmDialogProps = {
    * Visual variant.
    *   default     — brand fill on Confirm. Generic confirmations.
    *   destructive — red-toned Confirm. Delete / remove / discard.
+   *   cta         — amber Confirm. Publish / Send / Approve / Pay.
    * @default "default"
    */
   variant?: ConfirmDialogVariant;
@@ -166,7 +170,7 @@ export function ConfirmDialog({
               {cancelLabel}
             </Button>
             <Button
-              variant={variant === "destructive" ? "destructive" : "default"}
+              variant={variant === "destructive" ? "destructive" : variant === "cta" ? "cta" : "default"}
               onClick={handleConfirm}
               disabled={confirmDisabled}
               loading={pending}

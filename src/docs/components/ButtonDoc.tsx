@@ -33,6 +33,7 @@ const CANONICAL_VARIANTS: ButtonVariant[] = [
   "default",
   "outline",
   "secondary",
+  "cta",
   "ghost",
   "destructive",
   "link",
@@ -43,7 +44,6 @@ const LEGACY_VARIANTS: ButtonVariant[] = [
   "danger",
   "danger-outline",
   "success",
-  "cta",
   "icon",
 ];
 
@@ -55,6 +55,7 @@ const VARIANT_HINT: Record<ButtonVariant, string> = {
   default:         "Brand teal fill · white ink · the main action on a screen",
   outline:         "White pill · subtle border · secondary action next to a primary",
   secondary:       "Muted-neutral fill · quiet supporting action",
+  cta:             "Amber fill · white ink · execute / irreversible action (Publish, Send, Approve, Pay) · at most one per surface",
   ghost:           "Transparent at rest · brand-tinted hover · low-emphasis actions",
   destructive:     "Subtle red wash + red ink · delete / remove / cancel-only",
   link:            "Underline-on-hover · reads as a link but sits in a button slot",
@@ -63,7 +64,6 @@ const VARIANT_HINT: Record<ButtonVariant, string> = {
   danger:          "Deprecated alias — renders as destructive",
   "danger-outline":"Deprecated alias — renders as outline (red accents dropped in 0.12)",
   success:         "Deprecated alias — renders as outline (green accents dropped in 0.12)",
-  cta:             "Deprecated alias — renders as default (amber CTA styling dropped)",
   icon:            "Deprecated — use variant='ghost' size='icon' instead",
 };
 

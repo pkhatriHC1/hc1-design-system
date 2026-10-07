@@ -13,6 +13,7 @@ export type ButtonVariant =
   | "default"       // brand-fill primary — the "main action" button
   | "outline"       // white pill with subtle border — secondary action
   | "secondary"     // filled secondary (uses --secondary token)
+  | "cta"           // amber fill — execute / irreversible action (Publish, Send, Approve, Pay). At most one per surface.
   | "ghost"         // hover-only fill, transparent at rest
   | "destructive"   // subtle red wash + red text — for delete/cancel-only
   | "link"          // underline-on-hover link-styled button
@@ -21,7 +22,6 @@ export type ButtonVariant =
   | "danger"        // deprecated alias for "destructive"
   | "danger-outline"// deprecated: renders as outline with red accents
   | "success"       // deprecated: renders as outline with green accents
-  | "cta"           // deprecated: renders as default (amber CTA styling dropped)
   | "icon";         // deprecated: use variant="ghost" size="icon" instead
 
 /**
