@@ -2,6 +2,70 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] — 2026-10-08
+
+**Brand typography switch, self-hosted fonts, and the amber CTA.**
+
+The release that moves the DS onto its own typographic identity (Geist, no runtime font dependency on the host app), lands a true amber hero-action variant on `Button`, and re-anchors the AI token family on brand amber instead of borrowed-industry violet. Also fixes a sidebar typography inconsistency flagged during the SourceIQ migration audit, and gates the CI workflows so the mirror and canonical repos stop fighting each other.
+
+### Changed — Typography
+
+- **Source Sans Pro → Geist.** `--hc-font-sans` now resolves to `"Geist", system-ui, …`; `--hc-font-mono` to `"Geist Mono", ui-monospace, …`. Primitive and alias tokens stay named the same, so no consumer rename needed.
+- **Self-hosted font faces.** Geist + Geist Mono (weights 400 / 500 / 600 / 700) ship inside the published package at `dist/tokens/css/fonts/*.woff2`. Consumers get them automatically through `import "@hc1com/design-system/styles"` — the Google Fonts `<link>` in `index.html` can be removed. Fontsource is a devDependency only; it is not pulled into consumer `node_modules`.
+- **`Sidebar.Item` / `Sidebar.Group` trigger typography** moved to DS body scale (`text-16 leading-normal font-medium`) from the earlier `text-[14px] leading-tight`. Matches `Tabs.tsx` and the `body` type alias; closes a 14-vs-16 inconsistency flagged by the SourceIQ migration audit.
+
+### Added — `Button` variant `"cta"`
+
+A real amber hero-action variant reading from the `--hc-color-cta-*` tokens that already shipped in v0.13.0. The legacy `cta → default` alias row — which incorrectly rendered amber as teal — is removed. `ButtonVariant` promotes `"cta"` from the deprecated-aliases block to canonical. Three documented uses:
+
+1. **Execute / irreversible actions** — Publish, Send, Approve, Pay
+2. **Primary entry points** — Upload, Add Files to Analyze
+3. **Signature feature launchers** — IQ Assistant, AI tools
+
+Max two CTAs per view. Never on Cancel / Reset / Back.
+
+`ConfirmDialog` gains `variant="cta"` so a non-destructive execute confirm (Publish / Send / Approve) auto-renders its Confirm button in amber without consumers rewiring the button prop.
+
+### Changed — AI token family
+
+The `--hc-color-ai-*` aliases are re-pointed from the violet ramp to the brand amber family. HC1 AI is now on-brand (amber) rather than borrowing the industry-standard violet convention.
+
+- `--hc-color-ai-default` → `--hc-color-accent-500` (was `violet-500`)
+- `--hc-color-ai-hover` → `--hc-color-accent-600`
+- `--hc-color-ai-subtle-bg` → `--hc-color-accent-50`
+- `--hc-color-ai-gradient-from/via/to` → brand-500 / accent-400 / accent-300
+- **New** `--hc-color-ai-text` → `--hc-color-accent-700` for AI accents rendered as ink on a white background. Same fill-vs-ink split the DS uses for `severity-high`. Resolves the amber-500 contrast ceiling (~4.5:1 on white — passes AA for large text, borderline for body).
+
+**Violet is retained** as a supporting utility family — chart series (`--hc-color-chart-4`), decorative accents — but is no longer "RESERVED FOR AI MOMENTS ONLY." Products that previously used the violet ramp outside AI contexts can keep those references.
+
+`AiInsightCard` is updated end-to-end: pale amber tint background, amber accent bar, dark amber provenance ink. The copy in `AiInsightCardDoc` is corrected to describe the amber family.
+
+`FOUNDATION.md §8` is rewritten: lists CTA as its own color category alongside Primary / Secondary / Neutral / Status, spells out the AI amber fill-vs-ink pattern, and drops the "AI gradient is violet-to-teal" guidance.
+
+### Changed — CI workflow gating
+
+Both repos (`pkhatriHC1/hc1-design-system` and `hc1com/hc1-design-system`) carry the same workflow files, but each workflow now only runs on the repo that owns its target:
+
+- `deploy-pages.yml` runs only on `pkhatriHC1` (where GitHub Pages is enabled; the canonical docs site at `pkhatrihc1.github.io/hc1-design-system/`).
+- `publish.yml` runs only on `hc1com` (where the ambient `GITHUB_TOKEN` has `packages:write` on the `@hc1com` scope).
+
+The wrong-repo runs show as *skipped* instead of failing every push.
+
+### Developer-facing
+
+- `@fontsource/geist` + `@fontsource/geist-mono` added as devDependencies (used only to acquire the woff2 at build time; not in consumer `node_modules`).
+- `preview/vite.config.ts` gains `server.fs.allow: [".."]` so the preview dev server can serve woff2 from the parent src tree.
+
+### Migration notes
+
+- **Consumers on Tailwind v3 cannot adopt v0.14.0 directly.** The DS `@theme` block requires Tailwind v4 to generate utility classes. Upgrade Tailwind first.
+- **Remove Google Fonts `<link>` tags from `index.html`.** Any `fonts.googleapis.com` reference for Source Sans Pro, Geist, or JetBrains Mono is now redundant and can be deleted.
+- **Products using `--hc-color-ai-*` tokens** will see an automatic color shift (violet → amber). No code change required; the token names are stable.
+- **Products using violet shades directly** (`var(--hc-color-violet-*)`) are unaffected — the ramp is retained.
+- **No breaking Button API changes.** Existing `variant="cta"` call sites that were rendering teal (incorrectly) will now render the intended amber.
+
+---
+
 ## [0.13.0] — 2026-09-10
 
 **Chart palette + status-muted aliases (foundation-token gap-fill).**
