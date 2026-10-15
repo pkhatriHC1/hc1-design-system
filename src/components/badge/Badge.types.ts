@@ -29,9 +29,16 @@ export type BadgeVariant =
 export type BadgeAppearance = "soft" | "solid" | "outline";
 
 /**
- * Size ladder. Heights `20 / 24 / 28` — badges are compact by
- * definition; if you need something bigger you probably want a Card
- * header or a callout, not a badge.
+ * Size ladder. Driven by text size + vertical padding — the badge hugs
+ * its content; no fixed height.
+ *
+ *   sm — text 12 · py 2 · px 6   (≈ 16px tall; dense tables, nav counts)
+ *   md — text 14 · py 3 · px 8   (≈ 20px tall; default)
+ *   lg — text 16 · py 4 · px 10  (≈ 24px tall; headers, hero chips)
+ *
+ * Reach for `lg` only when the badge is the primary content of a
+ * header strap or a hero callout. Larger than that → use a Card
+ * header or an Alert, not a Badge.
  */
 export type BadgeSize = "sm" | "md" | "lg";
 

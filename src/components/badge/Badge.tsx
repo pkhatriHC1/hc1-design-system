@@ -29,24 +29,31 @@ const badgeVariants = cva(
   ),
   {
     variants: {
+      /* Intrinsic sizing. No fixed heights — the badge hugs its text
+         via text + vertical padding only. Text sizes 12 / 14 / 16 give
+         the three steps meaningful typographic hierarchy instead of
+         three near-identical heights that only differed in box-model
+         slack. --hc-badge-h is still exposed (text + 2×py) so the
+         count-pill's `min-width: var(--hc-badge-h)` keeps single-
+         digit counts round. */
       size: {
         sm: cn(
-          "h-[20px] px-8 text-12 gap-4 [--hc-badge-h:20px]",
-          "[&_[data-slot=badge-dot]]:size-[6px]",
+          "px-[6px] py-[2px] text-12 gap-[2px] [--hc-badge-h:16px]",
+          "[&_[data-slot=badge-dot]]:size-[5px]",
           "[&_svg]:size-[12px]",
-          "[&_[data-slot=badge-remove]]:size-[12px] [&_[data-slot=badge-remove]]:-mr-[4px]",
+          "[&_[data-slot=badge-remove]]:size-[12px] [&_[data-slot=badge-remove]]:-mr-[3px]",
         ),
         md: cn(
-          "h-[24px] px-8 text-12 gap-4 [--hc-badge-h:24px]",
-          "[&_[data-slot=badge-dot]]:size-[8px]",
+          "px-[8px] py-[3px] text-14 gap-[3px] [--hc-badge-h:20px]",
+          "[&_[data-slot=badge-dot]]:size-[6px]",
           "[&_svg]:size-[14px]",
-          "[&_[data-slot=badge-remove]]:size-[16px] [&_[data-slot=badge-remove]]:-mr-[4px]",
+          "[&_[data-slot=badge-remove]]:size-[14px] [&_[data-slot=badge-remove]]:-mr-[4px]",
         ),
         lg: cn(
-          "h-[28px] px-12 text-14 gap-4 [--hc-badge-h:28px]",
-          "[&_[data-slot=badge-dot]]:size-[10px]",
+          "px-[10px] py-[4px] text-16 gap-4 [--hc-badge-h:24px]",
+          "[&_[data-slot=badge-dot]]:size-[8px]",
           "[&_svg]:size-[16px]",
-          "[&_[data-slot=badge-remove]]:size-[20px] [&_[data-slot=badge-remove]]:-mr-[6px]",
+          "[&_[data-slot=badge-remove]]:size-[16px] [&_[data-slot=badge-remove]]:-mr-[4px]",
         ),
       },
       /* Variant only picks the dot color (appearance-independent — a dot
