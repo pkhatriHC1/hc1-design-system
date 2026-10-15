@@ -240,14 +240,14 @@ function AppearancesBlock() {
 
 function SizesBlock() {
   const SIZE_META: Record<BadgeSize, { label: string; height: string; usage: string }> = {
-    sm: { label: "Small",  height: "20px", usage: "Dense tables, list rows, inline meta." },
-    md: { label: "Medium", height: "24px", usage: "Default. Toolbars, cards, filter tags." },
-    lg: { label: "Large",  height: "28px", usage: "Detail headers, page banners, notice callouts." },
+    sm: { label: "Small",  height: "text 12 · ~16px tall", usage: "Dense tables, list rows, inline meta." },
+    md: { label: "Medium", height: "text 14 · ~20px tall", usage: "Default. Toolbars, cards, filter tags." },
+    lg: { label: "Large",  height: "text 16 · ~24px tall", usage: "Detail headers, page banners, notice callouts." },
   };
   return (
     <DocBlock
       title="Sizes"
-      lead="Three steps. Badges are compact by definition — if you need something bigger, you probably want a callout or a Card header, not a badge."
+      lead="Three steps, driven by text size + vertical padding — the badge hugs its content with no fixed height. The step between sizes is a text-size jump (12 → 14 → 16), not a box-model jump, so each size reads as a distinct typographic tier instead of three near-identical heights."
     >
       <div
         style={{
@@ -699,7 +699,7 @@ type PropRow = { name: string; type: string; def: string; desc: string };
 const PROPS: PropRow[] = [
   { name: "variant",       type: "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'", def: "'default'", desc: "Semantic tone. Pick by meaning, not color." },
   { name: "appearance",    type: "'soft' | 'solid' | 'outline'",                                                 def: "'soft'",    desc: "Visual weight." },
-  { name: "size",          type: "'sm' | 'md' | 'lg'",                                                            def: "'md'",      desc: "Size ladder — 20 / 24 / 28 px." },
+  { name: "size",          type: "'sm' | 'md' | 'lg'",                                                            def: "'md'",      desc: "Size ladder — text 12 / 14 / 16, intrinsic height (~16 / 20 / 24 px)." },
   { name: "dot",           type: "boolean",                                                                       def: "false",     desc: "Render a variant-colored dot before the label." },
   { name: "leadingIcon",   type: "ReactNode",                                                                     def: "—",         desc: "Icon before the label. Ignored when dot is set." },
   { name: "trailingIcon",  type: "ReactNode",                                                                     def: "—",         desc: "Icon after the label. Suppressed when onRemove is set." },
