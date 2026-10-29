@@ -2,6 +2,41 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] — 2026-10-30
+
+**Badge: Notion-style density + the font-size that never actually applied.**
+
+Real product feedback flagged the 0.14 badges as too chunky — `md` at `text-14` and `lg` at `text-16` read like page headers, not meta chips. This release shrinks the ladder, adds a new `xs` tier, and fixes a latent `tailwind-merge` bug that was silently dropping font-size on every soft/outline badge for the entire 0.14 line.
+
+### Changed — `Badge` size ladder
+
+| size | text  | padding (y / x) | height |
+|------|-------|-----------------|--------|
+| xs   | 10px  | 1 / 5           | ~14px  |
+| sm   | 12px  | 1 / 6           | ~16px  |
+| md   | 12px  | 1 / 8           | ~16px (default — same text/height as sm, roomier horizontal pad) |
+| lg   | 14px  | 2 / 9           | ~20px  |
+
+- **Visual change, no API break.** `sm`, `md`, `lg` names are preserved — every existing consumer keeps compiling; badges just render tighter and quieter. The default badge drops from ~20px tall (`text-14` in 0.14) to ~16px tall. Expect downstream UIs to visually reflow where badges were sitting next to the Button baseline or inline in `text-14` body copy.
+- **md now matches sm's text size + height.** `md` was always the awkward middle; collapsing it into sm (differentiated purely by horizontal padding) means consumers who stayed on the default don't jump a tier taller than they intended.
+- **`lg` is now hero-only.** Reach for `lg` only when the badge *is* the content (header strap, feature callout). Default use → `md`. Dense surfaces → `sm` or `xs`.
+
+### Added — `size="xs"`
+
+New smallest tier (text 10 / ~14px tall) for ultra-dense surfaces: data-table status cells, inline meta on list rows, severity dots with 1-word labels. `BadgeSize` union now includes `'xs'`. Downstream TypeScript consumers see this as a non-breaking type widening.
+
+### Fixed — font-size silently dropped on soft/outline badges (latent since the cva migration)
+
+`Badge.tsx` used the DS `text-12` / `text-14` tokens for the size variant classes. The compound variants that paint color (`text-neutral-700`, `text-brand-500`, etc.) land AFTER the size variant in cva's class concatenation. `tailwind-merge`'s default config can't tell apart a token-named `text-12` (font-size) from `text-neutral-700` (color) — both get bucketed into one `text-*` conflict group and the later one wins. Result: every soft and outline badge inherited the `<html>` default font-size (16px) instead of its intended 12/14 — devtools showed `16px Geist` on labels that `cva` thought it was setting to `12px`.
+
+Fixed by switching the Badge size variants to arbitrary `text-[Npx]` values, which `tailwind-merge` unambiguously classifies as font-size and leaves alone. A comment at the size cva explains the trap so future-us doesn't walk back into it.
+
+Other components that pair DS `text-N` tokens with `text-{color}` in a single `cn()` call (`Drawer`, `Card`, `Radio`, `Tooltip`) likely hit the same latent bug but are not touched in this release — follow-up audit tracked separately.
+
+### Doc updates
+
+`BadgeDoc` Sizes section + prop table + Tokens-used block all reflect the new ladder. The Sizes-section lead explains the deliberate choice to have `sm` and `md` share text size.
+
 ## [0.14.0] — 2026-10-08
 
 **Brand typography switch, self-hosted fonts, and the amber CTA.**
