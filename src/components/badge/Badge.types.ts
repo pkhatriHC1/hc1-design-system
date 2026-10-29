@@ -30,17 +30,21 @@ export type BadgeAppearance = "soft" | "solid" | "outline";
 
 /**
  * Size ladder. Driven by text size + vertical padding — the badge hugs
- * its content; no fixed height.
+ * its content; no fixed height. Notion-style — a badge should read as
+ * a quiet meta label at every step, never as a header.
  *
- *   sm — text 12 · py 2 · px 6   (≈ 16px tall; dense tables, nav counts)
- *   md — text 14 · py 3 · px 8   (≈ 20px tall; default)
- *   lg — text 16 · py 4 · px 10  (≈ 24px tall; headers, hero chips)
+ *   xs — text 10 · py 1 · px 5   (≈ 14px tall; ultra-dense data tables)
+ *   sm — text 12 · py 1 · px 6   (≈ 16px tall; dense tables, nav counts)
+ *   md — text 12 · py 1 · px 8   (≈ 16px tall; default — same height as
+ *                                 sm, roomier horizontal pad)
+ *   lg — text 14 · py 2 · px 9   (≈ 20px tall; hero chips only — use
+ *                                 when the badge IS the content)
  *
  * Reach for `lg` only when the badge is the primary content of a
  * header strap or a hero callout. Larger than that → use a Card
  * header or an Alert, not a Badge.
  */
-export type BadgeSize = "sm" | "md" | "lg";
+export type BadgeSize = "xs" | "sm" | "md" | "lg";
 
 /**
  * A single, small, semantic status indicator. The API is intentionally

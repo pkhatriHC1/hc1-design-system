@@ -29,31 +29,47 @@ const badgeVariants = cva(
   ),
   {
     variants: {
-      /* Intrinsic sizing. No fixed heights — the badge hugs its text
-         via text + vertical padding only. Text sizes 12 / 14 / 16 give
-         the three steps meaningful typographic hierarchy instead of
-         three near-identical heights that only differed in box-model
-         slack. --hc-badge-h is still exposed (text + 2×py) so the
-         count-pill's `min-width: var(--hc-badge-h)` keeps single-
-         digit counts round. */
+      /* Intrinsic sizing — badge hugs its text via text + vertical
+         padding, no fixed heights. 2px text ladder — 10 → 12 → 14 —
+         with sm/md sharing 12px (md differs only by a touch more
+         padding so the default badge reads a shade roomier without
+         getting louder). lg is the hero chip at 14px, used only when
+         the badge IS the content. --hc-badge-h is still exposed
+         (text + 2×py) so the count-pill's `min-width: var(--hc-badge-h)`
+         keeps single-digit counts round.
+         ──────────────────────────────────────────────────────────────
+         NOTE on font-size classes: we use arbitrary `text-[Npx]` here
+         (not the DS `text-N` tokens) because tailwind-merge's default
+         config can't distinguish token-named `text-12` (font-size)
+         from `text-neutral-700` (color) that appears in the
+         compoundVariants below — it collapses both into one group
+         and drops the earlier one, which killed font-size on soft/
+         outline variants. Arbitrary values like `text-[12px]` are
+         unambiguously font-size and survive the merge. */
       size: {
+        xs: cn(
+          "px-[5px] py-[1px] text-[10px] gap-[2px] [--hc-badge-h:14px]",
+          "[&_[data-slot=badge-dot]]:size-[4px]",
+          "[&_svg]:size-[10px]",
+          "[&_[data-slot=badge-remove]]:size-[10px] [&_[data-slot=badge-remove]]:-mr-[2px]",
+        ),
         sm: cn(
-          "px-[6px] py-[2px] text-12 gap-[2px] [--hc-badge-h:16px]",
-          "[&_[data-slot=badge-dot]]:size-[5px]",
+          "px-[6px] py-[1px] text-[12px] gap-[2px] [--hc-badge-h:16px]",
+          "[&_[data-slot=badge-dot]]:size-[6px]",
           "[&_svg]:size-[12px]",
           "[&_[data-slot=badge-remove]]:size-[12px] [&_[data-slot=badge-remove]]:-mr-[3px]",
         ),
         md: cn(
-          "px-[8px] py-[3px] text-14 gap-[3px] [--hc-badge-h:20px]",
+          "px-[8px] py-[1px] text-[12px] gap-[2px] [--hc-badge-h:16px]",
           "[&_[data-slot=badge-dot]]:size-[6px]",
-          "[&_svg]:size-[14px]",
-          "[&_[data-slot=badge-remove]]:size-[14px] [&_[data-slot=badge-remove]]:-mr-[4px]",
+          "[&_svg]:size-[12px]",
+          "[&_[data-slot=badge-remove]]:size-[12px] [&_[data-slot=badge-remove]]:-mr-[3px]",
         ),
         lg: cn(
-          "px-[10px] py-[4px] text-16 gap-4 [--hc-badge-h:24px]",
-          "[&_[data-slot=badge-dot]]:size-[8px]",
-          "[&_svg]:size-[16px]",
-          "[&_[data-slot=badge-remove]]:size-[16px] [&_[data-slot=badge-remove]]:-mr-[4px]",
+          "px-[9px] py-[2px] text-[14px] gap-[3px] [--hc-badge-h:20px]",
+          "[&_[data-slot=badge-dot]]:size-[7px]",
+          "[&_svg]:size-[14px]",
+          "[&_[data-slot=badge-remove]]:size-[14px] [&_[data-slot=badge-remove]]:-mr-[4px]",
         ),
       },
       /* Variant only picks the dot color (appearance-independent — a dot

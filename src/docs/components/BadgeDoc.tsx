@@ -28,7 +28,7 @@ import {
 
 const VARIANTS: BadgeVariant[]       = ["default", "primary", "success", "warning", "danger", "info", "neutral"];
 const APPEARANCES: BadgeAppearance[] = ["soft", "solid", "outline"];
-const SIZES: BadgeSize[]             = ["sm", "md", "lg"];
+const SIZES: BadgeSize[]             = ["xs", "sm", "md", "lg"];
 
 /* ══════ Entry ═════════════════════════════════════════════════════ */
 
@@ -240,14 +240,15 @@ function AppearancesBlock() {
 
 function SizesBlock() {
   const SIZE_META: Record<BadgeSize, { label: string; height: string; usage: string }> = {
-    sm: { label: "Small",  height: "text 12 · ~16px tall", usage: "Dense tables, list rows, inline meta." },
-    md: { label: "Medium", height: "text 14 · ~20px tall", usage: "Default. Toolbars, cards, filter tags." },
-    lg: { label: "Large",  height: "text 16 · ~24px tall", usage: "Detail headers, page banners, notice callouts." },
+    xs: { label: "Extra small", height: "text 10 · ~14px tall", usage: "Ultra-dense data tables, inline meta, severity dots with 1-word labels." },
+    sm: { label: "Small",       height: "text 12 · ~16px tall", usage: "Dense tables, list rows, nav counters." },
+    md: { label: "Medium",      height: "text 12 · ~16px tall", usage: "Default. Toolbars, cards, filter tags, status pills (same text and height as sm, roomier horizontal pad)." },
+    lg: { label: "Large",       height: "text 14 · ~20px tall", usage: "Hero chips — use only when the badge IS the content (header strap, feature callout)." },
   };
   return (
     <DocBlock
       title="Sizes"
-      lead="Three steps, driven by text size + vertical padding — the badge hugs its content with no fixed height. The step between sizes is a text-size jump (12 → 14 → 16), not a box-model jump, so each size reads as a distinct typographic tier instead of three near-identical heights."
+      lead="Four steps on a clean 2px text ladder: 10 → 12 → 12 → 14 (sm and md both sit at 12px; md just adds a touch more padding so the default badge reads a shade roomier without getting louder). A badge should stay quiet at every tier; it should never read as a header. Reach for lg only when the badge IS the content — a header strap, a feature callout."
     >
       <div
         style={{
@@ -699,7 +700,7 @@ type PropRow = { name: string; type: string; def: string; desc: string };
 const PROPS: PropRow[] = [
   { name: "variant",       type: "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'", def: "'default'", desc: "Semantic tone. Pick by meaning, not color." },
   { name: "appearance",    type: "'soft' | 'solid' | 'outline'",                                                 def: "'soft'",    desc: "Visual weight." },
-  { name: "size",          type: "'sm' | 'md' | 'lg'",                                                            def: "'md'",      desc: "Size ladder — text 12 / 14 / 16, intrinsic height (~16 / 20 / 24 px)." },
+  { name: "size",          type: "'xs' | 'sm' | 'md' | 'lg'",                                                     def: "'md'",      desc: "Size ladder — text 10 / 12 / 12 / 14, intrinsic height (~14 / 16 / 16 / 20 px). sm and md both at 12px / 16px tall; md just adds horizontal pad." },
   { name: "dot",           type: "boolean",                                                                       def: "false",     desc: "Render a variant-colored dot before the label." },
   { name: "leadingIcon",   type: "ReactNode",                                                                     def: "—",         desc: "Icon before the label. Ignored when dot is set." },
   { name: "trailingIcon",  type: "ReactNode",                                                                     def: "—",         desc: "Icon after the label. Suppressed when onRemove is set." },
@@ -766,8 +767,8 @@ function TokensUsedBlock() {
     { role: "Radius",              alias: "aliases.radius.chip (4 — matches every chip-shaped surface in HC1)" },
     { role: "Count radius",        alias: "aliases.radius.circular (9999 — pill shape)" },
     { role: "Typography",          alias: "aliases.typography.label (12 semibold + wide tracking)" },
-    { role: "Height ladder",       alias: "components.badge.size.height — 20 / 24 / 28" },
-    { role: "Horizontal padding",  alias: "aliases.spacing.inline.sm (sm/md) · inline.md (lg)" },
+    { role: "Height ladder",       alias: "intrinsic — text + 2 × py + 2 × border → ~14 / 16 / 16 / 20px (xs / sm / md / lg)" },
+    { role: "Horizontal padding",  alias: "5 / 6 / 8 / 9 px (xs / sm / md / lg)" },
     { role: "Gap between parts",   alias: "aliases.spacing.inline.xs (4)" },
     { role: "Soft palette",        alias: "brand-50 / status.*.bg backgrounds · action-primary / status.*.fg ink" },
     { role: "Solid palette",       alias: "action-primary · status.*.fg · action-danger · action-secondary backgrounds · text.inverse ink" },
