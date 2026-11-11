@@ -2,6 +2,75 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] — 2026-11-11
+
+**The SourceIQ standard: one layout for every hc1 product.**
+
+SourceIQ ("MLP – Source Of Truth") is the visual base for every hc1 product. Every value below was measured in the live SourceIQ prototype and approved in the *SourceIQ Reference Spec — Layout Decisions* sheet. The design system now owns these values, so Bolt prototypes and production code get them by using the components rather than by copying numbers.
+
+### Shell
+- **New `AppShell.TopBar`.** A modular top bar, 64px high.
+  - Required slots: `product` and `user`.
+  - Optional slots, always in this order: `context`, `search`, `assistant` (amber CTA), `notifications` (with count), `help`.
+  - There is no `className`, `style` or `children`. Products switch slots on or off; they cannot restyle the bar.
+- `AppShell.Main` defaults: 32px padding (`--hc-page-pad`) and a 1440px max width (`--hc-page-max-width`).
+- `Sidebar`:
+  - the header action is now the amber CTA;
+  - nav item radius is 8px (`radius-control`);
+  - icons render at 16px (they rendered tiny under the DS spacing scale before).
+- `SectionLabel` `md` is now 12px.
+
+### Page
+- `PageHeader`: title 24px bold in the new `text-heading` colour (brand-800); subtitle 16px in the new `text-supporting` colour (neutral-600). The built-in bottom margin is removed, because the template owns spacing.
+- **`PageTemplate` rewritten.** It owns all vertical spacing: 24px between header and content, and 24px between sections. **The `gap` prop is removed.** New `variant="focused"` gives one centred 896px column, with an optional sticky `footer={{ meta, actions }}` that rests on the bottom edge.
+- `Grid` gap defaults to 24px (`--hc-page-grid-gap`). The `gap` prop is deprecated.
+
+### Cards and KPIs
+- `Card` padding is 24px (compact: 16px) and the title is 16px semibold. `relaxed` is a deprecated alias of `comfortable`.
+- **`KpiCard` rewritten** with three variants, inferred from the data you pass rather than chosen by name:
+  - **basic**: label and value;
+  - **trend**: adds a `delta` pill and optional `supportingText`;
+  - **goal**: adds `goal={{ label, progress, status }}`, drawn with a Progress bar.
+
+  The label is 12px uppercase and the value 24px bold. There is an optional tinted icon tile and a `density="compact"` option. `className` and `style` are removed.
+- **New `KpiGroup`.** Joins several KPIs into one card with dividers.
+- **New `HeroSummary`.** The single headline banner on a page: 32px value, solid brand-800. Set `ai` to get the teal → amber AI gradient.
+
+### Tables
+- Row heights are 36 (compact), 48 (comfortable, one line) and 64 (relaxed, two-line rows).
+- Cell padding is 12px.
+- Headers are 12px, uppercase, semibold and neutral-500, and stay 48px tall at every density.
+
+### Overlays
+- `Dialog`: title 18px semibold, 24px body padding, grey footer band. Sizes stay at 400 / 560 / 720, and the scrim stays at 50% neutral-900 with no blur.
+- `Drawer` defaults to `lg` (640px). Every drawer uses this width, the IQ Assistant included. Title 18px.
+- **New `AssistantPanel`.** The shared IQ Assistant, built on Drawer: amber AI header with expand and close buttons, message bubbles, composer, footnote and a thinking state.
+
+### Forms and states
+- `Input`, `Select` and `Textarea`: labels 14px medium with a 6px gap to the field. Fields are 36px with an 8px radius. Textareas are at least 80px tall.
+- **New `FileUpload`.** A dashed drop zone with file-type chips and a hint line.
+- `EmptyState`: 48px icon, 16px semibold title, 14px secondary description.
+- **`Tabs` gains `variant="segmented"`**, a pill switcher for time ranges and filters with the active pill in brand-800. Use `underline` (the default) for page sections.
+- `Progress` `tone="warning"` fill is now light amber (accent-300) instead of dark amber text ink (accent-700). This also lightens at-risk goal bars on `KpiCard`.
+- `Wizard`: step labels are 14px, the current step is brand-800, and upcoming steps are muted.
+
+### Colour
+- **AI stays brand amber** (violet was trialled and rejected as off-brand). New `--hc-color-ai-border` (accent-100) for AI content cards. `AiInsightCard`, `HeroSummary ai` (teal → amber gradient) and `AssistantPanel` all read the `--hc-color-ai-*` tokens. See FOUNDATION §8.
+- New aliases: `--hc-color-text-heading` and `--hc-color-text-supporting`.
+
+### New tokens
+- Shell and page: `--hc-shell-topbar-height`, `--hc-shell-sidebar-width`, `--hc-page-pad`, `--hc-page-max-width`, `--hc-page-focused-width`, `--hc-page-header-gap`, `--hc-page-section-gap`, `--hc-page-grid-gap`, `--hc-page-title-size`, `--hc-page-subtitle-size`, `--hc-page-footer-height`.
+- Fields: `--hc-field-height`, `--hc-field-label-gap`, `--hc-textarea-min-height`.
+
+### Fixed
+- **`cn()` dropped classes.** Stock tailwind-merge treated DS size classes (`text-14`, `rounded-control`) as conflicting with colour classes and silently removed one of them. `cn()` now uses `extendTailwindMerge` with the DS text and radius scales. This is the same bug fixed for Badge in 0.15, now fixed everywhere.
+- **Icons and paddings rendered at a quarter size** in Sidebar, Button, DropdownMenu, Combobox, CommandPalette, PatientIdentityStrip and BulkActionBar. These classes were written for shadcn's 4px spacing scale (`size-4` meaning 16px), but the DS theme reads `size-4` as 4px. They now use explicit `--hc-space-*` values.
+
+### Breaking (pre-1.0)
+- `PageTemplate` no longer accepts `gap`.
+- `KpiCard` no longer accepts `className` or `style`. `delta.label` is deprecated in favour of `supportingText`.
+- These changes are visible on screen: table, card and title sizes follow the values above.
+
 ## [0.15.0] — 2026-10-30
 
 **Badge: Notion-style density + the font-size that never actually applied.**

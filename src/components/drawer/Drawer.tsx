@@ -179,7 +179,7 @@ function XIcon({ size = 16 }: { size?: number }) {
 const DrawerContent = forwardRef<HTMLDivElement, DrawerContentProps>(function DrawerContent(
   {
     placement = "right",
-    size = "md",
+    size = "lg",
     overlay = true,
     closeOnOverlayClick = true,
     closeOnEscape = true,
@@ -322,7 +322,7 @@ const DrawerTitle = forwardRef<HTMLHeadingElement, DrawerTitleProps>(function Dr
         id={id}
         data-slot="drawer-title"
         className={cn(
-          "m-0 text-neutral-900 text-20 font-semibold leading-[1.3]",
+          "m-0 text-neutral-900 text-18 font-semibold leading-[1.3]",
           className,
         )}
         {...rest}

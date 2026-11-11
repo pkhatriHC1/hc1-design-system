@@ -134,7 +134,7 @@ const itemBaseClasses = cn(
   "focus:bg-[color:var(--hc-color-brand-50)]",
   "data-[highlighted]:bg-[color:var(--hc-color-brand-50)]",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-  "[&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:pointer-events-none",
+  "[&_svg]:size-[var(--hc-space-16)] [&_svg]:shrink-0 [&_svg]:pointer-events-none",
 );
 
 const DropdownMenuItem = forwardRef<HTMLDivElement, DropdownMenuItemProps>(
@@ -181,12 +181,12 @@ const DropdownMenuCheckboxItem = forwardRef<
     <RadixDropdownMenu.CheckboxItem
       ref={forwardedRef}
       data-slot="dropdown-menu-checkbox-item"
-      className={cn(itemBaseClasses, "pl-8", className)}
+      className={cn(itemBaseClasses, "pl-[var(--hc-space-32)]", className)}
       {...rest}
     >
-      <span className="pointer-events-none absolute left-2 flex size-4 items-center justify-center">
+      <span className="pointer-events-none absolute left-2 flex size-[var(--hc-space-16)] items-center justify-center">
         <RadixDropdownMenu.ItemIndicator>
-          <Check className="size-4" />
+          <Check className="size-[var(--hc-space-16)]" />
         </RadixDropdownMenu.ItemIndicator>
       </span>
       {children}
@@ -210,10 +210,10 @@ const DropdownMenuRadioItem = forwardRef<
     <RadixDropdownMenu.RadioItem
       ref={forwardedRef}
       data-slot="dropdown-menu-radio-item"
-      className={cn(itemBaseClasses, "pl-8", className)}
+      className={cn(itemBaseClasses, "pl-[var(--hc-space-32)]", className)}
       {...rest}
     >
-      <span className="pointer-events-none absolute left-2 flex size-4 items-center justify-center">
+      <span className="pointer-events-none absolute left-2 flex size-[var(--hc-space-16)] items-center justify-center">
         <RadixDropdownMenu.ItemIndicator>
           <Circle className="size-2 fill-current" />
         </RadixDropdownMenu.ItemIndicator>
@@ -286,7 +286,7 @@ const DropdownMenuSubTrigger = forwardRef<
       {...rest}
     >
       {children}
-      <ChevronRight className="ml-auto size-4 opacity-60" />
+      <ChevronRight className="ml-auto size-[var(--hc-space-16)] opacity-60" />
     </RadixDropdownMenu.SubTrigger>
   );
 });

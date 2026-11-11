@@ -58,6 +58,8 @@ export const text = {
   link:      brand[600],
   linkHover: brand[700],
   onSolid:   white,           // v3: fg on solid colored fills
+  heading:   brand[800],      // page titles, section headings (SourceIQ standard)
+  supporting: neutral[600],   // page subtitles, supporting lines
 } as const;
 
 export const action = {
@@ -104,14 +106,14 @@ export const cta = {
 /**
  * AI — AI-generated content + AI feature surfaces.
  *
- * HC1 AI is on-brand amber, not the industry violet convention. Use
- * `default` as a fill color (white text on amber works at ≥4.5:1);
- * use `text` as ink when AI accents appear on white (caption, chip
- * label, icon stroke, provenance line). Same fill-vs-ink split the
- * DS already uses for severity-high.
+ * HC1 AI is on-brand amber, not the industry violet convention
+ * (reconfirmed 2026-11-12). Use `default` as a fill color (white text
+ * on amber works at ≥4.5:1); use `text` as ink when AI accents appear
+ * on white (caption, chip label, icon stroke, provenance line). Same
+ * fill-vs-ink split the DS already uses for severity-high.
  *
  * Hero AI launcher = cta variant (solid amber fill).
- * AI-generated content card = subtleBg + text (pale amber tint + dark ink).
+ * AI-generated content card = subtleBg + border + text.
  * Full-bleed AI moment = gradient (brand teal → amber).
  *
  * See FOUNDATION.md §8. Still a signal, not chrome — do not paint
@@ -122,6 +124,7 @@ export const ai = {
   hover:        accent[600],
   text:         accent[700],
   subtleBg:     accent[50],
+  border:       accent[100],
   gradientFrom: brand[500],
   gradientVia:  accent[400],
   gradientTo:   accent[300],

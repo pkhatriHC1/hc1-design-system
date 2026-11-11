@@ -127,7 +127,7 @@ export function Wizard({
                 onClick={clickable ? () => onStepChange!(i) : undefined}
                 className={cn(
                   "flex items-center gap-2 rounded-[var(--hc-radius-8)] px-2 py-1",
-                  "text-[13px] leading-tight",
+                  "text-[14px] leading-tight",
                   "transition-colors duration-150 ease-standard motion-reduce:duration-0",
                   clickable && "hover:bg-[color:var(--hc-color-brand-50)] cursor-pointer",
                   !clickable && "cursor-default",
@@ -136,10 +136,10 @@ export function Wizard({
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "flex size-6 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold",
-                    isCurrent && "bg-[color:var(--hc-color-action-primary)] text-[color:var(--hc-color-text-on-solid)]",
+                    "flex size-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold",
+                    isCurrent && "bg-[color:var(--hc-color-brand-800)] text-[color:var(--hc-color-text-on-solid)]",
                     isDone && "bg-[color:var(--hc-color-brand-100)] text-[color:var(--hc-color-brand-700)]",
-                    !isCurrent && !isDone && "border border-[color:var(--hc-color-border-default)] text-[color:var(--hc-color-text-tertiary)]",
+                    !isCurrent && !isDone && "bg-[color:var(--hc-color-neutral-200)] text-[color:var(--hc-color-text-disabled)]",
                   )}
                 >
                   {isDone ? <Check className="size-3" /> : i + 1}
@@ -155,7 +155,7 @@ export function Wizard({
                     {step.label}
                   </span>
                   {step.description && (
-                    <span className="text-[11px] text-[color:var(--hc-color-text-tertiary)]">
+                    <span className="text-[12px] text-[color:var(--hc-color-text-tertiary)]">
                       {step.description}
                     </span>
                   )}

@@ -40,7 +40,8 @@ const fillVariants = cva(
       tone: {
         default: "bg-[color:var(--hc-color-action-primary)]",
         success: "bg-[color:var(--hc-color-status-success-fg)]",
-        warning: "bg-[color:var(--hc-color-status-warning-fg)]",
+        /* Light amber fill. warning-fg is text ink and reads too dark as a bar. */
+        warning: "bg-[color:var(--hc-color-accent-300)]",
         danger:  "bg-[color:var(--hc-color-status-error-fg)]",
       },
     },

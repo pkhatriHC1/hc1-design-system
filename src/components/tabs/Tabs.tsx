@@ -9,6 +9,7 @@ import type {
   TabsPanelsProps,
   TabsProps,
   TabsSize,
+  TabsVariant,
   TabsTabProps,
 } from "./Tabs.types";
 
@@ -40,6 +41,21 @@ import type {
 import { createContext, useContext } from "react";
 
 const TabsSizeContext = createContext<TabsSize>("md");
+const TabsVariantContext = createContext<TabsVariant>("underline");
+
+/* Segmented look (SourceIQ time-frame control, 2026-11-11): filled dark
+   teal pill for the active option, grey text for the rest. Used for
+   picking a range or a filter; underline tabs switch views. */
+const segmentedListClasses = cn(
+  "inline-flex w-auto items-center gap-[var(--hc-space-4)] p-0 border-0 bg-transparent",
+);
+const segmentedTabClasses = cn(
+  "h-[var(--hc-field-height)] px-[var(--hc-space-12)] border-0 mb-0 rounded-control",
+  "text-[12px] font-semibold text-neutral-500",
+  "not-disabled:hover:bg-neutral-100 not-disabled:hover:text-neutral-900",
+  "data-[state=active]:bg-brand-800 data-[state=active]:text-white",
+  "data-[state=active]:not-disabled:hover:bg-brand-800 data-[state=active]:not-disabled:hover:text-white",
+);
 
 /* ══════ CVA — ROOT (sets --hc-tabs-* CSS vars) ═══════════════════ */
 
@@ -157,6 +173,7 @@ const TabsRoot = forwardRef<HTMLDivElement, TabsProps>(function TabsRoot(
     defaultValue,
     onValueChange,
     size           = "md",
+    variant        = "underline",
     ariaLabel,
     ariaLabelledBy,
     className,
@@ -168,6 +185,7 @@ const TabsRoot = forwardRef<HTMLDivElement, TabsProps>(function TabsRoot(
 ) {
   return (
     <TabsSizeContext.Provider value={size}>
+      <TabsVariantContext.Provider value={variant}>
       <RadixTabs.Root
         ref={ref}
         value={value}
@@ -176,6 +194,7 @@ const TabsRoot = forwardRef<HTMLDivElement, TabsProps>(function TabsRoot(
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
         data-slot="tabs-root"
+        data-variant={variant}
         style={style as CSSProperties}
         className={cn(
           tabsRootVariants({
@@ -187,6 +206,7 @@ const TabsRoot = forwardRef<HTMLDivElement, TabsProps>(function TabsRoot(
       >
         {children}
       </RadixTabs.Root>
+      </TabsVariantContext.Provider>
     </TabsSizeContext.Provider>
   );
 });
@@ -198,6 +218,7 @@ const TabsList = forwardRef<HTMLDivElement, TabsListProps>(function TabsList(
   { scrollable = true, className, children, ...rest },
   ref,
 ) {
+  const variant = useContext(TabsVariantContext);
   return (
     <RadixTabs.List
       ref={ref}
@@ -206,6 +227,7 @@ const TabsList = forwardRef<HTMLDivElement, TabsListProps>(function TabsList(
         tabsListVariants({
           scrollable,
         } as VariantProps<typeof tabsListVariants>),
+        variant === "segmented" && segmentedListClasses,
         className,
       )}
       {...rest}
@@ -222,6 +244,7 @@ const TabsTab = forwardRef<HTMLButtonElement, TabsTabProps>(function TabsTab(
   { value, icon, badge, disabled, className, children, onClick, ...rest },
   ref,
 ) {
+  const variant = useContext(TabsVariantContext);
   return (
     <RadixTabs.Trigger
       ref={ref}
@@ -229,7 +252,7 @@ const TabsTab = forwardRef<HTMLButtonElement, TabsTabProps>(function TabsTab(
       disabled={disabled}
       onClick={onClick}
       data-slot="tabs-tab"
-      className={cn(tabsTabVariants(), className)}
+      className={cn(tabsTabVariants(), variant === "segmented" && segmentedTabClasses, className)}
       {...rest}
     >
       {icon && (

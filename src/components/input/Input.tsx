@@ -272,7 +272,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     <div
       data-slot="input-field"
       className={cn(
-        "inline-flex flex-col gap-4 font-sans text-neutral-900 min-w-0",
+        "inline-flex flex-col gap-[var(--hc-field-label-gap)] font-sans text-neutral-900 min-w-0",
         fullWidth && "flex w-full",
         disabled && cn(
           "[&_[data-slot=input-label]]:text-neutral-400 [&_[data-slot=input-label]]:cursor-not-allowed",
@@ -286,7 +286,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           <label
             htmlFor={id}
             data-slot="input-label"
-            className="text-14 leading-[1.4] font-semibold text-neutral-900 cursor-pointer"
+            className="text-14 leading-[1.4] font-medium text-neutral-900 cursor-pointer"
           >
             {label}
             {required && (

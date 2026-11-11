@@ -388,7 +388,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
       <div
         data-slot="textarea-field"
         className={cn(
-          "inline-flex flex-col gap-4 font-sans text-neutral-900 min-w-0",
+          "inline-flex flex-col gap-[var(--hc-field-label-gap)] font-sans text-neutral-900 min-w-0",
           fullWidth && "flex w-full",
           disabled && cn(
             "[&_[data-slot=textarea-label]]:text-neutral-400 [&_[data-slot=textarea-label]]:cursor-not-allowed",
@@ -405,7 +405,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
               <label
                 htmlFor={id}
                 data-slot="textarea-label"
-                className="text-14 leading-[1.4] font-semibold text-neutral-900 cursor-pointer"
+                className="text-14 leading-[1.4] font-medium text-neutral-900 cursor-pointer"
               >
                 {label}
                 {required && (
@@ -571,7 +571,7 @@ const TextareaLabel = forwardRef<HTMLLabelElement, TextareaLabelProps>(function 
       htmlFor={ctx.inputId}
       data-slot="textarea-label"
       className={cn(
-        "text-14 leading-[1.4] font-semibold text-neutral-900 cursor-pointer",
+        "text-14 leading-[1.4] font-medium text-neutral-900 cursor-pointer",
         className,
       )}
       {...rest}

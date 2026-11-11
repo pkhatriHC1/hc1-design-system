@@ -2,6 +2,7 @@ import { Children, forwardRef, isValidElement } from "react";
 import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { cn } from "../../utils/cn";
 import { SidebarProvider } from "../sidebar";
+import { AppShellTopBar } from "./AppShellTopBar";
 import type {
   AppShellFooterProps,
   AppShellHeaderProps,
@@ -78,7 +79,7 @@ function splitChildren(children: ReactNode) {
       return;
     }
     const displayName = (child.type as { displayName?: string } | undefined)?.displayName;
-    if (displayName === "AppShell.Header") header.push(child);
+    if (displayName === "AppShell.Header" || displayName === "AppShell.TopBar") header.push(child);
     else if (displayName === "AppShell.Footer") footer.push(child);
     else content.push(child);
   });
@@ -99,6 +100,7 @@ const AppShellHeader = forwardRef<HTMLElement, AppShellHeaderProps>(function App
       data-slot="app-shell-header"
       className={cn(
         "flex shrink-0 items-center gap-3",
+        "min-h-[var(--hc-shell-topbar-height)]",
         "bg-[color:var(--hc-color-bg-surface)]",
         divider && "border-b border-[color:var(--hc-color-border-subtle)]",
         className,
@@ -142,7 +144,15 @@ AppShellFooter.displayName = "AppShell.Footer";
 /* ══════ Main ══════════════════════════════════════════════════ */
 
 const AppShellMain = forwardRef<HTMLElement, AppShellMainProps>(function AppShellMain(
-  { className, style, maxWidth, center = false, padding = 24, children, ...rest },
+  {
+    className,
+    style,
+    maxWidth = "var(--hc-page-max-width)",
+    center = false,
+    padding = "var(--hc-page-pad)",
+    children,
+    ...rest
+  },
   forwardedRef,
 ) {
   const mainStyle: CSSProperties = { ...style, padding };
@@ -170,12 +180,14 @@ AppShellMain.displayName = "AppShell.Main";
 
 type AppShellCompound = typeof AppShellRoot & {
   Header: typeof AppShellHeader;
+  TopBar: typeof AppShellTopBar;
   Main: typeof AppShellMain;
   Footer: typeof AppShellFooter;
 };
 
 const AppShell = AppShellRoot as AppShellCompound;
 AppShell.Header = AppShellHeader;
+AppShell.TopBar = AppShellTopBar;
 AppShell.Main = AppShellMain;
 AppShell.Footer = AppShellFooter;
 

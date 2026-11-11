@@ -42,9 +42,8 @@ export type GridProps = HTMLAttributes<HTMLDivElement> & {
    */
   minTileWidth?: number;
   /**
-   * Gap between tiles in px. Applies both between columns and between
-   * wrapped rows.
-   * @default 16
+   * @deprecated Leave unset. Card grids use one gutter everywhere:
+   * 24px (`--hc-page-grid-gap`, SourceIQ standard 2026-11-11).
    */
   gap?: number;
 };
@@ -58,7 +57,7 @@ const COLUMN_CLASSES: Record<NonNullable<GridProps["columns"]>, string> = {
 };
 
 export const Grid = forwardRef<HTMLDivElement, GridProps>(function Grid(
-  { columns = 3, minTileWidth, gap = 16, className, style, children, ...rest },
+  { columns = 3, minTileWidth, gap, className, style, children, ...rest },
   forwardedRef,
 ) {
   const useAutoFit = typeof minTileWidth === "number";
@@ -72,7 +71,7 @@ export const Grid = forwardRef<HTMLDivElement, GridProps>(function Grid(
         className,
       )}
       style={{
-        gap,
+        gap: gap ?? "var(--hc-page-grid-gap)",
         gridTemplateColumns: useAutoFit
           ? `repeat(auto-fit, minmax(min(${minTileWidth}px, 100%), 1fr))`
           : undefined,

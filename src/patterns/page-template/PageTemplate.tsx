@@ -2,10 +2,8 @@ import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "../../utils/cn";
 
 /**
- * PageTemplate — the standard page layout.
+ * PageTemplate — the standard page layout for every hc1 product.
  *
- * Merges the previous `DashboardHero` (dashboard landing) and `DetailPage`
- * (record-detail template) into one primitive with generic slot names.
  * Five optional slots stacked vertically with a two-column split on the
  * `children` + `aside` row:
  *
@@ -16,80 +14,88 @@ import { cn } from "../../utils/cn";
  *   ├──────────────────────────────────────────────────────┤
  *   │ widgets — KPI row, filter chips, stats               │
  *   ├──────────────────────────────────┬───────────────────┤
- *   │                                  │                   │
  *   │ children (main)                  │ aside (rail)      │
  *   │ ── 2/3 width when aside present  │ 1/3 width         │
- *   │                                  │                   │
  *   └──────────────────────────────────┴───────────────────┘
  *
- * Every slot is optional — pass what you need, omit the rest.
+ * SPACING IS OWNED HERE (SourceIQ standard, 2026-11-11). The template
+ * sets every vertical gap on the page: 24px between the header and the
+ * first section (`--hc-page-header-gap`) and 24px between sections
+ * (`--hc-page-section-gap`). Screens never add their own margins
+ * between sections — pass several sections as children and they are
+ * spaced automatically. There is no `gap` prop on purpose.
  *
- * Fits a dashboard:
+ * Two variants:
+ *   default — full-width page (dashboards, queues, analytics)
+ *   focused — one centred 896px column (`--hc-page-focused-width`) with
+ *             an optional sticky action footer (detail pages, action
+ *             plans, multi-step flows)
+ *
+ * Dashboard:
  *   <PageTemplate
- *     header={<PageHeader title="Overview" />}
+ *     header={<PageHeader title="Supply Chain Dashboard" subtitle="…" />}
  *     widgets={<Grid columns={4}>…KpiCards…</Grid>}
- *     aside={<ChartCard>secondary chart</ChartCard>}
  *   >
- *     <ChartCard>primary chart</ChartCard>
+ *     <ChartCard>…</ChartCard>
+ *     <Card>…</Card>
  *   </PageTemplate>
  *
- * Fits a detail page:
+ * Focused detail page:
  *   <PageTemplate
- *     eyebrow={<PatientIdentityStrip … />}
- *     header={<PageHeader title="Alicia Reyes" tabs={<Tabs>…</Tabs>} />}
- *     aside={<Card>Care team</Card>}
+ *     variant="focused"
+ *     header={<PageHeader title="Cepheid renewal window closing" />}
+ *     footer={{ meta: "Due December 11, 2026", actions: <>…</> }}
  *   >
- *     <Card>Main tab content</Card>
+ *     <Card>…</Card>
  *   </PageTemplate>
  */
-
-export type PageTemplateProps = HTMLAttributes<HTMLDivElement> & {
-  /**
-   * Top strap — identity strip, breadcrumb crumbs, mini nav.
-   * Renders above the header.
-   */
+export type PageTemplateProps = Omit<HTMLAttributes<HTMLDivElement>, "style"> & {
+  /** Layout variant. @default 'default' */
+  variant?: "default" | "focused";
+  /** Identity strip, mini nav or banner above the header. */
   eyebrow?: ReactNode;
-  /**
-   * Primary header — typically an HC1 PageHeader with title +
-   * breadcrumb + tabs + actions.
-   */
+  /** The page header — always a `<PageHeader>`. */
   header?: ReactNode;
-  /**
-   * Widget row between header and the main body — KPI Grid, filter
-   * chips, stats callouts.
-   */
+  /** KPI row, filter chips or stats directly under the header. */
   widgets?: ReactNode;
-  /**
-   * Right rail. On wide screens takes 1/3 width; stacks below children
-   * on narrow viewports. Use for secondary charts (dashboard),
-   * metadata cards (detail page), or drill-down slots.
-   */
+  /** Right rail (default variant only). Main content takes 2/3. */
   aside?: ReactNode;
-  /**
-   * Main content region. When `aside` is present, takes 2/3 width on
-   * wide screens; otherwise stretches full-width.
-   */
+  /** Sections of the page. Each direct child is spaced 24px apart. */
   children?: ReactNode;
-  /** Vertical gap between regions in px. @default 24 */
-  gap?: number;
+  /**
+   * Sticky action footer (focused variant only): meta on the left
+   * (e.g. a due date), actions on the right (secondary, then primary).
+   */
+  footer?: { meta?: ReactNode; actions?: ReactNode };
 };
 
 export function PageTemplate({
+  variant = "default",
   eyebrow,
   header,
   widgets,
   aside,
   children,
-  gap = 24,
+  footer,
   className,
-  style,
   ...rest
 }: PageTemplateProps) {
-  return (
+  const focused = variant === "focused";
+  const showAside = !!aside && !focused;
+
+  const column = (
     <div
       data-slot="page-template"
-      className={cn("flex flex-col", className)}
-      style={{ gap, ...style }}
+      data-variant={variant}
+      className={cn(
+        "flex flex-col gap-[var(--hc-page-section-gap)]",
+        focused && "mx-auto w-full max-w-[var(--hc-page-focused-width)]",
+        /* With a footer, the column fills the viewport so the footer
+           rests on the bottom edge even when the page is short. */
+        focused && footer &&
+          "min-h-[calc(100dvh-var(--hc-shell-topbar-height)-var(--hc-page-pad)-var(--hc-page-section-gap)-var(--hc-page-footer-height))]",
+        className,
+      )}
       {...rest}
     >
       {eyebrow && (
@@ -98,7 +104,10 @@ export function PageTemplate({
         </div>
       )}
       {header && (
-        <div data-slot="page-template-header" className="min-w-0">
+        <div
+          data-slot="page-template-header"
+          className="min-w-0 [&+*]:mt-[calc(var(--hc-page-header-gap)-var(--hc-page-section-gap))]"
+        >
           {header}
         </div>
       )}
@@ -107,30 +116,68 @@ export function PageTemplate({
           {widgets}
         </div>
       )}
-      {(children || aside) && (
+      {(children || showAside) && (
         <div
           data-slot="page-template-body"
           className={cn(
-            "grid grid-cols-1 min-w-0",
-            aside && "lg:grid-cols-3",
+            "grid min-w-0 grid-cols-1 gap-[var(--hc-page-section-gap)]",
+            showAside && "lg:grid-cols-3",
           )}
-          style={{ gap }}
         >
           {children && (
             <div
               data-slot="page-template-main"
-              className={cn("min-w-0", aside && "lg:col-span-2")}
+              className={cn(
+                "flex min-w-0 flex-col gap-[var(--hc-page-section-gap)]",
+                showAside && "lg:col-span-2",
+              )}
             >
               {children}
             </div>
           )}
-          {aside && (
-            <div data-slot="page-template-aside" className="min-w-0">
+          {showAside && (
+            <div
+              data-slot="page-template-aside"
+              className="flex min-w-0 flex-col gap-[var(--hc-page-section-gap)]"
+            >
               {aside}
             </div>
           )}
         </div>
       )}
     </div>
+  );
+
+  if (!(focused && footer)) return column;
+
+  return (
+    <>
+      {column}
+      <div
+        data-slot="page-template-footer"
+        className={cn(
+          /* Bleeds to the edges of AppShell.Main and pins to its bottom. */
+          "sticky bottom-[calc(-1*var(--hc-page-pad))] z-[1]",
+          "-mx-[var(--hc-page-pad)] -mb-[var(--hc-page-pad)] mt-[var(--hc-page-section-gap)]",
+          "border-t border-[color:var(--hc-color-border-default)]",
+          "bg-[color:var(--hc-color-bg-surface)]",
+        )}
+      >
+        <div
+          className={cn(
+            "mx-auto flex w-full max-w-[calc(var(--hc-page-focused-width)+2*var(--hc-page-pad))]",
+            "h-[var(--hc-page-footer-height)] items-center justify-between gap-[var(--hc-space-12)]",
+            "px-[var(--hc-page-pad)]",
+          )}
+        >
+          <div className="min-w-0 text-[14px] text-[color:var(--hc-color-text-supporting)]">
+            {footer.meta}
+          </div>
+          <div className="flex shrink-0 items-center gap-[var(--hc-space-8)]">
+            {footer.actions}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

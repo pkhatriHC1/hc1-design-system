@@ -282,7 +282,7 @@ const SidebarHeader = forwardRef<HTMLDivElement, SidebarHeaderProps>(function Si
               className={cn(
                 /* Ghost-icon-button — square, transparent, brand-tinted hover */
                 "inline-flex shrink-0 items-center justify-center",
-                "size-[var(--hc-space-32)] rounded-md",
+                "size-[var(--hc-space-32)] rounded-control",
                 "text-[color:var(--hc-color-text-inverse)]",
                 "transition-[background-color] duration-150 ease-standard motion-reduce:duration-0",
                 "hover:bg-[color:rgba(255,255,255,0.08)]",
@@ -325,27 +325,26 @@ function SidebarHeaderAction({
 }) {
   const buttonClasses = cn(
     "flex items-center justify-center gap-2",
-    /* Fully overridable via CSS vars — consumer can set
-       --hc-sidebar-action-bg / -fg / -hover on Sidebar or :root
-       to make the primary action match its own brand. Defaults
-       chain to HC1's elevated-surface white pill. */
-    "rounded-full",
-    "bg-[color:var(--hc-sidebar-action-bg,var(--hc-color-bg-surface))]",
-    "text-[color:var(--hc-sidebar-action-fg,var(--hc-color-text-primary))]",
-    "font-semibold text-[13px] leading-tight",
+    /* The one optional product action at the top of the sidebar
+       (e.g. "Add Files to Analyze"). Amber CTA, radius-control — the
+       SourceIQ standard (2026-11-11). Products do not restyle it. */
+    "rounded-control",
+    "bg-[color:var(--hc-sidebar-action-bg,var(--hc-color-cta-default))]",
+    "text-[color:var(--hc-sidebar-action-fg,var(--hc-color-text-on-solid))]",
+    "font-semibold text-[14px] leading-tight",
     "transition-[background-color,transform] duration-150 ease-standard motion-reduce:duration-0",
-    "hover:bg-[color:var(--hc-sidebar-action-hover,var(--hc-color-bg-elevated))] hover:shadow-sm",
+    "hover:bg-[color:var(--hc-sidebar-action-hover,var(--hc-color-cta-hover))]",
     "focus:outline-none focus-visible:outline focus-visible:outline-2",
     "focus-visible:outline-[color:var(--hc-color-border-focus)] focus-visible:outline-offset-2",
     "active:translate-y-px",
     /* Layout — icon-only when collapsed, full-width pill when expanded */
-    collapsed ? "size-10 self-center" : "h-10 w-full px-4",
+    collapsed ? "size-10 self-center" : "h-10 w-full px-[var(--hc-space-16)]",
   );
 
   const iconEl = (
     <span
       data-slot="sidebar-header-action-icon"
-      className="inline-flex shrink-0 [&>svg]:size-4"
+      className="inline-flex shrink-0 [&>svg]:size-[var(--hc-space-16)]"
     >
       {action.icon}
     </span>
@@ -405,7 +404,7 @@ const SidebarSection = forwardRef<HTMLDivElement, SidebarSectionProps>(function 
         <SectionLabel
           tone="inverse"
           className={cn(
-            "px-4 pt-4 pb-1",
+            "px-[var(--hc-space-16)] pt-[var(--hc-space-16)] pb-1",
             /* Top divider for sections after the first — done via
                ::before-esque; simpler is a border-top when it's not
                the immediate child of section-list. Section itself has
@@ -478,12 +477,12 @@ const SidebarItem = forwardRef<HTMLElement, SidebarItemProps>(function SidebarIt
   /* Dimensions preserved from shadcn's SidebarMenuButton size="lg" so
      consumers migrating from that primitive see byte-identical layout. */
   const commonClasses = cn(
-    "group relative flex items-center gap-2 rounded-md",
+    "group relative flex items-center gap-2 rounded-control",
     "text-16 leading-normal font-medium",
     "no-underline text-[color:var(--hc-color-text-inverse)]",
     "transition-[background-color,opacity] duration-150 ease-standard motion-reduce:duration-0",
     /* Layout — icon-only 32px square when collapsed, 48px tall pill when
-       expanded. Uses --hc-space-* directly instead of Tailwind's size-8 /
+       expanded. Uses --hc-space-* directly instead of Tailwind's size-[var(--hc-space-32)] /
        h-12 utilities: the DS theme.css remaps --spacing-8 / --spacing-12
        to the pixel token values (8 / 12), so shadcn's convention of
        "h-12 = 48px" no longer applies inside the DS. Referencing the
@@ -503,7 +502,7 @@ const SidebarItem = forwardRef<HTMLElement, SidebarItemProps>(function SidebarIt
   const iconEl = (
     <span
       data-slot="sidebar-item-icon"
-      className="inline-flex shrink-0 [&>svg]:size-4"
+      className="inline-flex shrink-0 [&>svg]:size-[var(--hc-space-16)]"
       aria-hidden="true"
     >
       {icon}
@@ -694,7 +693,7 @@ const SidebarGroup = forwardRef<HTMLButtonElement, SidebarGroupProps>(function S
   /* Trigger visuals match Sidebar.Item's commonClasses so a Group row
      reads as a peer of an Item row (same height, icon slot, hover ring). */
   const triggerClasses = cn(
-    "group relative flex items-center gap-2 rounded-md",
+    "group relative flex items-center gap-2 rounded-control",
     "text-16 leading-normal font-medium",
     "no-underline text-[color:var(--hc-color-text-inverse)]",
     "transition-[background-color,opacity] duration-150 ease-standard motion-reduce:duration-0",
@@ -712,7 +711,7 @@ const SidebarGroup = forwardRef<HTMLButtonElement, SidebarGroupProps>(function S
   const iconEl = (
     <span
       data-slot="sidebar-item-icon"
-      className="inline-flex shrink-0 [&>svg]:size-4"
+      className="inline-flex shrink-0 [&>svg]:size-[var(--hc-space-16)]"
       aria-hidden="true"
     >
       {icon}
@@ -736,7 +735,7 @@ const SidebarGroup = forwardRef<HTMLButtonElement, SidebarGroupProps>(function S
       aria-hidden="true"
       data-slot="sidebar-group-chevron"
       className={cn(
-        "size-4 shrink-0 opacity-70",
+        "size-[var(--hc-space-16)] shrink-0 opacity-70",
         "transition-transform duration-150 ease-standard motion-reduce:duration-0",
         open && "rotate-90",
       )}

@@ -273,7 +273,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
             {leadingIcon && (
               <span
                 data-slot="combobox-leading-icon"
-                className="inline-flex shrink-0 items-center [&>svg]:size-4 text-[color:var(--hc-color-text-tertiary)]"
+                className="inline-flex shrink-0 items-center [&>svg]:size-[var(--hc-space-16)] text-[color:var(--hc-color-text-tertiary)]"
                 aria-hidden="true"
               >
                 {leadingIcon}
@@ -291,7 +291,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
             <ChevronDown
               aria-hidden="true"
               className={cn(
-                "size-4 shrink-0 opacity-60 transition-transform duration-150",
+                "size-[var(--hc-space-16)] shrink-0 opacity-60 transition-transform duration-150",
                 open && "rotate-180",
               )}
             />
@@ -318,7 +318,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
             <div className="flex items-center gap-2 border-b border-[color:var(--hc-color-border-subtle)] px-3 py-2">
               <Search
                 aria-hidden="true"
-                className="size-4 shrink-0 text-[color:var(--hc-color-text-tertiary)]"
+                className="size-[var(--hc-space-16)] shrink-0 text-[color:var(--hc-color-text-tertiary)]"
               />
               <input
                 ref={searchInputRef}
@@ -342,7 +342,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
               {loading && (
                 <Loader2
                   aria-hidden="true"
-                  className="size-4 shrink-0 animate-spin text-[color:var(--hc-color-text-tertiary)]"
+                  className="size-[var(--hc-space-16)] shrink-0 animate-spin text-[color:var(--hc-color-text-tertiary)]"
                 />
               )}
             </div>
@@ -353,7 +353,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
               className="m-0 max-h-[280px] overflow-y-auto p-1"
             >
               {filteredOptions.length === 0 && (
-                <li className="px-3 py-4 text-center text-[13px] text-[color:var(--hc-color-text-tertiary)]">
+                <li className="px-3 py-[var(--hc-space-16)] text-center text-[13px] text-[color:var(--hc-color-text-tertiary)]">
                   {emptyMessage}
                 </li>
               )}
@@ -378,7 +378,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
                   >
                     {option.icon && (
                       <span
-                        className="inline-flex shrink-0 [&>svg]:size-4"
+                        className="inline-flex shrink-0 [&>svg]:size-[var(--hc-space-16)]"
                         aria-hidden="true"
                       >
                         {option.icon}
@@ -395,7 +395,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
                     {selected && (
                       <Check
                         aria-hidden="true"
-                        className="size-4 shrink-0 text-[color:var(--hc-color-brand-600)]"
+                        className="size-[var(--hc-space-16)] shrink-0 text-[color:var(--hc-color-brand-600)]"
                       />
                     )}
                   </li>

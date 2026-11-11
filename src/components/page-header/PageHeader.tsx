@@ -22,8 +22,11 @@ export const PageHeader = forwardRef<HTMLDivElement, PageHeaderProps>(function P
       ref={forwardedRef}
       data-slot="page-header"
       className={cn(
-        "mb-6 flex flex-col",
-        tabs ? "gap-4" : "gap-3",
+        /* No outer margin: the gap below the header is owned by
+           PageTemplate (--hc-page-header-gap), so it is identical on
+           every page. */
+        "flex flex-col",
+        tabs ? "gap-[var(--hc-space-16)]" : "gap-3",
         className,
       )}
       {...rest}
@@ -45,8 +48,8 @@ export const PageHeader = forwardRef<HTMLDivElement, PageHeaderProps>(function P
               "data-slot": "page-header-title",
               className: cn(
                 "m-0 mb-0.5",
-                "font-bold text-[color:var(--hc-color-text-primary)]",
-                "text-[24px] leading-[1.2] tracking-tight",
+                "font-bold text-[color:var(--hc-color-text-heading)]",
+                "text-[length:var(--hc-page-title-size)] leading-[1.25] tracking-tight",
                 "[font-family:var(--hc-font-sans)]",
               ),
             },
@@ -57,8 +60,8 @@ export const PageHeader = forwardRef<HTMLDivElement, PageHeaderProps>(function P
               data-slot="page-header-subtitle"
               className={cn(
                 "m-0",
-                "text-[14px] leading-[1.5]",
-                "text-[color:var(--hc-color-text-tertiary)]",
+                "text-[length:var(--hc-page-subtitle-size)] leading-[1.5]",
+                "text-[color:var(--hc-color-text-supporting)]",
               )}
             >
               {subtitle}

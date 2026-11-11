@@ -9,9 +9,11 @@ export type DrawerPlacement = "left" | "right";
 
 /**
  * Panel width ladder. Values match `--hc-drawer-size-*` in variables.css.
- *   sm         — narrow filter/settings tray (360px)
- *   md         — most drawers; default edit/detail panel (480px)
- *   lg         — spacious editors, multi-column reads (640px)
+ *   lg         — THE STANDARD (640px). Every detail drawer and the IQ
+ *                Assistant panel use it (decision 2026-11-11: one width
+ *                for every drawer).
+ *   md         — legacy (480px). Don't use for new work.
+ *   sm         — legacy (360px). Don't use for new work.
  *   fullscreen — mobile / immersive edits; edge-to-edge (100vw)
  */
 export type DrawerSize = "sm" | "md" | "lg" | "fullscreen";
@@ -57,8 +59,9 @@ export type DrawerContentProps = HTMLAttributes<HTMLDivElement> & {
   placement?: DrawerPlacement;
   /**
    * Panel width. `fullscreen` fills the viewport edge-to-edge and
-   * disables the panel radius/shadow.
-   * @default 'md'
+   * disables the panel radius/shadow. Leave unset: every hc1 drawer
+   * is `lg` (640px).
+   * @default 'lg'
    */
   size?: DrawerSize;
   /**

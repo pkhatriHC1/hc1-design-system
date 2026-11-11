@@ -80,21 +80,25 @@ const cardVariants = cva(
         selected:    "bg-white border-brand-500 shadow-none",
       },
       density: {
+        /* SourceIQ standard (2026-11-11): 24px padding everywhere,
+           16px only for compact cards inside tables/drawers/panels.
+           Card titles are 16px semibold at every density. */
         compact: cn(
-          "[--hc-card-pad:var(--hc-space-12)]",
+          "[--hc-card-pad:var(--hc-space-16)]",
           "[--hc-card-title-size:16px]",
           "[--hc-card-icon-size:20px]",
           "[--hc-card-actions-gap:var(--hc-space-4)]",
         ),
         comfortable: cn(
-          "[--hc-card-pad:var(--hc-space-16)]",
-          "[--hc-card-title-size:18px]",
+          "[--hc-card-pad:var(--hc-space-24)]",
+          "[--hc-card-title-size:16px]",
           "[--hc-card-icon-size:24px]",
           "[--hc-card-actions-gap:var(--hc-space-8)]",
         ),
         relaxed: cn(
+          /* relaxed: deprecated alias of comfortable. */
           "[--hc-card-pad:var(--hc-space-24)]",
-          "[--hc-card-title-size:20px]",
+          "[--hc-card-title-size:16px]",
           "[--hc-card-icon-size:28px]",
           "[--hc-card-actions-gap:var(--hc-space-12)]",
         ),

@@ -344,7 +344,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
     <div
       data-slot="select-field"
       className={cn(
-        "inline-flex flex-col gap-4 font-sans text-neutral-900 min-w-0",
+        "inline-flex flex-col gap-[var(--hc-field-label-gap)] font-sans text-neutral-900 min-w-0",
         fullWidth && "flex w-full",
         disabled && cn(
           "[&_[data-slot=select-label]]:text-neutral-400 [&_[data-slot=select-label]]:cursor-not-allowed",
@@ -358,7 +358,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
           <span
             id={labelId}
             data-slot="select-label"
-            className="text-14 leading-[1.4] font-semibold text-neutral-900 cursor-pointer"
+            className="text-14 leading-[1.4] font-medium text-neutral-900 cursor-pointer"
           >
             {label}
             {required && (

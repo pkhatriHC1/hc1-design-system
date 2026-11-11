@@ -93,13 +93,13 @@ export function AiInsightCard({
       data-slot="ai-insight-card"
       className={cn(
         "relative flex flex-col gap-[var(--hc-space-12)]",
-        "rounded-[var(--hc-radius-control)] border",
+        "rounded-[var(--hc-radius-surface)] border",
         /* Amber AI-token frame — the visual signature that marks the
            content as AI-generated. Left accent bar is stronger; the
            background stays a subtle wash. */
-        "border-[color:var(--hc-color-accent-200)]",
+        "border-[color:var(--hc-color-ai-border)]",
         "bg-[color:var(--hc-color-ai-subtle-bg)]",
-        "p-[var(--hc-space-16)]",
+        "p-[var(--hc-space-24)]",
         /* Left accent bar via ::before-style inset box-shadow. */
         "shadow-[inset_3px_0_0_var(--hc-color-ai-default)]",
         className,
@@ -111,9 +111,9 @@ export function AiInsightCard({
           data-slot="ai-insight-card-icon"
           aria-hidden="true"
           className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-full",
-            "bg-[color:var(--hc-color-accent-100)] text-[color:var(--hc-color-ai-text)]",
-            "[&>svg]:size-4",
+            "flex size-[var(--hc-space-32)] shrink-0 items-center justify-center rounded-full",
+            "bg-[color:var(--hc-color-ai-border)] text-[color:var(--hc-color-ai-text)]",
+            "[&>svg]:size-[var(--hc-space-16)]",
           )}
         >
           {icon}
@@ -122,7 +122,7 @@ export function AiInsightCard({
           <div
             data-slot="ai-insight-card-title"
             className={cn(
-              "text-[15px] font-semibold leading-tight",
+              "text-[16px] font-semibold leading-tight",
               "text-[color:var(--hc-color-text-primary)]",
             )}
           >
@@ -132,7 +132,7 @@ export function AiInsightCard({
             <div
               data-slot="ai-insight-card-description"
               className={cn(
-                "mt-1 text-[13px] leading-relaxed",
+                "mt-1 text-[14px] leading-relaxed",
                 "text-[color:var(--hc-color-text-secondary)]",
               )}
             >
@@ -141,8 +141,8 @@ export function AiInsightCard({
           )}
           {loading && (
             <div className="mt-2 flex flex-col gap-1.5">
-              <div className="h-[12px] w-[80%] animate-pulse rounded-[4px] bg-[color:var(--hc-color-accent-100)]" />
-              <div className="h-[12px] w-[60%] animate-pulse rounded-[4px] bg-[color:var(--hc-color-accent-100)]" />
+              <div className="h-[12px] w-[80%] animate-pulse rounded-[4px] bg-[color:var(--hc-color-ai-border)]" />
+              <div className="h-[12px] w-[60%] animate-pulse rounded-[4px] bg-[color:var(--hc-color-ai-border)]" />
             </div>
           )}
         </div>
@@ -155,7 +155,7 @@ export function AiInsightCard({
           data-slot="ai-insight-card-provenance"
           className={cn(
             "flex items-center gap-1.5",
-            "text-[11px] font-medium uppercase tracking-widest",
+            "text-[12px] font-medium uppercase tracking-widest",
             "text-[color:var(--hc-color-ai-text)]",
           )}
         >

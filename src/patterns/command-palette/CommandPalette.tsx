@@ -181,10 +181,10 @@ export function CommandPalette({
         showCloseButton={false}
         className="p-0"
       >
-        <div className="flex items-center gap-2 border-b border-[color:var(--hc-color-border-subtle)] px-4 py-3">
+        <div className="flex items-center gap-2 border-b border-[color:var(--hc-color-border-subtle)] px-[var(--hc-space-16)] py-3">
           <Search
             aria-hidden="true"
-            className="size-4 shrink-0 text-[color:var(--hc-color-text-tertiary)]"
+            className="size-[var(--hc-space-16)] shrink-0 text-[color:var(--hc-color-text-tertiary)]"
           />
           <input
             ref={searchRef}
@@ -246,7 +246,7 @@ export function CommandPalette({
                       "outline-none focus:outline-none",
                       cmd.disabled && "opacity-50",
                       highlighted && !cmd.disabled && "bg-[color:var(--hc-color-brand-50)]",
-                      "[&>svg]:size-4 [&>svg]:shrink-0",
+                      "[&>svg]:size-[var(--hc-space-16)] [&>svg]:shrink-0",
                     )}
                   >
                     {cmd.icon}

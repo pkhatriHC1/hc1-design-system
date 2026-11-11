@@ -278,6 +278,11 @@
   --hc-color-text-link:       var(--hc-color-brand-600);
   --hc-color-text-link-hover: var(--hc-color-brand-700);
   --hc-color-text-on-solid:   var(--hc-color-white);    /* text on any solid brand/action fill */
+  /* Headings — page titles, section headings, drawer/modal titles that
+     carry the brand (dark teal, as in SourceIQ). Body text stays primary. */
+  --hc-color-text-heading:    var(--hc-color-brand-800);
+  /* Supporting copy under a heading — page subtitle, card supporting line. */
+  --hc-color-text-supporting: var(--hc-color-neutral-600);
 
   /* ═══ ALIAS: ACTION ══════════════════════════════════════════════ */
   --hc-color-action-primary:          var(--hc-color-brand-500);
@@ -299,16 +304,17 @@
 
   /* ═══ ALIAS: AI (AI-generated content + AI feature surfaces) ═════
      Brand amber family — HC1's AI accent is on-brand, not borrowed
-     from the industry violet convention. Use `-default` as a fill
-     (white text on amber works at ≥4.5:1); use `-text` as ink when
-     an AI accent appears on a white background (caption, chip label,
-     icon stroke, provenance line). The two shades split the same way
-     severity-high does — amber for fills, dark amber for ink.
-     See FOUNDATION.md §8. */
+     from the industry violet convention (reconfirmed 2026-11-12).
+     Use `-default` as a fill (white text on amber works at ≥4.5:1);
+     use `-text` as ink when an AI accent appears on a white background
+     (caption, chip label, icon stroke, provenance line). The two shades
+     split the same way severity-high does — amber for fills, dark amber
+     for ink. AI content cards add `-border`. See FOUNDATION.md §8. */
   --hc-color-ai-default:       var(--hc-color-accent-500);
   --hc-color-ai-hover:         var(--hc-color-accent-600);
   --hc-color-ai-text:          var(--hc-color-accent-700);
   --hc-color-ai-subtle-bg:     var(--hc-color-accent-50);
+  --hc-color-ai-border:        var(--hc-color-accent-100);
   --hc-color-ai-gradient-from: var(--hc-color-brand-500);
   --hc-color-ai-gradient-via:  var(--hc-color-accent-400);
   --hc-color-ai-gradient-to:   var(--hc-color-accent-300);
@@ -427,6 +433,29 @@
   --hc-elevation-popover: var(--hc-shadow-md);
   --hc-elevation-overlay: var(--hc-shadow-lg);
   --hc-elevation-modal:   var(--hc-shadow-xl);
+
+  /* ═══ SHELL + PAGE LAYOUT (SourceIQ standard, 2026-11-11) ═════════
+     Owned by AppShell / PageHeader / PageTemplate. Screens never set
+     their own page padding or section spacing — they read these. */
+  --hc-shell-topbar-height:   64px;
+  --hc-shell-topbar-pad-x:    var(--hc-space-24);
+  --hc-shell-sidebar-width:   256px;
+  --hc-page-pad:              var(--hc-space-32);
+  --hc-page-max-width:        1440px;
+  --hc-page-focused-width:    896px;   /* single-column "focused page" (detail / flow) */
+  --hc-page-header-gap:       var(--hc-space-24);  /* title block → first section */
+  --hc-page-section-gap:      var(--hc-space-24);  /* between sections */
+  --hc-page-grid-gap:         var(--hc-space-24);  /* card grid gutter */
+  --hc-page-title-size:       24px;
+  --hc-page-subtitle-size:    16px;
+  --hc-page-footer-height:    64px;   /* sticky action footer on focused pages */
+
+  /* ═══ FORM FIELDS (component) ════════════════════════════════════
+     One control height across Input / Select / Combobox and Button md,
+     so mixed rows line up. */
+  --hc-field-height:          36px;
+  --hc-field-label-gap:       6px;
+  --hc-textarea-min-height:   80px;
 
   /* ═══ DIALOG (component) ═════════════════════════════════════════
      The canonical overlay primitive. Panel widths and scrim tint live
@@ -607,9 +636,12 @@
      Button size ladder (sm / md / lg) so an inline Button sits flush
      with a table row. Header cells are the same height so header
      rhythm is consistent. */
-  --hc-table-row-h-compact:     28px;
-  --hc-table-row-h-comfortable: 36px;
-  --hc-table-row-h-relaxed:     44px;
+  /* Row heights (SourceIQ standard, 2026-11-11): comfortable = one-line
+     row, relaxed = two-line row (name + grey sub-line), compact = dense
+     embedded views only. */
+  --hc-table-row-h-compact:     36px;
+  --hc-table-row-h-comfortable: 48px;
+  --hc-table-row-h-relaxed:     64px;
 
   /* Sticky-header shadow. When the body scrolls under a sticky header
      this shadow appears below the header. Derived from the same shadow

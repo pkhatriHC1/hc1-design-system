@@ -80,15 +80,15 @@ const tableRootVariants = cva(
         comfortable: cn(
           "[--hc-table-row-h:var(--hc-table-row-h-comfortable)]",
           "[--hc-table-cell-pad-x:var(--hc-space-12)]",
-          "[--hc-table-cell-pad-y:var(--hc-space-8)]",
+          "[--hc-table-cell-pad-y:var(--hc-space-12)]",
           "[--hc-table-cell-font-size:var(--hc-font-size-14)]",
           "[--hc-table-cell-icon-size:16px]",
         ),
         relaxed: cn(
           "[--hc-table-row-h:var(--hc-table-row-h-relaxed)]",
-          "[--hc-table-cell-pad-x:var(--hc-space-16)]",
+          "[--hc-table-cell-pad-x:var(--hc-space-12)]",
           "[--hc-table-cell-pad-y:var(--hc-space-12)]",
-          "[--hc-table-cell-font-size:var(--hc-font-size-16)]",
+          "[--hc-table-cell-font-size:var(--hc-font-size-14)]",
           "[--hc-table-cell-icon-size:18px]",
         ),
       },
@@ -461,10 +461,11 @@ const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(function Tabl
       style={headStyle}
       className={cn(
         /* Body */
-        "align-middle h-[var(--hc-table-row-h)]",
+        /* Header never taller than a one-line row, even in two-line (relaxed) tables. */
+        "align-middle h-[min(var(--hc-table-row-h),var(--hc-table-row-h-comfortable))]",
         "py-8 px-[var(--hc-table-cell-pad-x)]",
         /* Typography */
-        "font-sans text-12 font-semibold leading-[1.4] tracking-[0.06em]",
+        "font-sans text-12 font-semibold uppercase leading-[1.4] tracking-[0.06em]",
         "text-neutral-500",
         /* Frame */
         "border-b border-neutral-200 bg-white",

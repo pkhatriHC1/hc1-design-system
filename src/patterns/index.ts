@@ -31,3 +31,6 @@ export * from "./inline-edit";
 export * from "./grid";
 export * from "./bulk-action-bar";
 export * from "./page-template";
+export * from "./file-upload";
+export * from "./hero-summary";
+export * from "./assistant-panel";

@@ -253,7 +253,7 @@ const DialogHeader = forwardRef<HTMLDivElement, DialogHeaderProps>(function Dial
       className={cn(
         "relative flex items-start gap-12",
         /* padding: stack-lg × [inline-xl + 32px reserved for X] × stack-lg × inline-xl */
-        "pt-16 pr-[calc(24px+32px)] pb-16 pl-24",
+        "pt-24 pr-[calc(24px+32px)] pb-16 pl-24",
         className,
       )}
       {...rest}
@@ -282,7 +282,7 @@ const DialogTitle = forwardRef<HTMLHeadingElement, DialogTitleProps>(function Di
         id={id}
         data-slot="dialog-title"
         className={cn(
-          "m-0 text-neutral-900 text-20 font-semibold leading-[1.3]",
+          "m-0 text-neutral-900 text-18 font-semibold leading-[1.3]",
           className,
         )}
         {...rest}
@@ -331,7 +331,7 @@ const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(function DialogBo
       data-slot="dialog-body"
       className={cn(
         "flex-1 min-h-0 overflow-y-auto",
-        "py-12 px-24",
+        "py-24 px-24",
         "text-neutral-700 text-16 leading-normal",
         /* When Body follows Header directly, collapse its top padding so
            the two sections share one rhythmic gap. */
@@ -359,7 +359,7 @@ const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(function Dial
       className={cn(
         "flex items-center gap-12",
         "py-16 px-24",
-        "bg-white border-t border-neutral-100",
+        "bg-neutral-50 border-t border-neutral-100",
         "text-neutral-500 text-14 leading-[1.4]",
         className,
       )}
