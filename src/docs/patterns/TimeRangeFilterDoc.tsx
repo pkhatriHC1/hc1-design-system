@@ -2,6 +2,7 @@ import { useState } from "react";
 import { TimeRangeFilter } from "../../patterns";
 import { PageHeader } from "../../components/page-header";
 import { Calendar } from "../../components/calendar";
+import { DatePicker } from "../../components/date-picker";
 import type { DateRange } from "../../components/calendar";
 import { DocPage, DocBlock, RuleList } from "../standards/_shared";
 import { PropsTable, PropSectionEyebrow, type PropRow } from "./_props";
@@ -39,7 +40,12 @@ export function TimeRangeFilterDoc() {
           }
         />
       </DocBlock>
-      <DocBlock title="Calendar on its own" lead="The calendar component is also available for single dates (inside a Popover or a form).">
+      <DocBlock title="DatePicker — single date fields" lead="For a date in a form, use DatePicker: a 36px field that opens the calendar. Never use a native date input.">
+        <div style={{ maxWidth: 320 }}>
+          <DatePicker label="Next report date" value={single} onChange={setSingle} />
+        </div>
+      </DocBlock>
+      <DocBlock title="Calendar on its own" lead="The underlying calendar, for custom layouts inside a Popover.">
         <Calendar mode="single" selected={single} onSelect={setSingle} />
       </DocBlock>
       <DocBlock title="Props">

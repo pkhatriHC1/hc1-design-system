@@ -7,7 +7,8 @@ All notable changes to `@hc1/design-system` are documented here. This project fo
 ### Added
 - **`FilterChips`** pattern: a row of toggle chips that filter the content below, each with an optional icon and meta line (e.g. count · total), plus a Clear action. Single select; clicking the selected chip clears it.
 - **`StepChecklist`** pattern: process steps shown with a completion tick or an empty circle (not form checkboxes), an optional date, click to mark done or undo, and an optional remove action with a confirm. Done steps are not struck through.
-- Playground pages for both.
+- **`DatePicker`** component: a 36px form field (Input styling, 14px label 6px above) that opens the Calendar in a Popover; picking a day closes it. Optional `minDate` / `maxDate`. Use it for every single-date field instead of a native date input.
+- Playground pages for FilterChips and StepChecklist; DatePicker shown on the Time Range Filter page.
 
 ### Fixed
 - **`KpiCard` delta** is rounded to one decimal, so raw ratios ("4.186046…%") never reach the screen.
