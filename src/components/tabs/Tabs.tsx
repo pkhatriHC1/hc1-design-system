@@ -133,7 +133,9 @@ const tabsTabVariants = cva(
     "px-[var(--hc-tabs-pad-x)] h-[var(--hc-tabs-h)]",
     "text-[length:var(--hc-tabs-font-size)]",
     "text-neutral-500",
-    "rounded-t-control",
+    /* Square corners: a radius here bent the 2px underline up at both
+       ends. The segmented variant adds its own rounded-control. */
+    "rounded-none",
     /* Reserve the underline space up front so the tab doesn't jump 2px
        when it becomes selected. Overlap the list's bottom border. */
     "border-b-2 border-transparent -mb-[1px]",

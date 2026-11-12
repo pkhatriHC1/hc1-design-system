@@ -82,6 +82,8 @@ import {
   FileUploadDoc,
   AssistantPanelDoc,
   TimeRangeFilterDoc,
+  FilterChipsDoc,
+  StepChecklistDoc,
 } from "./patterns";
 
 import {
@@ -159,6 +161,8 @@ export const SECTIONS: SectionEntry[] = [
   { id: "pattern-file-upload",  label: "File Upload",  category: "patterns", Component: FileUploadDoc },
   { id: "pattern-assistant-panel", label: "Assistant Panel", category: "patterns", Component: AssistantPanelDoc },
   { id: "pattern-time-range-filter", label: "Time Range Filter", category: "patterns", Component: TimeRangeFilterDoc },
+  { id: "pattern-filter-chips", label: "Filter Chips", category: "patterns", Component: FilterChipsDoc },
+  { id: "pattern-step-checklist", label: "Step Checklist", category: "patterns", Component: StepChecklistDoc },
   { id: "pattern-chart-card", label: "Chart Card", category: "patterns", Component: ChartCardDoc },
   { id: "pattern-severity-legend", label: "Severity Legend", category: "patterns", Component: SeverityLegendDoc },
   { id: "pattern-ai-insight",      label: "AI Insight Card", category: "patterns", Component: AiInsightCardDoc },

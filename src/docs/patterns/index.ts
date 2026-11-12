@@ -20,3 +20,5 @@ export * from "./HeroSummaryDoc";
 export * from "./FileUploadDoc";
 export * from "./AssistantPanelDoc";
 export * from "./TimeRangeFilterDoc";
+export * from "./FilterChipsDoc";
+export * from "./StepChecklistDoc";

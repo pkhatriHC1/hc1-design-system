@@ -2,6 +2,16 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0] — 2026-11-13
+
+### Added
+- **`FilterChips`** pattern: a row of toggle chips that filter the content below, each with an optional icon and meta line (e.g. count · total), plus a Clear action. Single select; clicking the selected chip clears it.
+- **`StepChecklist`** pattern: process steps shown with a completion tick or an empty circle (not form checkboxes), an optional date, click to mark done or undo, and an optional remove action with a confirm. Done steps are not struck through.
+- Playground pages for both.
+
+### Fixed
+- **`Tabs` underline:** the tab had rounded top corners, which bent the 2px selected underline up at both ends. Underline tabs are now square; segmented tabs keep their rounded pills.
+
 ## [0.17.1] — 2026-11-13
 
 ### Fixed
