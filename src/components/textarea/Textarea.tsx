@@ -444,13 +444,13 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
         {/* Frame — the visual textarea box. */}
         <div
           data-slot="textarea-frame"
-          className={textareaFrameVariants({
+          className={cn(textareaFrameVariants({
             size,
             state: frameState,
             autoResize,
             resize,
             loading,
-          } as VariantProps<typeof textareaFrameVariants>)}
+          } as VariantProps<typeof textareaFrameVariants>))}
           style={frameStyle}
           onClick={() => {
             if (!disabled && !readOnly) innerRef.current?.focus();

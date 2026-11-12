@@ -400,11 +400,11 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
           aria-describedby={ariaDescribedBy}
           aria-busy={loading || undefined}
           data-slot="select-trigger"
-          className={selectTriggerVariants({
+          className={cn(selectTriggerVariants({
             size,
             state: frameState,
             loading,
-          } as VariantProps<typeof selectTriggerVariants>)}
+          } as VariantProps<typeof selectTriggerVariants>))}
         >
           {leadingIcon && (
             <span
@@ -458,11 +458,11 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
             sideOffset={4}
             collisionPadding={8}
             data-slot="select-popup"
-            className={selectPopupVariants()}
+            className={cn(selectPopupVariants())}
           >
             <RadixSelect.Viewport
               data-slot="select-viewport"
-              className={selectViewportVariants()}
+              className={cn(selectViewportVariants())}
             >
               {isEmpty ? (
                 <div
@@ -544,10 +544,10 @@ function renderOption(opt: SelectOption, size: SelectSize): ReactNode {
       value={opt.value}
       disabled={opt.disabled}
       data-slot="select-option"
-      className={selectOptionVariants({
+      className={cn(selectOptionVariants({
         size,
         withDescription: hasDesc,
-      } as VariantProps<typeof selectOptionVariants>)}
+      } as VariantProps<typeof selectOptionVariants>))}
     >
       {opt.icon && (
         <span

@@ -2,6 +2,12 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.1] — 2026-11-13
+
+### Fixed
+- **Checked checkboxes and radios rendered white.** The indicator's base style set `bg-white` and the checked style set `bg-brand-500`; the variant classes weren't passed through `cn()`, so both classes were applied and white won. The box showed a white tick on white. White now lives only on the unchecked state, and the variant classes go through `cn()`.
+- Same `cn()` fix for `Input`, `Select` and `Textarea`, where the base white background could override the disabled grey.
+
 ## [0.17.0] — 2026-11-13
 
 ### Added

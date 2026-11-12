@@ -222,7 +222,7 @@ type BoxState = "unchecked" | "checked" | "indeterminate";
 const checkboxIndicatorVariants = cva(
   cn(
     "inline-flex items-center justify-center shrink-0",
-    "border rounded-chip bg-white",
+    "border rounded-chip",
     "transition-[background-color,border-color,color] duration-150 ease-standard motion-reduce:duration-0",
     /* Focus ring lifts from the peer (native input) — brand by default,
        compound-overridden to red when invalid. */
@@ -240,8 +240,10 @@ const checkboxIndicatorVariants = cva(
         true: "",
       },
       boxState: {
+        /* White fill lives here, not in the base: cva doesn't de-duplicate,
+           so a base bg-white overrode the checked bg-brand-500. */
         unchecked: cn(
-          "border-neutral-300 text-white",
+          "bg-white border-neutral-300 text-white",
           "group-hover:bg-neutral-100 group-hover:border-brand-500",
         ),
         checked: cn(
@@ -483,23 +485,23 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
           aria-describedby={ariaDescribedBy}
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledBy}
-          className={checkboxInputVariants({
+          className={cn(checkboxInputVariants({
             size,
             hasText,
-          } as VariantProps<typeof checkboxInputVariants>)}
+          } as VariantProps<typeof checkboxInputVariants>))}
         />
 
         {buckets.indicator ?? (
           <span
             data-slot="checkbox-indicator"
             aria-hidden="true"
-            className={checkboxIndicatorVariants({
+            className={cn(checkboxIndicatorVariants({
               size,
               hasText,
               boxState,
               invalid,
               disabled,
-            } as VariantProps<typeof checkboxIndicatorVariants>)}
+            } as VariantProps<typeof checkboxIndicatorVariants>))}
           >
             {indeterminate ? (
               <DashGlyph size={iconSize} />

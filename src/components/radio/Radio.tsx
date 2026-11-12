@@ -167,7 +167,7 @@ type BoxState = "unchecked" | "checked";
 const radioIndicatorVariants = cva(
   cn(
     "inline-flex items-center justify-center shrink-0",
-    "border rounded-full bg-white",
+    "border rounded-full",
     "transition-[background-color,border-color,color] duration-150 ease-standard motion-reduce:duration-0",
     "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring",
   ),
@@ -183,8 +183,10 @@ const radioIndicatorVariants = cva(
         true: "",
       },
       boxState: {
+        /* White fill lives here, not in the base: cva doesn't de-duplicate,
+           so a base bg-white overrode the checked bg-brand-500. */
         unchecked: cn(
-          "border-neutral-300 text-white",
+          "bg-white border-neutral-300 text-white",
           "group-hover:bg-neutral-100 group-hover:border-brand-500",
         ),
         checked: cn(
@@ -446,28 +448,28 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
           aria-describedby={ariaDescribedBy}
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledBy}
-          className={radioInputVariants({
+          className={cn(radioInputVariants({
             size,
             hasText,
-          } as VariantProps<typeof radioInputVariants>)}
+          } as VariantProps<typeof radioInputVariants>))}
         />
 
         {buckets.indicator ?? (
           <span
             data-slot="radio-indicator"
             aria-hidden="true"
-            className={radioIndicatorVariants({
+            className={cn(radioIndicatorVariants({
               size,
               hasText,
               boxState,
               invalid,
               disabled,
-            } as VariantProps<typeof radioIndicatorVariants>)}
+            } as VariantProps<typeof radioIndicatorVariants>))}
           >
             {currentChecked && (
               <span
                 data-slot="radio-dot"
-                className={radioDotVariants({ size })}
+                className={cn(radioDotVariants({ size }))}
               />
             )}
           </span>
@@ -758,9 +760,9 @@ export function RadioGroup({
       <RadioGroupContext.Provider value={contextValue}>
         <div
           data-slot="radio-group-items"
-          className={radioGroupItemsVariants({
+          className={cn(radioGroupItemsVariants({
             orientation: orientation as RadioGroupOrientation,
-          })}
+          }))}
         >
           {children}
         </div>

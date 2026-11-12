@@ -312,11 +312,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 
       <div
         data-slot="input-frame"
-        className={inputFrameVariants({
+        className={cn(inputFrameVariants({
           size,
           state: frameState,
           loading,
-        } as VariantProps<typeof inputFrameVariants>)}
+        } as VariantProps<typeof inputFrameVariants>))}
         onClick={() => {
           /* Clicking the frame around the control should focus the control,
              mirroring how native <label> around <input> behaves. */
