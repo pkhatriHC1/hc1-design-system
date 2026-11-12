@@ -2,6 +2,14 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.1] — 2026-11-13
+
+### Fixed
+- **`KpiCard` content alignment when clickable.** A card with `onClick` renders as a `<button>`, which centres its content vertically, so labels in a `KpiGroup` row sat at different heights. The card is now a top-aligned flex column that fills its grid cell.
+
+### Docs
+- README: correct package name (`@hc1com/design-system`); import the styles **in your main CSS file right after `@import "tailwindcss"`** (importing from JS generates no component classes); `react-hook-form` and `recharts` are required whenever you import from `/patterns`; new "release file" install route for Bolt.
+
 ## [0.16.0] — 2026-11-11
 
 **The SourceIQ standard: one layout for every hc1 product.**
