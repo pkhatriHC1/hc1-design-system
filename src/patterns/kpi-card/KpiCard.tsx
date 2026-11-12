@@ -130,6 +130,16 @@ export const KpiCard = forwardRef<HTMLDivElement, KpiCardProps>(function KpiCard
   const clickable = !!onClick;
   const variant = goal ? "goal" : delta ? "trend" : "basic";
   const supporting = supportingText ?? delta?.label;
+  if (
+    import.meta.env?.DEV &&
+    supportingText != null &&
+    delta?.label != null
+  ) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[hc1 KpiCard] Both `supportingText` and the deprecated `delta.label` are set; `delta.label` is ignored. Move it into `supportingText`.",
+    );
+  }
 
   const content = loading ? (
     <div className="flex flex-col gap-[var(--hc-space-8)]">

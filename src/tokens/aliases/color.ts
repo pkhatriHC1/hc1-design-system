@@ -126,8 +126,8 @@ export const ai = {
   subtleBg:     accent[50],
   border:       accent[100],
   gradientFrom: brand[500],
-  gradientVia:  accent[400],
-  gradientTo:   accent[300],
+  gradientVia:  accent[500],
+  gradientTo:   accent[600],
 } as const;
 
 /**

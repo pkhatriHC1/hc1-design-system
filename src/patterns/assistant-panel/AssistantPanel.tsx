@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Maximize2, SendHorizontal, Sparkles, X } from "lucide-react";
 import { cn } from "../../utils/cn";
@@ -68,6 +68,17 @@ export function AssistantPanel({
   onExpand,
 }: AssistantPanelProps) {
   const [draft, setDraft] = useState("");
+  const endRef = useRef<HTMLDivElement>(null);
+
+  /* Keep the newest message in view. Smooth scroll only when the user
+     hasn't asked for reduced motion. */
+  useEffect(() => {
+    if (!open) return;
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    endRef.current?.scrollIntoView({ block: "end", behavior: reduce ? "auto" : "smooth" });
+  }, [open, messages.length, thinking]);
   const send = () => {
     const text = draft.trim();
     if (!text) return;
@@ -91,7 +102,7 @@ export function AssistantPanel({
           </span>
           <div className="min-w-0 flex-1">
             <Drawer.Title className="m-0 text-[18px] font-bold leading-tight text-white">{title}</Drawer.Title>
-            {subtitle && <p className="m-0 text-[12px] text-white/85">{subtitle}</p>}
+            {subtitle && <p className="m-0 text-[12px] text-white">{subtitle}</p>}
           </div>
           {onExpand && (
             <button type="button" aria-label="Expand" onClick={onExpand} className={headerButton}>
@@ -119,6 +130,7 @@ export function AssistantPanel({
               Thinking…
             </div>
           )}
+          <div ref={endRef} aria-hidden="true" />
         </div>
 
         {/* Composer */}

@@ -16,3 +16,6 @@ export * from "./BulkActionBarDoc";
 export * from "./TablesDoc";
 export * from "./FiltersDoc";
 export * from "./NavigationDoc";
+export * from "./HeroSummaryDoc";
+export * from "./FileUploadDoc";
+export * from "./AssistantPanelDoc";

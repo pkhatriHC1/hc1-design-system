@@ -71,9 +71,9 @@ export function HeroSummary({ label, value, supportingText, icon, action, ai = f
           </span>
         )}
         <div className="flex min-w-0 flex-col gap-[var(--hc-space-4)]">
-          <span className="text-[14px] font-medium text-white/80">{label}</span>
+          <span className="text-[14px] font-medium">{label}</span>
           <span className="text-[32px] font-bold leading-[1.15] [font-variant-numeric:tabular-nums]">{value}</span>
-          {supportingText && <span className="text-[14px] text-white/80">{supportingText}</span>}
+          {supportingText && <span className="text-[14px]">{supportingText}</span>}
         </div>
       </div>
       {action && <div className="shrink-0">{action}</div>}

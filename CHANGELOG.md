@@ -51,24 +51,31 @@ SourceIQ ("MLP – Source Of Truth") is the visual base for every hc1 product. E
 - **New `FileUpload`.** A dashed drop zone with file-type chips and a hint line.
 - `EmptyState`: 48px icon, 16px semibold title, 14px secondary description.
 - **`Tabs` gains `variant="segmented"`**, a pill switcher for time ranges and filters with the active pill in brand-800. Use `underline` (the default) for page sections.
-- `Progress` `tone="warning"` fill is now light amber (accent-300) instead of dark amber text ink (accent-700). This also lightens at-risk goal bars on `KpiCard`.
+- `Progress` `tone="warning"` fill is now amber-500, the CTA amber, instead of dark amber text ink (accent-700). It is lighter and still 3.4:1 against the track, which meets WCAG's 3:1 minimum for UI elements. This also lightens at-risk goal bars on `KpiCard`.
 - `Wizard`: step labels are 14px, the current step is brand-800, and upcoming steps are muted.
 
 ### Colour
 - **AI stays brand amber** (violet was trialled and rejected as off-brand). New `--hc-color-ai-border` (accent-100) for AI content cards. `AiInsightCard`, `HeroSummary ai` (teal → amber gradient) and `AssistantPanel` all read the `--hc-color-ai-*` tokens. See FOUNDATION §8.
+- The AI gradient now runs brand-500 → accent-500 → accent-600 (was → accent-400 → accent-300). White text now passes WCAG AA (≥ 4.5:1) everywhere on an AI banner. `HeroSummary` label and supporting text, and the `AssistantPanel` subtitle, are now full white rather than translucent.
 - New aliases: `--hc-color-text-heading` and `--hc-color-text-supporting`.
 
 ### New tokens
 - Shell and page: `--hc-shell-topbar-height`, `--hc-shell-sidebar-width`, `--hc-page-pad`, `--hc-page-max-width`, `--hc-page-focused-width`, `--hc-page-header-gap`, `--hc-page-section-gap`, `--hc-page-grid-gap`, `--hc-page-title-size`, `--hc-page-subtitle-size`, `--hc-page-footer-height`.
 - Fields: `--hc-field-height`, `--hc-field-label-gap`, `--hc-textarea-min-height`.
 
+### Added — docs
+- New playground pages: `HeroSummary`, `FileUpload` and `AssistantPanel`. `AppShellDoc` gains an `AppShell.TopBar` section, and `KpiCardDoc` is rewritten for the three variants and `KpiGroup`.
+- `AssistantPanel` scrolls to the newest message automatically, and respects `prefers-reduced-motion`.
+
 ### Fixed
 - **`cn()` dropped classes.** Stock tailwind-merge treated DS size classes (`text-14`, `rounded-control`) as conflicting with colour classes and silently removed one of them. `cn()` now uses `extendTailwindMerge` with the DS text and radius scales. This is the same bug fixed for Badge in 0.15, now fixed everywhere.
 - **Icons and paddings rendered at a quarter size** in Sidebar, Button, DropdownMenu, Combobox, CommandPalette, PatientIdentityStrip and BulkActionBar. These classes were written for shadcn's 4px spacing scale (`size-4` meaning 16px), but the DS theme reads `size-4` as 4px. They now use explicit `--hc-space-*` values.
 
 ### Breaking (pre-1.0)
-- `PageTemplate` no longer accepts `gap`.
-- `KpiCard` no longer accepts `className` or `style`. `delta.label` is deprecated in favour of `supportingText`.
+- `PageTemplate` no longer accepts `gap` or `style`.
+- `KpiCard` no longer accepts `className` or `style`. `delta.label` is deprecated in favour of `supportingText`; in development a console warning fires when both are set, because `delta.label` is then ignored.
+- `Drawer` default `size` changes from `md` (480px) to `lg` (640px). Drawers that relied on the default get wider; pass `size="md"` to keep the old width for now.
+- `AppShell.Main` defaults change: `maxWidth` goes from 100% to 1440px (`--hc-page-max-width`) and `padding` from 24px to 32px (`--hc-page-pad`). On wide screens, content is now centred with a max width instead of stretching edge to edge.
 - These changes are visible on screen: table, card and title sizes follow the values above.
 
 ## [0.15.0] — 2026-10-30

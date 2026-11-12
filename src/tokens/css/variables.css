@@ -316,8 +316,8 @@
   --hc-color-ai-subtle-bg:     var(--hc-color-accent-50);
   --hc-color-ai-border:        var(--hc-color-accent-100);
   --hc-color-ai-gradient-from: var(--hc-color-brand-500);
-  --hc-color-ai-gradient-via:  var(--hc-color-accent-400);
-  --hc-color-ai-gradient-to:   var(--hc-color-accent-300);
+  --hc-color-ai-gradient-via:  var(--hc-color-accent-500);   /* white text ≥ 4.5:1 */
+  --hc-color-ai-gradient-to:   var(--hc-color-accent-600);
 
   /* ═══ ALIAS: SEVERITY (state-scoped medical status) ══════════════
      Five tiers. Each carries text + bg + bg-subtle + border. Icon

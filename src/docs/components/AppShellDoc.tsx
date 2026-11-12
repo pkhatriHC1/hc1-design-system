@@ -1,9 +1,7 @@
 import type { ReactNode } from "react";
-import { Bell, Home, Search, User } from "lucide-react";
+import { Home, Search, User } from "lucide-react";
 import { AppShell } from "../../components/app-shell";
 import { Sidebar } from "../../components/sidebar";
-import { Button } from "../../components/button";
-import { Badge } from "../../components/badge";
 import {
   DocPage,
   DocBlock,
@@ -31,7 +29,7 @@ function PurposeBlock() {
     <DocBlock
       eyebrow="Purpose"
       title="The canonical HC1 AppShell"
-      lead="AppShell is the standard product-page frame every IQ product wraps around itself. Root distributes children by displayName — AppShell.Header on top (optional), Sidebar + AppShell.Main in the middle row, AppShell.Footer at the bottom (optional). Wire it once at the app root and every route inherits the same frame."
+      lead="AppShell is the standard product-page frame every IQ product wraps around itself. Root distributes children by displayName — AppShell.TopBar on top (the standard hc1 bar; AppShell.Header is the legacy free-form slot), Sidebar + AppShell.Main in the middle row, AppShell.Footer at the bottom (optional). Wire it once at the app root and every route inherits the same frame."
     />
   );
 }
@@ -42,7 +40,7 @@ function AnatomyBlock() {
   return (
     <DocBlock
       title="Anatomy"
-      lead="Four slots. Header + Footer are optional; Sidebar + Main are the standard content row."
+      lead="TopBar on top, Sidebar + Main as the content row, an optional Footer. AppShell.Header remains only for products still migrating."
     >
       <div
         style={{
@@ -78,7 +76,7 @@ function AnatomyBlock() {
               borderBottom: `1px solid ${t.color.border.subtle}`,
             }}
           >
-            AppShell.Header
+            AppShell.TopBar
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "80px 1fr" }}>
             <div
@@ -118,9 +116,10 @@ function AnatomyBlock() {
           gap: t.space.inline.md,
         }}
       >
-        <Part name="AppShell.Header" desc="Optional top bar. Global chrome — brand mark, breadcrumbs, search, user menu. Full-width, shrink-to-content height. Has a bottom divider by default." />
+        <Part name="AppShell.TopBar" desc="The standard hc1 top bar, 64px high. Fixed slots in a fixed order; products switch optional slots on or off. Use this, not AppShell.Header, in every product." />
+        <Part name="AppShell.Header" desc="Legacy free-form top bar. Kept for existing products during migration; new screens use AppShell.TopBar." />
         <Part name="Sidebar"         desc="Left rail. Not an AppShell subcomponent — the actual Sidebar primitive. AppShell auto-wraps in SidebarProvider so Sidebar.Trigger placed anywhere inside (e.g. in the Header) controls collapse." />
-        <Part name="AppShell.Main"   desc="Right column. Scrolls its own content while the sidebar stays fixed. Optional maxWidth + center for constrained content layouts." />
+        <Part name="AppShell.Main"   desc="Right column. Scrolls its own content while the sidebar stays fixed. Defaults to 32px padding and a 1440px max width (the SourceIQ standard)." />
         <Part name="AppShell.Footer" desc="Optional bottom bar. Status text, keyboard shortcut hints, environment badges. Shrink-to-content height with a top divider." />
       </div>
     </DocBlock>
@@ -144,7 +143,7 @@ function LiveBlock() {
   return (
     <DocBlock
       title="Live example"
-      lead="A full-height shell with a header (search + user chip), sidebar, main content, and a footer with environment info."
+      lead="A full-height shell with the standard top bar (every optional slot switched on), sidebar, main content, and a footer with environment info."
     >
       <div
         style={{
@@ -155,32 +154,14 @@ function LiveBlock() {
         }}
       >
         <AppShell>
-          <AppShell.Header>
-            <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 12 }}>
-              <Sidebar.Trigger />
-              <span
-                style={{
-                  fontFamily: t.font.mono,
-                  fontSize: 13,
-                  color: t.color.text.secondary,
-                }}
-              >
-                clinical-iq /
-              </span>
-              <strong style={{ ...t.type.bodyS, color: t.color.text.primary }}>Overview</strong>
-            </div>
-            <Button variant="ghost" size="sm">
-              <Search />
-              Search
-              <Badge variant="neutral">⌘K</Badge>
-            </Button>
-            <Button variant="ghost" size="icon-sm" aria-label="Notifications">
-              <Bell />
-            </Button>
-            <Button variant="ghost" size="icon-sm" aria-label="Account">
-              <User />
-            </Button>
-          </AppShell.Header>
+          <AppShell.TopBar
+            product={{ name: "SourceIQ" }}
+            context="Memorial General Hospital"
+            search={{ placeholder: "Search", shortcut: "⌘K", onOpen: () => {} }}
+            assistant={{ onClick: () => {} }}
+            notifications={{ count: 3, onClick: () => {} }}
+            user={{ name: "Lisa Chen", role: "Category Manager", onClick: () => {} }}
+          />
 
           <Sidebar defaultCollapsed persistKey={false} ariaLabel="Preview sidebar">
             <Sidebar.Header />
@@ -191,14 +172,14 @@ function LiveBlock() {
             </Sidebar.Section>
           </Sidebar>
 
-          <AppShell.Main maxWidth={720} center>
+          <AppShell.Main>
             <div style={{ display: "flex", flexDirection: "column", gap: t.space.stack.md }}>
               <h1 style={{ margin: 0, ...t.type.headingS, color: t.color.text.primary }}>
                 Overview
               </h1>
               <p style={{ ...t.type.body, color: t.color.text.secondary, margin: 0 }}>
-                This is {"<AppShell.Main>"} with a constrained max width of 720px and centered
-                content. Real product routes render page content here.
+                This is {"<AppShell.Main>"} with its standard 32px padding and 1440px max
+                width. Real product routes render a PageTemplate here.
               </p>
               <div
                 style={{
@@ -230,15 +211,25 @@ function LiveBlock() {
 
 type PropRow = { name: string; type: string; def: string; desc: string };
 
+const TOPBAR_PROPS: PropRow[] = [
+  { name: "product",       type: "{ name; logo?; href? }",                  def: "—", desc: "Required. Product name, optional logo and home link. Always on the left." },
+  { name: "user",          type: "{ name; role?; avatarSrc?; onClick? }",   def: "—", desc: "Required. Avatar, name and role. Always last on the right." },
+  { name: "context",       type: "ReactNode",                               def: "—", desc: "Optional. Organisation, site or patient context, after a divider next to the product." },
+  { name: "search",        type: "{ placeholder?; shortcut?; onOpen }",     def: "—", desc: "Optional. A search trigger that opens your search or command palette." },
+  { name: "assistant",     type: "{ label?; onClick }",                     def: "—", desc: "Optional. The amber IQ Assistant launcher. Pair it with <AssistantPanel>." },
+  { name: "notifications", type: "{ count?; onClick }",                     def: "—", desc: "Optional. Bell button with a red unread count (99+ cap)." },
+  { name: "help",          type: "{ href?; onClick? }",                     def: "—", desc: "Optional. Help button; an href opens in a new tab." },
+];
+
 const HEADER_PROPS: PropRow[] = [
   { name: "divider", type: "boolean",          def: "true",         desc: "Draw a bottom border between the header and the content row." },
   { name: "padding", type: "number | string",  def: "'12px 24px'",  desc: "Padding around the header content." },
 ];
 
 const MAIN_PROPS: PropRow[] = [
-  { name: "maxWidth", type: "number | string", def: "100%",  desc: "Constrain the main-content column to a max width." },
+  { name: "maxWidth", type: "number | string", def: "1440px", desc: "Max width of the content column (--hc-page-max-width). Was 100% before 0.16." },
   { name: "center",   type: "boolean",         def: "false", desc: "Center the constrained content horizontally. Ignored when maxWidth is 100%." },
-  { name: "padding",  type: "number | string", def: "24",    desc: "Padding around the main content." },
+  { name: "padding",  type: "number | string", def: "32px",  desc: "Padding around the main content (--hc-page-pad). Was 24 before 0.16." },
 ];
 
 const FOOTER_PROPS: PropRow[] = [
@@ -249,8 +240,12 @@ const FOOTER_PROPS: PropRow[] = [
 function PropsTableBlock() {
   return (
     <DocBlock title="Props">
-      <PropSectionEyebrow>AppShell.Header</PropSectionEyebrow>
-      <PropsTable rows={HEADER_PROPS} />
+      <PropSectionEyebrow>AppShell.TopBar</PropSectionEyebrow>
+      <PropsTable rows={TOPBAR_PROPS} />
+      <div style={{ marginTop: t.space.section.sm }}>
+        <PropSectionEyebrow>AppShell.Header (legacy)</PropSectionEyebrow>
+        <PropsTable rows={HEADER_PROPS} />
+      </div>
       <div style={{ marginTop: t.space.section.sm }}>
         <PropSectionEyebrow>AppShell.Main</PropSectionEyebrow>
         <PropsTable rows={MAIN_PROPS} />
@@ -358,8 +353,12 @@ function NotesBlock() {
             text: "AppShell auto-wraps its children in SidebarProvider, so Sidebar.Trigger placed anywhere inside (like the AppShell.Header) controls the sidebar's collapse state without extra wiring.",
           },
           {
+            tone: "must",
+            text: "Use AppShell.TopBar for the top bar. It has no className, style or children on purpose: products switch slots on or off but never restyle or add to the bar. Need a new slot? Propose it for the design system.",
+          },
+          {
             tone: "should",
-            text: "Reach for maxWidth + center on AppShell.Main for detail pages that read as centered content (settings, docs, single-record views). Leave it at 100% for dashboards and worklists.",
+            text: "Keep AppShell.Main at its defaults (32px padding, 1440px max width). For centred single-column pages, use PageTemplate variant=\"focused\" rather than changing maxWidth.",
           },
           {
             tone: "note",
