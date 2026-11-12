@@ -29,6 +29,7 @@ export * from "./switch";
 export * from "./textarea";
 export * from "./tooltip";
 export * from "./popover";
+export * from "./calendar";
 export * from "./breadcrumb";
 export * from "./gauge";
 export * from "./progress";

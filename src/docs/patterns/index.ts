@@ -19,3 +19,4 @@ export * from "./NavigationDoc";
 export * from "./HeroSummaryDoc";
 export * from "./FileUploadDoc";
 export * from "./AssistantPanelDoc";
+export * from "./TimeRangeFilterDoc";
