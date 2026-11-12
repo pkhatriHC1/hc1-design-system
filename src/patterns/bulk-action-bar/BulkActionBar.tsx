@@ -65,7 +65,7 @@ export function BulkActionBar({
         "px-[var(--hc-space-16)] py-[var(--hc-space-8)]",
         "text-[color:var(--hc-color-text-primary)]",
         variant === "sticky" && [
-          "sticky bottom-4 z-sticky",
+          "sticky bottom-[var(--hc-space-16)] z-sticky",
           "shadow-[var(--hc-shadow-lg)]",
         ],
         className,

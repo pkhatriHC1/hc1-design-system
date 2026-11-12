@@ -93,7 +93,7 @@ export function PatientIdentityStrip({
     <div
       data-slot="patient-identity-strip"
       className={cn(
-        "flex flex-wrap items-center gap-4",
+        "flex flex-wrap items-center gap-[var(--hc-space-16)]",
         "rounded-[var(--hc-radius-control)] border",
         "border-[color:var(--hc-color-border-subtle)]",
         "bg-[color:var(--hc-color-bg-elevated)]",
@@ -147,7 +147,7 @@ export function PatientIdentityStrip({
           className={cn(
             "flex min-w-0 flex-wrap items-center gap-x-6 gap-y-1",
             "border-l border-[color:var(--hc-color-border-subtle)]",
-            "pl-4",
+            "pl-[var(--hc-space-16)]",
           )}
         >
           {meta.map((m, i) => (

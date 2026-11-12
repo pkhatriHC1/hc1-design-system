@@ -26,7 +26,7 @@ const sectionLabelVariants = cva(
       },
       size: {
         sm: "text-[10px] leading-[1.4] tracking-[0.14em]",
-        md: "text-[11px] leading-[1.4] tracking-[0.14em]",
+        md: "text-[12px] leading-[1.4] tracking-[0.12em]",
         lg: "text-[12px] leading-[1.4] tracking-[0.08em]",
       },
     },

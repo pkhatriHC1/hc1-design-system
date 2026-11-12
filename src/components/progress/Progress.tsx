@@ -40,7 +40,9 @@ const fillVariants = cva(
       tone: {
         default: "bg-[color:var(--hc-color-action-primary)]",
         success: "bg-[color:var(--hc-color-status-success-fg)]",
-        warning: "bg-[color:var(--hc-color-status-warning-fg)]",
+        /* Amber-500 (the CTA amber): lighter than warning-fg ink, and still
+           3.4:1 against the track, so it meets WCAG 1.4.11 (3:1). */
+        warning: "bg-[color:var(--hc-color-accent-500)]",
         danger:  "bg-[color:var(--hc-color-status-error-fg)]",
       },
     },

@@ -1,2 +1,2 @@
-export { KpiCard } from "./KpiCard";
-export type { KpiCardProps, KpiCardDelta } from "./KpiCard";
+export { KpiCard, KpiGroup } from "./KpiCard";
+export type { KpiCardProps, KpiCardDelta, KpiCardGoal, KpiGroupProps } from "./KpiCard";

@@ -4,4 +4,5 @@ export type {
   AppShellHeaderProps,
   AppShellFooterProps,
   AppShellMainProps,
+  AppShellTopBarProps,
 } from "./AppShell.types";

@@ -12,6 +12,14 @@ import type {
  */
 export type TabsSize = "sm" | "md" | "lg";
 
+/**
+ * Visual style. Each has one job (SourceIQ standard, 2026-11-11):
+ *   underline — switches between views of a page (Active / Completed /
+ *               Dismissed). The default.
+ *   segmented — picks a range or filter (30 Days / 6 Months / 12 Months).
+ */
+export type TabsVariant = "underline" | "segmented";
+
 /* ══════ ROOT ══════════════════════════════════════════════════════ */
 
 export type TabsProps = Omit<HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> & {
@@ -28,6 +36,11 @@ export type TabsProps = Omit<HTMLAttributes<HTMLDivElement>, "onChange" | "defau
    * or End. Consumers do not need to wire keyboard themselves.
    */
   onValueChange?: (value: string) => void;
+  /**
+   * underline switches views; segmented picks a range or filter.
+   * @default 'underline'
+   */
+  variant?: TabsVariant;
   /**
    * Size ladder.
    * @default 'md'

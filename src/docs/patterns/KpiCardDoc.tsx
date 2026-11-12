@@ -1,30 +1,16 @@
-import type { ReactNode } from "react";
-import {
-  Activity,
-  AlertTriangle,
-  Clock,
-  DollarSign,
-  Stethoscope,
-  Users,
-} from "lucide-react";
-import { Grid, KpiCard } from "../../patterns";
-import {
-  DocPage,
-  DocBlock,
-  RuleList,
-  Callout,
-  t,
-} from "../standards/_shared";
+import { Activity, Clock, DollarSign, Target, TrendingUp, Users } from "lucide-react";
+import { Grid, KpiCard, KpiGroup } from "../../patterns";
+import { DocPage, DocBlock, RuleList, Callout, t } from "../standards/_shared";
+import { PropsTable, PropSectionEyebrow, type PropRow } from "./_props";
 
 export function KpiCardDoc() {
   return (
     <DocPage>
       <PurposeBlock />
-      <BasicBlock />
+      <VariantsBlock />
       <DeltaBlock />
-      <SparklineBlock />
+      <GroupBlock />
       <StatesBlock />
-      <RowBlock />
       <PropsTableBlock />
       <NotesBlock />
     </DocPage>
@@ -38,20 +24,34 @@ function PurposeBlock() {
     <DocBlock
       eyebrow="Pattern · KpiCard"
       title="KpiCard — the standard metric card"
-      lead="KpiCard is the metric chip every dashboard opens with — label + value + optional delta + optional sparkline + optional icon. The delta auto-colors as success or error based on whether the metric moved in the direction the consumer flagged as 'positive'. Pair with Grid for a responsive grid."
+      lead="Every metric tile in every hc1 product is a KpiCard. Its look is fixed: a 12px uppercase label, a 24px bold value, an optional 14px supporting line. You never pick a variant by name. The card works out which one it is from the data you pass, so two products showing the same kind of metric always look the same."
     />
   );
 }
 
-/* ══════ Basic ══════════════════════════════════════════════════════ */
+/* ══════ Variants ═══════════════════════════════════════════════════ */
 
-function BasicBlock() {
+function VariantsBlock() {
   return (
-    <DocBlock title="Basic" lead="Label + value is the minimum. Everything else is optional.">
+    <DocBlock
+      title="Three variants, chosen by the data"
+      lead="basic: label and value. trend: add `delta` (and usually `supportingText`). goal: add `goal`, which draws a progress bar towards a target. An `icon` is allowed on any of them."
+    >
       <Grid columns={3}>
-        <KpiCard label="Patients" value="342" />
-        <KpiCard label="Revenue" value="$9.8M" icon={<DollarSign />} />
-        <KpiCard label="Uptime" value="99.8%" icon={<Activity />} />
+        <KpiCard icon={<DollarSign />} label="Direct product savings" value="$219,240" />
+        <KpiCard
+          label="Active vendors"
+          value="5"
+          delta={{ value: 2.1, direction: "up" }}
+          supportingText="vs last month"
+        />
+        <KpiCard
+          label="Hgb <7 rate"
+          value="88.3%"
+          delta={{ value: 0.5, direction: "up" }}
+          supportingText="vs last month"
+          goal={{ label: "Goal: 90%", progress: 98, status: "at-risk" }}
+        />
       </Grid>
     </DocBlock>
   );
@@ -62,65 +62,62 @@ function BasicBlock() {
 function DeltaBlock() {
   return (
     <DocBlock
-      title="Delta — up/down + positive semantics"
-      lead="Pass `positive` to tell the DS which direction is 'good' for this metric. Growth metrics (revenue, patients seen) are positive-up; cost metrics (wait time, error rate) are positive-down. The DS picks the color."
+      title="Delta and goal colours"
+      lead="Pass `positive` to say which direction is good for this metric. Growth metrics (revenue, patients seen) are positive-up; cost metrics (wait time, error rate) are positive-down. The DS picks green or red. A goal bar is green on track, amber at risk, red off track."
     >
       <Grid columns={3}>
         <KpiCard
+          icon={<TrendingUp />}
           label="Revenue"
           value="$9.8M"
-          delta={{ value: 12, direction: "up", positive: "up", label: "vs last month" }}
-          icon={<DollarSign />}
+          delta={{ value: 12, direction: "up", positive: "up" }}
+          supportingText="vs last month"
+          goal={{ label: "Goal: $10M", progress: 98, status: "on-track" }}
         />
         <KpiCard
-          label="Avg wait time"
-          value="14min"
-          delta={{ value: 8, direction: "down", positive: "down", label: "vs last month" }}
           icon={<Clock />}
+          label="Avg wait time"
+          value="14 min"
+          delta={{ value: 8, direction: "down", positive: "down" }}
+          supportingText="vs last month"
+          goal={{ label: "Goal: 10 min", progress: 60, status: "at-risk" }}
         />
         <KpiCard
+          icon={<Activity />}
           label="Critical alerts"
           value="7"
-          delta={{ value: 3, direction: "up", positive: "down", label: "this week" }}
-          icon={<AlertTriangle />}
+          delta={{ value: 3, direction: "up", positive: "down" }}
+          supportingText="this week"
+          goal={{ label: "Goal: 0", progress: 20, status: "off-track" }}
         />
       </Grid>
 
-      <Callout tone="info" title="What color means">
-        Green means the metric moved the way the consumer wants it to. Red means it moved against them. Neutral means the direction wasn&apos;t declared or the metric is flat. Never override the color with a `style` prop — the semantic mapping is the whole point.
+      <Callout tone="info" title="What colour means">
+        Green means the metric moved the way you want. Red means it moved against you. Grey means flat or no declared direction. KpiCard has no className or style, so the colour mapping can&apos;t be overridden: that is the point.
       </Callout>
     </DocBlock>
   );
 }
 
-/* ══════ Sparkline ══════════════════════════════════════════════════ */
+/* ══════ Group ══════════════════════════════════════════════════════ */
 
-function SparklineBlock() {
+function GroupBlock() {
   return (
     <DocBlock
-      title="Sparkline"
-      lead="Pass an array of numbers for a small inline chart in the corner. Hand-rolled SVG polyline — no Recharts dependency for the tiny visual. Color follows the delta semantics: green when trending positive, red when negative, brand teal otherwise."
+      title="KpiGroup — related metrics in one card"
+      lead="When several KPIs tell one story (identified → realized → still to capture), put them in a KpiGroup. It draws one card with dividers instead of separate tiles. Use Grid for unrelated KPIs."
     >
-      <Grid columns={3}>
+      <KpiGroup>
+        <KpiCard icon={<Target />} label="Identified savings" value="9,769,947" supportingText="across 12 initiatives" />
         <KpiCard
-          label="Weekly signups"
-          value="1,204"
-          sparkline={[840, 920, 810, 950, 1020, 1180, 1204]}
-          delta={{ value: 24, direction: "up", label: "week over week" }}
+          icon={<TrendingUp />}
+          label="Realized savings"
+          value="2,540,186"
+          supportingText="from 3 completed initiatives"
+          goal={{ label: "26% captured", progress: 26, status: "at-risk" }}
         />
-        <KpiCard
-          label="Server errors"
-          value="42"
-          sparkline={[95, 88, 72, 68, 55, 48, 42]}
-          delta={{ value: 55, direction: "down", positive: "down", label: "week over week" }}
-        />
-        <KpiCard
-          label="Active clinicians"
-          value="86"
-          sparkline={[80, 82, 84, 83, 85, 86, 86]}
-          delta={{ value: 0, direction: "flat", label: "week over week" }}
-        />
-      </Grid>
+        <KpiCard icon={<Activity />} label="Still to capture" value="7,229,761" supportingText="across 9 active initiatives" />
+      </KpiGroup>
     </DocBlock>
   );
 }
@@ -130,36 +127,20 @@ function SparklineBlock() {
 function StatesBlock() {
   return (
     <DocBlock
-      title="Loading + Clickable"
-      lead="`loading` swaps the value out for skeletons while data lands. `onClick` turns the whole card into a button — hover feedback, focus ring, press animation."
+      title="Loading, clickable and compact"
+      lead="`loading` swaps the value for skeletons. `onClick` makes the whole card a button with hover, focus and press feedback. `density=&quot;compact&quot;` drops the padding to 16px for dense side rails."
     >
-      <Grid columns={2}>
+      <Grid columns={3}>
         <KpiCard label="Revenue" value="$9.8M" loading />
         <KpiCard
           label="Patients"
           value="342"
           icon={<Users />}
-          delta={{ value: 12, direction: "up", label: "vs last month" }}
-          onClick={() => alert("clicked → drill into patients")}
+          delta={{ value: 12, direction: "up" }}
+          supportingText="vs last month"
+          onClick={() => {}}
         />
-      </Grid>
-    </DocBlock>
-  );
-}
-
-/* ══════ Row ════════════════════════════════════════════════════════ */
-
-function RowBlock() {
-  return (
-    <DocBlock
-      title="Grid — responsive tile grid"
-      lead="Wraps KpiCards in a responsive grid. `columns` sets the wide-screen column count; the row auto-drops to 2 columns on tablets and 1 column on phones."
-    >
-      <Grid columns={4}>
-        <KpiCard label="Revenue" value="$9.8M" icon={<DollarSign />} delta={{ value: 12, direction: "up", label: "vs last mo" }} />
-        <KpiCard label="Patients" value="342" icon={<Users />} delta={{ value: 5, direction: "up", label: "vs last mo" }} />
-        <KpiCard label="Avg wait" value="14min" icon={<Clock />} delta={{ value: 8, direction: "down", positive: "down", label: "vs last mo" }} />
-        <KpiCard label="Clinicians" value="86" icon={<Stethoscope />} delta={{ value: 2, direction: "up", label: "vs last mo" }} />
+        <KpiCard label="Patients" value="342" density="compact" supportingText="compact density" />
       </Grid>
     </DocBlock>
   );
@@ -167,28 +148,32 @@ function RowBlock() {
 
 /* ══════ Props ══════════════════════════════════════════════════════ */
 
-type PropRow = { name: string; type: string; def: string; desc: string };
-
 const CARD_PROPS: PropRow[] = [
-  { name: "label",     type: "ReactNode",           def: "—",     desc: "Card label — uppercase small caps by convention." },
-  { name: "value",     type: "ReactNode",           def: "—",     desc: "Primary value. Rendered at 28px bold." },
-  { name: "delta",     type: "KpiCardDelta",        def: "—",     desc: "{ value, direction, label?, positive? }. Auto-colors per positive semantics." },
-  { name: "sparkline", type: "number[]",            def: "—",     desc: "Array of recent values. Rendered as a small SVG polyline in the corner." },
-  { name: "icon",      type: "ReactNode",           def: "—",     desc: "Leading icon in a brand-tinted circle at the top-right." },
-  { name: "loading",   type: "boolean",             def: "false", desc: "Replaces content with skeleton placeholders." },
-  { name: "onClick",   type: "() => void",          def: "—",     desc: "Renders the card as a button with hover / focus / press feedback." },
+  { name: "label",          type: "ReactNode",              def: "—",         desc: "Metric name. Rendered 12px uppercase; wraps rather than truncates." },
+  { name: "value",          type: "ReactNode",              def: "—",         desc: "The figure. Rendered 24px bold, tabular numbers." },
+  { name: "icon",           type: "ReactNode",              def: "—",         desc: "Lucide icon in a tinted tile beside the label." },
+  { name: "delta",          type: "KpiCardDelta",           def: "—",         desc: "Change vs an earlier period → trend variant. Shown as a pill." },
+  { name: "supportingText", type: "ReactNode",              def: "—",         desc: "One 14px line under the value, e.g. 'vs last month'." },
+  { name: "goal",           type: "KpiCardGoal",            def: "—",         desc: "Progress towards a target → goal variant." },
+  { name: "sparkline",      type: "number[]",               def: "—",         desc: "Small trend line beside the value (trend variant only)." },
+  { name: "loading",        type: "boolean",                def: "false",     desc: "Skeleton placeholders while data loads." },
+  { name: "onClick",        type: "() => void",             def: "—",         desc: "Makes the whole card a button." },
+  { name: "ariaLabel",      type: "string",                 def: "—",         desc: "Accessible name when the card is clickable." },
+  { name: "density",        type: "'default' | 'compact'",  def: "'default'", desc: "Compact drops padding from 24px to 16px." },
 ];
 
 const DELTA_PROPS: PropRow[] = [
-  { name: "value",     type: "number",                  def: "—",     desc: "Percentage change — sign derived from `direction`." },
-  { name: "direction", type: "'up' | 'down' | 'flat'",  def: "—",     desc: "Direction the metric moved." },
-  { name: "label",     type: "ReactNode",               def: "—",     desc: "Comparison text — 'vs last month', 'this week'." },
-  { name: "positive",  type: "'up' | 'down'",           def: "'up'",  desc: "Which direction is semantically good. Determines the color mapping." },
+  { name: "value",     type: "number",                 def: "—",    desc: "Percentage change. The sign comes from `direction`." },
+  { name: "direction", type: "'up' | 'down' | 'flat'", def: "—",    desc: "Which way the metric moved." },
+  { name: "positive",  type: "'up' | 'down'",          def: "'up'", desc: "Which direction is good. Sets green vs red." },
+  { name: "unit",      type: "string",                 def: "'%'",  desc: "Suffix after the value." },
+  { name: "label",     type: "ReactNode",              def: "—",    desc: "Deprecated: use `supportingText`. Ignored (with a dev warning) when both are set." },
 ];
 
-const ROW_PROPS: PropRow[] = [
-  { name: "columns", type: "2 | 3 | 4 | 5 | 6", def: "4", desc: "Wide-screen column count. Auto-drops to 2 on tablet, 1 on phone." },
-  { name: "gap",     type: "number",             def: "16", desc: "Gap between cards in px." },
+const GOAL_PROPS: PropRow[] = [
+  { name: "label",    type: "ReactNode",                              def: "—",          desc: "Shown at the right of the supporting line, e.g. 'Goal: 90%'." },
+  { name: "progress", type: "number",                                 def: "—",          desc: "0–100. Clamped." },
+  { name: "status",   type: "'on-track' | 'at-risk' | 'off-track'",   def: "'on-track'", desc: "Bar colour: green, amber or red." },
 ];
 
 function PropsTableBlock() {
@@ -201,89 +186,10 @@ function PropsTableBlock() {
         <PropsTable rows={DELTA_PROPS} />
       </div>
       <div style={{ marginTop: t.space.section.sm }}>
-        <PropSectionEyebrow>Grid</PropSectionEyebrow>
-        <PropsTable rows={ROW_PROPS} />
+        <PropSectionEyebrow>KpiCardGoal</PropSectionEyebrow>
+        <PropsTable rows={GOAL_PROPS} />
       </div>
     </DocBlock>
-  );
-}
-
-function PropSectionEyebrow({ children }: { children: ReactNode }) {
-  return (
-    <div
-      style={{
-        ...t.type.caption,
-        textTransform: "uppercase",
-        letterSpacing: "0.14em",
-        fontWeight: 700,
-        color: t.color.text.tertiary,
-        marginBottom: t.space.stack.sm,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function PropsTable({ rows }: { rows: PropRow[] }) {
-  return (
-    <div
-      style={{
-        border: `1px solid ${t.color.border.subtle}`,
-        borderRadius: t.radius.control,
-        background: t.color.background.default,
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "160px 1.4fr 100px 2fr",
-          background: t.color.background.subtle,
-          padding: `${t.space.inline.sm} ${t.space.inline.lg}`,
-          borderBottom: `1px solid ${t.color.border.subtle}`,
-        }}
-      >
-        <HeaderCell>Prop</HeaderCell>
-        <HeaderCell>Type</HeaderCell>
-        <HeaderCell>Default</HeaderCell>
-        <HeaderCell>Description</HeaderCell>
-      </div>
-      {rows.map((row, i) => (
-        <div
-          key={row.name}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "160px 1.4fr 100px 2fr",
-            padding: `${t.space.inline.md} ${t.space.inline.lg}`,
-            borderBottom: i === rows.length - 1 ? "none" : `1px solid ${t.color.border.subtle}`,
-            alignItems: "start",
-            gap: t.space.inline.md,
-          }}
-        >
-          <code style={{ fontFamily: t.font.mono, fontSize: 13, color: t.color.action.primary, fontWeight: 600 }}>{row.name}</code>
-          <code style={{ fontFamily: t.font.mono, fontSize: 12, color: t.color.text.secondary, wordBreak: "break-word" }}>{row.type}</code>
-          <code style={{ fontFamily: t.font.mono, fontSize: 12, color: t.color.text.tertiary }}>{row.def}</code>
-          <span style={{ ...t.type.bodyS, color: t.color.text.secondary }}>{row.desc}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function HeaderCell({ children }: { children: ReactNode }) {
-  return (
-    <span
-      style={{
-        fontSize: 12,
-        fontWeight: 700,
-        textTransform: "uppercase",
-        letterSpacing: "0.14em",
-        color: t.color.text.tertiary,
-      }}
-    >
-      {children}
-    </span>
   );
 }
 
@@ -294,10 +200,11 @@ function NotesBlock() {
     <DocBlock title="Notes">
       <RuleList
         rules={[
-          { tone: "must",  text: "Always set `positive` on cost / wait-time / error-rate metrics — otherwise a down-trend renders in the wrong color and confuses the story." },
-          { tone: "should", text: "Match the value's typography to its precision. '$9.8M' reads faster than '$9,821,432' on a KpiCard." },
-          { tone: "should", text: "Group up to 4-6 KpiCards in one row. More than that and the metrics blur together — reach for a Table instead." },
-          { tone: "note",   text: "Sparkline is a rough visual, not a precise chart. If consumers need axes / tooltips / legends, reach for ChartCard." },
+          { tone: "must",   text: "Never rebuild a metric tile by hand. If KpiCard can't show your metric, propose the change to the design system." },
+          { tone: "must",   text: "Set `positive: 'down'` on cost, wait-time and error-rate metrics, or a good result turns red." },
+          { tone: "must",   text: "Always give a goal bar a `label` with the figure ('26% captured', 'Goal: 90%'). The bar alone is not enough to read the value." },
+          { tone: "should", text: "Use KpiGroup for KPIs that tell one story, Grid for unrelated ones. Keep to 3–5 per row." },
+          { tone: "note",   text: "Removed in 0.16: className and style. `delta.label` is deprecated in favour of `supportingText`." },
         ]}
       />
     </DocBlock>

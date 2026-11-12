@@ -78,6 +78,9 @@ import {
   TablesDoc,
   FiltersDoc,
   NavigationDoc,
+  HeroSummaryDoc,
+  FileUploadDoc,
+  AssistantPanelDoc,
 } from "./patterns";
 
 import {
@@ -151,6 +154,9 @@ export const SECTIONS: SectionEntry[] = [
   { id: "pattern-data-table", label: "Data Table", category: "patterns", Component: DataTableDoc },
   { id: "pattern-command-palette", label: "Command Palette", category: "patterns", Component: CommandPaletteDoc },
   { id: "pattern-kpi-card",  label: "KPI Card",   category: "patterns", Component: KpiCardDoc },
+  { id: "pattern-hero-summary", label: "Hero Summary", category: "patterns", Component: HeroSummaryDoc },
+  { id: "pattern-file-upload",  label: "File Upload",  category: "patterns", Component: FileUploadDoc },
+  { id: "pattern-assistant-panel", label: "Assistant Panel", category: "patterns", Component: AssistantPanelDoc },
   { id: "pattern-chart-card", label: "Chart Card", category: "patterns", Component: ChartCardDoc },
   { id: "pattern-severity-legend", label: "Severity Legend", category: "patterns", Component: SeverityLegendDoc },
   { id: "pattern-ai-insight",      label: "AI Insight Card", category: "patterns", Component: AiInsightCardDoc },

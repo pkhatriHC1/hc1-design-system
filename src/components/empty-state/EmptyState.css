@@ -115,8 +115,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width:  56px;
-  height: 56px;
+  width:  48px;   /* SourceIQ standard (2026-11-11) */
+  height: 48px;
   border-radius: var(--hc-radius-full);
   background: var(--hc-empty-icon-bg);
   color:      var(--hc-empty-icon-fg);
@@ -153,7 +153,7 @@
   color: var(--hc-color-text-primary);
 
   font-family: var(--hc-font-sans);
-  font-size:   var(--hc-font-size-20);       /* headingS — matches Card comfortable title */
+  font-size:   var(--hc-font-size-16);       /* 16px semibold, same as card titles */
   font-weight: var(--hc-font-weight-semibold);
   line-height: 1.4;
 }
@@ -161,12 +161,13 @@
 /* ══════ DESCRIPTION ═══════════════════════════════════════════════ */
 
 .hc-empty__description {
+  /* secondary (not tertiary) so it passes AA on white */
   margin: 0;
   margin-top: var(--hc-space-stack-xs);
-  color: var(--hc-color-text-tertiary);
+  color: var(--hc-color-text-secondary);
 
   font-family: var(--hc-font-sans);
-  font-size:   var(--hc-font-size-16);       /* body */
+  font-size:   var(--hc-font-size-14);
   line-height: 1.5;
 }
 

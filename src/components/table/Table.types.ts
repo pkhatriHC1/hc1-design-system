@@ -9,9 +9,10 @@ import type {
  * Density controls the row-height ladder plus internal cell padding.
  * Row heights map 1:1 to the Button size ladder so inline Buttons and
  * Selects sit flush with a row without adding vertical noise.
- *   compact     → 28px  (Button sm)
- *   comfortable → 36px  (Button md)  ← default
- *   relaxed     → 44px  (Button lg)
+ *   comfortable → 48px — one-line rows   ← default (SourceIQ standard)
+ *   relaxed     → 64px — two-line rows (name + grey sub-line)
+ *   compact     → 36px — dense embedded views only (e.g. inside Epic)
+ * Header: 12px uppercase semibold grey. Cell padding: 12px.
  */
 export type TableDensity = "compact" | "comfortable" | "relaxed";
 

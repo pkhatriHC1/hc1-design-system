@@ -62,7 +62,9 @@ export type AppShellMainProps = HTMLAttributes<HTMLElement> & {
   /**
    * Constrain the main-content column to a max width. Content
    * remains flush-left by default; set `center` to center it.
-   * @default '100%'
+   * Leave unset: the hc1 page standard caps content at 1440px
+   * (`--hc-page-max-width`).
+   * @default 'var(--hc-page-max-width)'
    */
   maxWidth?: number | string;
   /**
@@ -73,7 +75,63 @@ export type AppShellMainProps = HTMLAttributes<HTMLElement> & {
   center?: boolean;
   /**
    * Padding around the main content. Numeric values are px.
-   * @default 24
+   * Leave unset: the hc1 page standard is 32px (`--hc-page-pad`).
+   * @default 'var(--hc-page-pad)'
    */
   padding?: number | string;
+};
+
+/**
+ * AppShell.TopBar — the hc1 top bar. Modular: fixed slots in a fixed
+ * order. `product` and `user` are required; every other slot is
+ * switched on by passing its prop. There is no className / style /
+ * children on purpose — every product's top bar is identical.
+ */
+export type AppShellTopBarProps = {
+  /** Required. hc1 + product mark on the far left. */
+  product: {
+    /** Product name, e.g. "SourceIQ". */
+    name: string;
+    /** Optional logo (img or svg), rendered 24px tall before the name. */
+    logo?: ReactNode;
+    /** Where the mark links to (usually the product home). */
+    href?: string;
+  };
+  /**
+   * Optional. Organisation context after a divider — facility or tenant
+   * name (e.g. "Memorial General Hospital"), or a facility switcher.
+   */
+  context?: ReactNode;
+  /** Optional. Search / command-palette trigger. */
+  search?: {
+    placeholder?: string;
+    /** Keyboard hint shown inside the trigger, e.g. "⌘K". */
+    shortcut?: string;
+    onOpen: () => void;
+  };
+  /** Optional. IQ Assistant launcher — always an amber CTA button. */
+  assistant?: {
+    /** @default "IQ Assistant" */
+    label?: string;
+    onClick: () => void;
+  };
+  /** Optional. Notification bell with an unread count. */
+  notifications?: {
+    count?: number;
+    onClick: () => void;
+  };
+  /** Optional. Help button — opens a URL or runs a handler. */
+  help?: {
+    href?: string;
+    onClick?: () => void;
+  };
+  /** Required. Signed-in user on the far right. */
+  user: {
+    name: string;
+    /** Role or title under the name, e.g. "Category Manager". */
+    role?: string;
+    avatarSrc?: string;
+    /** Opens the user menu. */
+    onClick?: () => void;
+  };
 };
