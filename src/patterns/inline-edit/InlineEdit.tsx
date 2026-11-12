@@ -184,7 +184,7 @@ export function InlineEdit({
           Cancel
         </Button>
         {!multiline && (
-          <span className="ml-auto text-[11px] text-[color:var(--hc-color-text-tertiary)]">
+          <span className="ml-auto text-[12px] text-[color:var(--hc-color-text-tertiary)]">
             Enter to save · Esc to cancel
           </span>
         )}

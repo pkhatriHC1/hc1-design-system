@@ -74,7 +74,7 @@ export function BulkActionBar({
     >
       <div
         data-slot="bulk-action-bar-summary"
-        className="flex items-center gap-2 text-[13px] font-medium"
+        className="flex items-center gap-2 text-[14px] font-medium"
       >
         <span
           data-slot="bulk-action-bar-count"

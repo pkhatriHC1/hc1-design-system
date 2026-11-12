@@ -79,7 +79,7 @@ function FilterBarRoot({
       {label && (
         <span
           data-slot="filter-bar-label"
-          className="text-[13px] font-medium text-[color:var(--hc-color-text-secondary)]"
+          className="text-[14px] font-medium text-[color:var(--hc-color-text-secondary)]"
         >
           {label}
         </span>

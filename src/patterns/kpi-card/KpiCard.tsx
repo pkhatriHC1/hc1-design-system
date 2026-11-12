@@ -355,7 +355,8 @@ export function KpiGroup({ children, title, action, ...rest }: KpiGroupProps) {
 function DeltaBadge({ delta }: { delta: KpiCardDelta }) {
   const tone = deltaTone(delta);
   const sign = delta.direction === "up" ? "+" : delta.direction === "down" ? "−" : "";
-  const amount = delta.direction === "flat" ? 0 : Math.abs(delta.value);
+  /* Round to one decimal so raw ratios ("4.186046…") never reach the UI. */
+  const amount = delta.direction === "flat" ? 0 : Math.round(Math.abs(delta.value) * 10) / 10;
   return (
     <span
       data-slot="kpi-card-delta"

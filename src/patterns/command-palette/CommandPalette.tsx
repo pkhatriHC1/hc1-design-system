@@ -196,7 +196,7 @@ export function CommandPalette({
             aria-label="Search commands"
             className={cn(
               "w-full border-0 bg-transparent p-0 outline-none",
-              "text-[15px] leading-tight text-[color:var(--hc-color-text-primary)]",
+              "text-[16px] leading-tight text-[color:var(--hc-color-text-primary)]",
               "placeholder:text-[color:var(--hc-color-text-tertiary)]",
             )}
           />
@@ -208,7 +208,7 @@ export function CommandPalette({
           className="max-h-[360px] overflow-y-auto p-2"
         >
           {flat.length === 0 && (
-            <div className="px-3 py-6 text-center text-[13px] text-[color:var(--hc-color-text-tertiary)]">
+            <div className="px-3 py-6 text-center text-[14px] text-[color:var(--hc-color-text-tertiary)]">
               {emptyMessage}
             </div>
           )}
@@ -219,7 +219,7 @@ export function CommandPalette({
                 <div
                   className={cn(
                     "px-3 py-1",
-                    "text-[11px] font-semibold uppercase tracking-widest",
+                    "text-[12px] font-semibold uppercase tracking-widest",
                     "text-[color:var(--hc-color-text-tertiary)]",
                   )}
                 >

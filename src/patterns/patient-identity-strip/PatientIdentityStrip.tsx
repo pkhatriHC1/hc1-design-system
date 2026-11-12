@@ -111,7 +111,7 @@ export function PatientIdentityStrip({
               data-slot="patient-identity-strip-name"
               className={cn(
                 "min-w-0 truncate font-semibold leading-tight",
-                compact ? "text-[15px]" : "text-[17px]",
+                compact ? "text-[16px]" : "text-[18px]",
                 "text-[color:var(--hc-color-text-primary)]",
               )}
             >
@@ -127,7 +127,7 @@ export function PatientIdentityStrip({
             data-slot="patient-identity-strip-mrn"
             className={cn(
               "font-mono text-[color:var(--hc-color-text-tertiary)]",
-              compact ? "text-[11px]" : "text-[12px]",
+              compact ? "text-[12px]" : "text-[12px]",
             )}
           >
             {mrn}
@@ -163,7 +163,7 @@ export function PatientIdentityStrip({
               </span>
               <span
                 className={cn(
-                  compact ? "text-[13px]" : "text-[14px]",
+                  compact ? "text-[14px]" : "text-[14px]",
                   "font-medium text-[color:var(--hc-color-text-primary)]",
                 )}
               >

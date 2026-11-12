@@ -105,7 +105,7 @@ export function SeverityLegend({
           className={cn(
             "font-semibold uppercase tracking-widest",
             "text-[color:var(--hc-color-text-tertiary)]",
-            compact ? "text-[10px]" : "text-[11px]",
+            compact ? "text-[10px]" : "text-[12px]",
           )}
           data-slot="severity-legend-title"
         >
@@ -136,7 +136,7 @@ export function SeverityLegend({
             <span
               className={cn(
                 "font-medium text-[color:var(--hc-color-text-secondary)]",
-                compact ? "text-[11px]" : "text-[12px]",
+                compact ? "text-[12px]" : "text-[12px]",
               )}
             >
               {label}

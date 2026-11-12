@@ -37,7 +37,7 @@ import type {
 
 const TRIGGER_HEIGHT: Record<ComboboxSize, string> = {
   xs: "h-[var(--hc-space-20)] text-[12px]",
-  sm: "h-[var(--hc-space-32)] text-[13px]",
+  sm: "h-[var(--hc-space-32)] text-[14px]",
   md: "h-[var(--hc-space-32)] text-[14px]",
   lg: "h-[var(--hc-space-48)] text-[16px]",
   xl: "h-[var(--hc-space-64)] text-[18px]",
@@ -233,7 +233,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
           <label
             id={labelId}
             htmlFor={triggerId}
-            className="text-[13px] font-medium text-[color:var(--hc-color-text-primary)]"
+            className="text-[14px] font-medium text-[color:var(--hc-color-text-primary)]"
           >
             {label}
             {required && (
@@ -353,7 +353,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
               className="m-0 max-h-[280px] overflow-y-auto p-1"
             >
               {filteredOptions.length === 0 && (
-                <li className="px-3 py-[var(--hc-space-16)] text-center text-[13px] text-[color:var(--hc-color-text-tertiary)]">
+                <li className="px-3 py-[var(--hc-space-16)] text-center text-[14px] text-[color:var(--hc-color-text-tertiary)]">
                   {emptyMessage}
                 </li>
               )}

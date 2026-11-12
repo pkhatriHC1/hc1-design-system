@@ -10,6 +10,8 @@ All notable changes to `@hc1/design-system` are documented here. This project fo
 - Playground pages for both.
 
 ### Fixed
+- **`KpiCard` delta** is rounded to one decimal, so raw ratios ("4.186046…%") never reach the screen.
+- **Off-scale text sizes** in ChartCard, CommandPalette, BulkActionBar, FilterBar, SeverityLegend, InlineEdit and PatientIdentityStrip (11/13/15/17px), plus DropdownMenu labels and Combobox, snapped to the type scale (12/14/16/18px).
 - **`Tabs` underline:** the tab had rounded top corners, which bent the 2px selected underline up at both ends. Underline tabs are now square; segmented tabs keep their rounded pills.
 
 ## [0.17.1] — 2026-11-13

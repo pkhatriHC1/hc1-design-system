@@ -233,7 +233,7 @@ const DropdownMenuLabel = forwardRef<HTMLDivElement, DropdownMenuLabelProps>(
         ref={forwardedRef}
         data-slot="dropdown-menu-label"
         className={cn(
-          "px-2 py-1.5 text-[11px] font-semibold uppercase tracking-widest",
+          "px-2 py-1.5 text-[12px] font-semibold uppercase tracking-widest",
           "text-[color:var(--hc-color-text-tertiary)]",
           className,
         )}

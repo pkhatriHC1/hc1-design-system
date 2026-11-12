@@ -110,7 +110,7 @@ export function ChartCard({
               <div
                 data-slot="chart-card-description"
                 className={cn(
-                  "mt-0.5 text-[13px] leading-normal",
+                  "mt-0.5 text-[14px] leading-normal",
                   "text-[color:var(--hc-color-text-tertiary)]",
                 )}
               >
