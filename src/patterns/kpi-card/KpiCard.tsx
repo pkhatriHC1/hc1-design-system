@@ -287,31 +287,65 @@ KpiCard.displayName = "KpiCard";
 
 /* ══════ KpiGroup ══════════════════════════════════════════════════ */
 
-export type KpiGroupProps = Omit<HTMLAttributes<HTMLDivElement>, "style" | "className"> & {
-  /** 2–4 KpiCards. They share one frame, split by dividers. */
+export type KpiGroupProps = Omit<HTMLAttributes<HTMLDivElement>, "style" | "className" | "title"> & {
+  /** KpiCards. They share one frame, split by dividers. Keep to 6 or fewer. */
   children: ReactNode;
+  /**
+   * Optional heading inside the frame (16px semibold). Use this instead
+   * of wrapping the group in a Card: a Card around a KpiGroup draws two
+   * borders.
+   */
+  title?: ReactNode;
+  /** Optional single action on the heading row, e.g. a ghost "View all" Button. */
+  action?: ReactNode;
 };
 
 /**
  * KpiGroup — several KpiCards in one panel with dividers (the SourceIQ
  * dashboard "Identified / Realized / Still to capture" style). Columns
- * stack on small screens.
+ * stack on small screens. With `title`, a heading row sits inside the
+ * same frame:
+ *
+ *   <KpiGroup title="All Initiatives" action={<Button variant="ghost">View all</Button>}>
+ *     <KpiCard label="Total spend" value="$48.8M" />
+ *     …
+ *   </KpiGroup>
  */
-export function KpiGroup({ children, ...rest }: KpiGroupProps) {
+export function KpiGroup({ children, title, action, ...rest }: KpiGroupProps) {
+  const hasHeader = title != null || action != null;
   return (
     <GroupContext.Provider value={true}>
-      <div
+      <section
         data-slot="kpi-group"
         className={cn(
-          "grid grid-cols-1 overflow-hidden md:auto-cols-fr md:grid-flow-col",
-          "rounded-[var(--hc-radius-surface)] border",
+          "overflow-hidden rounded-[var(--hc-radius-surface)] border",
           "border-[color:var(--hc-color-border-default)] bg-[color:var(--hc-color-bg-elevated)]",
-          "divide-y divide-[color:var(--hc-color-border-default)] md:divide-x md:divide-y-0",
         )}
         {...rest}
       >
-        {children}
-      </div>
+        {hasHeader && (
+          <div
+            data-slot="kpi-group-header"
+            className={cn(
+              "flex min-h-[var(--hc-space-64)] items-center justify-between gap-[var(--hc-space-12)]",
+              "border-b border-[color:var(--hc-color-border-default)] px-[var(--hc-space-24)] py-[var(--hc-space-12)]",
+            )}
+          >
+            {title != null && (
+              <h2 className="m-0 text-[16px] font-semibold text-[color:var(--hc-color-text-primary)]">{title}</h2>
+            )}
+            {action != null && <div className="ml-auto shrink-0">{action}</div>}
+          </div>
+        )}
+        <div
+          className={cn(
+            "grid grid-cols-1 md:auto-cols-fr md:grid-flow-col",
+            "divide-y divide-[color:var(--hc-color-border-default)] md:divide-x md:divide-y-0",
+          )}
+        >
+          {children}
+        </div>
+      </section>
     </GroupContext.Provider>
   );
 }

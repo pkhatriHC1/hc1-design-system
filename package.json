@@ -1,6 +1,6 @@
 {
   "name": "@hc1com/design-system",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "description": "HC1 design system — Radix + Tailwind v4 + cva composition, HC1 tokens. Shared UI package for ClinicalIQ, SourceIQ, HerCare, and future modules.",
   "type": "module",
   "sideEffects": [
@@ -124,7 +124,8 @@
     }
   },
   "dependencies": {
-    "lucide-react": "^0.468.0"
+    "lucide-react": "^0.468.0",
+    "react-day-picker": "^9.14.0"
   },
   "devDependencies": {
     "@fontsource/geist": "^5.3.0",

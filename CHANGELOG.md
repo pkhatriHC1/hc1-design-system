@@ -2,6 +2,16 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.0] — 2026-11-13
+
+### Added
+- **`Calendar`** component: single dates or ranges, built on `react-day-picker` (new runtime dependency, installed automatically) and styled only with DS tokens. Keyboard navigation and ARIA grid roles included. No className or style.
+- **`TimeRangeFilter`** pattern: preset ranges as segmented pills, plus an optional **Custom** pill that opens a two-month range calendar with Cancel/Apply. The applied range is shown on the pill. Future dates are disabled by default. Goes in `PageHeader`'s `actions` slot, on the title row. Replaces `Tabs variant="segmented"` + native date inputs for dashboard time ranges.
+- **`KpiGroup` `title` and `action`**: an optional heading row inside the group's frame. Use it instead of wrapping a KpiGroup in a Card, which drew two borders.
+
+### Docs
+- New playground page: Time Range Filter (with the standalone Calendar).
+
 ## [0.16.1] — 2026-11-13
 
 ### Fixed

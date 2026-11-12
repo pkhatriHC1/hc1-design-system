@@ -105,7 +105,7 @@ function GroupBlock() {
   return (
     <DocBlock
       title="KpiGroup — related metrics in one card"
-      lead="When several KPIs tell one story (identified → realized → still to capture), put them in a KpiGroup. It draws one card with dividers instead of separate tiles. Use Grid for unrelated KPIs."
+      lead="When several KPIs tell one story (identified → realized → still to capture), put them in a KpiGroup. It draws one card with dividers instead of separate tiles. Need a heading? Pass `title` (and an optional `action`) instead of wrapping the group in a Card, which would draw two borders. Use Grid for unrelated KPIs."
     >
       <KpiGroup>
         <KpiCard icon={<Target />} label="Identified savings" value="9,769,947" supportingText="across 12 initiatives" />
