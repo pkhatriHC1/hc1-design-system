@@ -1,4 +1,4 @@
-# @hc1/design-system
+# @hc1com/design-system
 
 Shared UI package for every HC1 IQ product — **ClinicalIQ**, **SourceIQ**, **HerCare**, and any future module. One source of truth for tokens, components, and the interactive playground.
 
@@ -7,7 +7,7 @@ Built on the [**shadcn/ui**](https://ui.shadcn.com) composition model — Radix 
 - **Live playground:** https://pkhatrihc1.github.io/hc1-design-system/
 - **Repo:** https://github.com/pkhatriHC1/hc1-design-system
 - **Current version:** `0.13.0`
-- **Public surface:** 32 components (`@hc1/design-system`) + 24 opinionated patterns (`@hc1/design-system/patterns`) + tokens + styles subpaths.
+- **Public surface:** 32 components (`@hc1com/design-system`) + 24 opinionated patterns (`@hc1com/design-system/patterns`) + tokens + styles subpaths.
 
 ---
 
@@ -16,12 +16,12 @@ Built on the [**shadcn/ui**](https://ui.shadcn.com) composition model — Radix 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
 │  Consumer app (SourceIQ, ClinicalIQ, HerCare…)                    │
-│  import { Button, Card } from "@hc1/design-system"                │
-│  import "@hc1/design-system/styles"                               │
+│  import { Button, Card } from "@hc1com/design-system"                │
+│  import "@hc1com/design-system/styles"                               │
 └──────────────────┬────────────────────────────────────────────────┘
                    │
 ┌──────────────────▼────────────────────────────────────────────────┐
-│  @hc1/design-system  (this package, ships as compiled dist/)      │
+│  @hc1com/design-system  (this package, ships as compiled dist/)      │
 │  ┌────────────────────────────────────────────────────────────┐   │
 │  │  Components — cva + cn + Tailwind v4 classes               │   │
 │  │  ┌────────────────────────────────────────────────────┐    │   │
@@ -92,16 +92,21 @@ Products already using shadcn/ui (SourceIQ, ClinicalIQ, HerCare) migrate by swap
 
 **How consumers install:**
 
-- **Private Artifactory (target state):** `npm install @hc1/design-system@^0.13` with `.npmrc` pointing `@hc1:registry=https://hc1repo.jfrog.io/…`
-- **Git URL (current):** `"@hc1/design-system": "github:pkhatriHC1/hc1-design-system#v0.13.0"` — the `prepare` script auto-runs `tsup` on install, so `dist/` always exists.
-- **Local file: dep (monorepo dev):** `"@hc1/design-system": "file:../hc1-design-system"` — same auto-build via `prepare`.
+- **Private Artifactory (target state):** `npm install @hc1com/design-system@^0.13` with `.npmrc` pointing `@hc1:registry=https://hc1repo.jfrog.io/…`
+- **Release file (recommended for Bolt and other sandboxes):** download the built package attached to each GitHub release into the project, then depend on it locally — no build step, no registry login:
+  ```bash
+  curl -L -o hc1com-design-system-0.16.1.tgz https://github.com/pkhatriHC1/hc1-design-system/releases/download/v0.16.1/hc1com-design-system-0.16.1.tgz
+  ```
+  `"@hc1com/design-system": "file:./hc1com-design-system-0.16.1.tgz"`. (npm inside Bolt can't follow GitHub's release-download redirect, so use curl, not a URL dependency.)
+- **Git URL:** `"@hc1com/design-system": "github:pkhatriHC1/hc1-design-system#v0.16.1"` — the `prepare` script auto-runs `tsup` on install, so `dist/` always exists.
+- **Local file: dep (monorepo dev):** `"@hc1com/design-system": "file:../hc1-design-system"` — same auto-build via `prepare`.
 
 ---
 
 ## Installation
 
 ```bash
-npm install @hc1/design-system
+npm install @hc1com/design-system react-hook-form recharts
 ```
 
 Peer dependencies (must be present in the consumer):
@@ -113,10 +118,12 @@ Peer dependencies (must be present in the consumer):
 - `tailwind-merge ^3.6`
 - `@radix-ui/react-avatar`, `-dialog`, `-dropdown-menu`, `-popover`, `-select`, `-slot`, `-tabs`, `-tooltip`, `-progress`, `-separator`, `-scroll-area`
 
-**Optional peers (only needed for specific `@hc1/design-system/patterns` exports):**
+**Also required if you import anything from `@hc1com/design-system/patterns`** (PageTemplate, KpiCard, HeroSummary and every other pattern):
 
-- `react-hook-form ^7` — required by `<Form>` / `<FormInput>` / etc. Products that don't build forms can skip.
-- `recharts ^2 || ^3` — required by `<ChartCard>`. Products without charts can skip.
+- `react-hook-form ^7`
+- `recharts ^2 || ^3`
+
+The patterns entry point loads the form and chart patterns too, so these two are needed even if your product has no forms or charts.
 
 Runtime dep (installed automatically): `lucide-react`.
 
@@ -158,12 +165,15 @@ Defense-in-depth. Even with compiled `dist/`, a transitive dep can pull in a dif
 
 The `$@types/react` syntax forces every nested version to match the top-level one.
 
-### 3. Import the styles once
+### 3. Import the styles once — in your main CSS file, not in JS
 
-```ts
-// consumer's app entry (main.tsx, _app.tsx, etc.)
-import "@hc1/design-system/styles";
+```css
+/* src/index.css (the file with your Tailwind import) */
+@import "tailwindcss";
+@import "@hc1com/design-system/styles";
 ```
+
+It must be in the same CSS file as `@import "tailwindcss"`, right after it. The stylesheet tells Tailwind to scan the design system's code; that only works inside your Tailwind CSS file. Importing it from `main.tsx` loads the tokens but generates none of the component classes, so the shell renders unstyled.
 
 This one import brings:
 - HC1's primitive tokens (`--hc-color-brand-500` etc.)
@@ -178,9 +188,9 @@ This one import brings:
 ## Usage
 
 ```tsx
-import { Button, Card, Dialog, Progress } from "@hc1/design-system";
-import { primitives, aliases } from "@hc1/design-system/tokens";
-import "@hc1/design-system/styles"; // once, at app entry
+import { Button, Card, Dialog, Progress } from "@hc1com/design-system";
+import { primitives, aliases } from "@hc1com/design-system/tokens";
+import "@hc1com/design-system/styles"; // once, at app entry
 
 export function App() {
   return (
@@ -200,14 +210,14 @@ export function App() {
 To mount the interactive documentation app (dev-mode only, don't ship to production):
 
 ```tsx
-import { DesignSystemPlayground } from "@hc1/design-system/playground";
+import { DesignSystemPlayground } from "@hc1com/design-system/playground";
 ```
 
 ---
 
 ## Public exports
 
-### `@hc1/design-system` (root)
+### `@hc1com/design-system` (root)
 
 **32 components**, one named export each:
 
@@ -222,11 +232,11 @@ import { DesignSystemPlayground } from "@hc1/design-system/playground";
 | `Sidebar` | `Skeleton` | `Switch` | `Table` |
 | `Tabs` | `Textarea` | `Toast` | `Tooltip` |
 
-Plus the `tokens` namespace: `import { tokens } from "@hc1/design-system"` → `tokens.primitives`, `tokens.aliases`, etc.
+Plus the `tokens` namespace: `import { tokens } from "@hc1com/design-system"` → `tokens.primitives`, `tokens.aliases`, etc.
 
 `EmptyState` also ships five preset shortcut components — `NoDataEmptyState`, `NoResultsEmptyState`, `ErrorEmptyState`, `PermissionDeniedEmptyState`, `OfflineEmptyState` — that pick the right variant + default icon for the four scenarios that account for ~80% of empty states.
 
-### `@hc1/design-system/patterns`
+### `@hc1com/design-system/patterns`
 
 **24 opinionated compositions** covering the surfaces every HC1 product rebuilds — forms, worklists, dashboards, detail pages, clinical patterns:
 
@@ -240,9 +250,9 @@ Plus the `tokens` namespace: `import { tokens } from "@hc1/design-system"` → `
 | **Clinical / HC1-specific** | `SeverityLegend`, `AiInsightCard` (only sanctioned violet AI-token use), `PatientIdentityStrip` |
 | **B-tier** | `Wizard`, `InlineEdit` |
 
-**Why patterns are a separate subpath:** they're OPINIONATED (density, spacing, layout, slot policy) while the main `@hc1/design-system` export is UNOPINIONATED primitives. Patterns iterate faster than primitives — the subpath split means changes to `<DataTable>` don't force a primitives semver bump. See `PATTERNS_LOG.md` for the roadmap + decisions.
+**Why patterns are a separate subpath:** they're OPINIONATED (density, spacing, layout, slot policy) while the main `@hc1com/design-system` export is UNOPINIONATED primitives. Patterns iterate faster than primitives — the subpath split means changes to `<DataTable>` don't force a primitives semver bump. See `PATTERNS_LOG.md` for the roadmap + decisions.
 
-### `@hc1/design-system/tokens`
+### `@hc1com/design-system/tokens`
 
 Direct access to the three-layer token system:
 
@@ -251,11 +261,11 @@ Direct access to the three-layer token system:
 - **`components`** — per-component token bundles (`button.paddingX`, `card.borderRadius`, etc.).
 - **`types`** — shared TypeScript token types (`ColorScale`, `TypographyStyle`).
 
-### `@hc1/design-system/styles`
+### `@hc1com/design-system/styles`
 
 The CSS bridge — every token exported as a `--hc-*` custom property, every shadcn semantic var (`--primary`, `--border`, etc.) mapped to an HC1 alias.
 
-### `@hc1/design-system/playground`
+### `@hc1com/design-system/playground`
 
 The interactive documentation app. Dev-mode only — don't bundle into production.
 
@@ -336,7 +346,7 @@ The playground (`src/DesignSystemPlayground.tsx` + `preview/`) auto-deploys to h
 
 ```
 hc1-design-system/
-├── package.json           — @hc1/design-system, semver 0.x
+├── package.json           — @hc1com/design-system, semver 0.x
 ├── tsup.config.ts         — build config (ESM + CJS + .d.ts + .d.cts)
 ├── tsconfig.json          — strict, ES2022, JSX react-jsx
 ├── README.md              — this file
@@ -416,7 +426,7 @@ git push
 5. Update this README's component table.
 6. Update `CHANGELOG.md` with the addition.
 
-**Adding a pattern (`@hc1/design-system/patterns`):**
+**Adding a pattern (`@hc1com/design-system/patterns`):**
 
 1. First check `PATTERNS_LOG.md` — the roadmap has 7 phases and each pattern lives inside one. Ad-hoc additions should either fit a phase or extend the log.
 2. Create `src/patterns/<name>/{Name.tsx, index.ts}` — compose DS primitives, encode HC1 opinions (density, spacing, slot policy).
@@ -448,14 +458,14 @@ No dependency on ClinicalIQ, SourceIQ, or any product. The package is independen
 
 - `0.11` — `Sidebar`, `AppShell`, `PageHeader`, `SectionLabel` added.
 - `0.12` — `Button` rebuilt for shadcn/SourceIQ parity + `asChild`.
-- `0.13` — `Avatar`, `Combobox`, `DropdownMenu` primitives + the full `@hc1/design-system/patterns` subpath with 24 opinionated compositions (Form / DataTable / ChartCard / PageTemplate / CommandPalette / clinical patterns / …).
+- `0.13` — `Avatar`, `Combobox`, `DropdownMenu` primitives + the full `@hc1com/design-system/patterns` subpath with 24 opinionated compositions (Form / DataTable / ChartCard / PageTemplate / CommandPalette / clinical patterns / …).
 
 See `CHANGELOG.md` for the full log and `PATTERNS_LOG.md` for the patterns roadmap.
 
 **1.0.0 will ship only when all four gates are cleared:**
 
-1. ClinicalIQ is fully migrated onto `@hc1/design-system`.
-2. SourceIQ is fully migrated onto `@hc1/design-system` (in progress — see `sourceiq-hc1com/docs/DESIGN_SYSTEM_MIGRATION.md`).
+1. ClinicalIQ is fully migrated onto `@hc1com/design-system`.
+2. SourceIQ is fully migrated onto `@hc1com/design-system` (in progress — see `sourceiq-hc1com/docs/DESIGN_SYSTEM_MIGRATION.md`).
 3. The legacy design systems inside both products are removed.
 4. The public API has absorbed at least one round of migration feedback without a breaking change.
 

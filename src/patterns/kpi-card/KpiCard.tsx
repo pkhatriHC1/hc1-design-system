@@ -230,7 +230,10 @@ export const KpiCard = forwardRef<HTMLDivElement, KpiCardProps>(function KpiCard
   );
 
   const frameClasses = cn(
-    "block w-full text-left",
+    /* flex-col + justify-start: a clickable card renders as <button>, which
+       centres its content vertically by default. Pin content to the top so
+       labels line up across a KpiGroup row. */
+    "flex h-full w-full flex-col justify-start text-left",
     inGroup
       ? "p-[var(--hc-space-24)]"
       : cn(
