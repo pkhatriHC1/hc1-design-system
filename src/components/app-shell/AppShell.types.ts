@@ -131,7 +131,27 @@ export type AppShellTopBarProps = {
     /** Role or title under the name, e.g. "Category Manager". */
     role?: string;
     avatarSrc?: string;
-    /** Opens the user menu. */
+    /** Optional email shown at the top of the user menu. */
+    email?: string;
+    /**
+     * Items for the user menu. When set, clicking the user opens a menu
+     * with the user's name, role and email at the top, then these items.
+     * Mark sign-out with `destructive` and put it last.
+     */
+    menu?: AppShellUserMenuItem[];
+    /** Custom handler instead of the built-in menu. Ignored when `menu` is set. */
     onClick?: () => void;
   };
+};
+
+/** One item in the AppShell.TopBar user menu. */
+export type AppShellUserMenuItem = {
+  label: string;
+  /** Optional 16px lucide icon. */
+  icon?: ReactNode;
+  onSelect: () => void;
+  /** Destructive styling, e.g. Sign out. */
+  destructive?: boolean;
+  /** Draw a separator above this item, e.g. to set Sign out apart. */
+  separatorBefore?: boolean;
 };

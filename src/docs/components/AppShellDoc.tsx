@@ -160,7 +160,11 @@ function LiveBlock() {
             search={{ placeholder: "Search", shortcut: "⌘K", onOpen: () => {} }}
             assistant={{ onClick: () => {} }}
             notifications={{ count: 3, onClick: () => {} }}
-            user={{ name: "Lisa Chen", role: "Category Manager", onClick: () => {} }}
+            user={{ name: "Lisa Chen", role: "Category Manager", email: "lisa.chen@hc1.com", menu: [
+              { label: "Profile", onSelect: () => {} },
+              { label: "Preferences", onSelect: () => {} },
+              { label: "Sign out", destructive: true, separatorBefore: true, onSelect: () => {} },
+            ] }}
           />
 
           <Sidebar defaultCollapsed persistKey={false} ariaLabel="Preview sidebar">
@@ -213,7 +217,7 @@ type PropRow = { name: string; type: string; def: string; desc: string };
 
 const TOPBAR_PROPS: PropRow[] = [
   { name: "product",       type: "{ name; logo?; href? }",                  def: "—", desc: "Required. Product name, optional logo and home link. Always on the left." },
-  { name: "user",          type: "{ name; role?; avatarSrc?; onClick? }",   def: "—", desc: "Required. Avatar, name and role. Always last on the right." },
+  { name: "user",          type: "{ name; role?; avatarSrc?; email?; menu?; onClick? }",   def: "—", desc: "Required. Avatar, name and role. Always last on the right. Pass `menu` (label, icon?, onSelect, destructive?, separatorBefore?) to open the standard user menu with name, role and email at the top." },
   { name: "context",       type: "ReactNode",                               def: "—", desc: "Optional. Organisation, site or patient context, after a divider next to the product." },
   { name: "search",        type: "{ placeholder?; shortcut?; onOpen }",     def: "—", desc: "Optional. A search trigger that opens your search or command palette." },
   { name: "assistant",     type: "{ label?; onClick }",                     def: "—", desc: "Optional. The amber IQ Assistant launcher. Pair it with <AssistantPanel>." },

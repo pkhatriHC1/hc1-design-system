@@ -1,9 +1,10 @@
-import { forwardRef } from "react";
+import { Fragment, forwardRef } from "react";
 import type { ReactNode } from "react";
-import { Bell, CircleHelp, Search, Sparkles } from "lucide-react";
+import { Bell, ChevronDown, CircleHelp, Search, Sparkles } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { Avatar } from "../avatar";
 import { Button } from "../button";
+import { DropdownMenu } from "../dropdown-menu";
 import type { AppShellTopBarProps } from "./AppShell.types";
 
 /**
@@ -197,6 +198,48 @@ function UserBlock({ user }: { user: AppShellTopBarProps["user"] }) {
     "inline-flex items-center gap-[var(--hc-space-8)] rounded-[var(--hc-radius-control)]",
     "px-[var(--hc-space-4)] py-[var(--hc-space-4)]",
   );
+  if (user.menu && user.menu.length > 0) {
+    return (
+      <DropdownMenu>
+        <DropdownMenu.Trigger asChild>
+          <button
+            type="button"
+            data-slot="app-shell-topbar-user"
+            aria-label={`${user.name} — account menu`}
+            className={cn(
+              classes,
+              "hover:bg-[color:var(--hc-color-bg-subtle)] data-[state=open]:bg-[color:var(--hc-color-bg-subtle)]",
+              "focus:outline-none focus-visible:outline focus-visible:outline-2",
+              "focus-visible:outline-[color:var(--hc-color-border-focus)] focus-visible:outline-offset-2",
+            )}
+          >
+            {content}
+            <ChevronDown aria-hidden className="size-[var(--hc-space-16)] text-[color:var(--hc-color-text-tertiary)]" />
+          </button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content size="md" align="end">
+          <div data-slot="app-shell-user-menu-header" className="flex items-center gap-[var(--hc-space-12)] px-[var(--hc-space-8)] py-[var(--hc-space-8)]">
+            <Avatar size="md" name={user.name} src={user.avatarSrc} />
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="truncate text-[14px] font-semibold text-[color:var(--hc-color-text-primary)]">{user.name}</span>
+              {user.role && <span className="truncate text-[12px] text-[color:var(--hc-color-text-tertiary)]">{user.role}</span>}
+              {user.email && <span className="truncate text-[12px] text-[color:var(--hc-color-text-tertiary)]">{user.email}</span>}
+            </span>
+          </div>
+          <DropdownMenu.Separator />
+          {user.menu.map((item) => (
+            <Fragment key={item.label}>
+              {item.separatorBefore && <DropdownMenu.Separator />}
+              <DropdownMenu.Item destructive={item.destructive} onSelect={item.onSelect}>
+                {item.icon}
+                {item.label}
+              </DropdownMenu.Item>
+            </Fragment>
+          ))}
+        </DropdownMenu.Content>
+      </DropdownMenu>
+    );
+  }
   return user.onClick ? (
     <button
       type="button"

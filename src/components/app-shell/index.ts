@@ -5,4 +5,5 @@ export type {
   AppShellFooterProps,
   AppShellMainProps,
   AppShellTopBarProps,
+  AppShellUserMenuItem,
 } from "./AppShell.types";

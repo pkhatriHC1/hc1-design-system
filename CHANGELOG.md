@@ -2,6 +2,11 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.5] — 2026-11-13
+
+### Added
+- **User menu in `AppShell.TopBar`.** Pass `user.menu` (items with `label`, optional `icon`, `onSelect`, `destructive` and `separatorBefore`) and clicking the user opens the standard menu: avatar, name, role and optional `user.email` at the top, then the items. Every product gets the same menu, e.g. Profile, Preferences, then Sign out. `user.onClick` still works for a custom handler when no `menu` is set.
+
 ## [0.18.4] — 2026-11-13
 
 ### Added
