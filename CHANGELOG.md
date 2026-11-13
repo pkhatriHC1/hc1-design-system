@@ -2,6 +2,12 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.3] — 2026-11-13
+
+### Fixed
+- **Sidebar labels were centred** when a `Sidebar.Item` or `Sidebar.Group` used `onClick` instead of a link, because a button centres its text by default. Labels now start at the left in every form.
+- **Avatar initials were 11, 13 and 15px** at the sm, md and lg sizes, which are off the type scale. They are now 12, 14 and 16px.
+
 ## [0.18.2] — 2026-11-13
 
 ### Fixed

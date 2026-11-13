@@ -32,11 +32,12 @@ const SIZE_PX: Record<AvatarSize, number> = {
   xl: 56,
 };
 
+/* Initials sit on the type scale (10 / 12 / 14 / 16 / 20). */
 const FALLBACK_TEXT_PX: Record<AvatarSize, number> = {
   xs: 10,
-  sm: 11,
-  md: 13,
-  lg: 15,
+  sm: 12,
+  md: 14,
+  lg: 16,
   xl: 20,
 };
 
