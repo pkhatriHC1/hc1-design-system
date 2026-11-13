@@ -95,10 +95,10 @@ Products already using shadcn/ui (SourceIQ, ClinicalIQ, HerCare) migrate by swap
 - **Private Artifactory (target state):** `npm install @hc1com/design-system@^0.13` with `.npmrc` pointing `@hc1:registry=https://hc1repo.jfrog.io/…`
 - **Release file (recommended for Bolt and other sandboxes):** download the built package attached to each GitHub release into the project, then depend on it locally — no build step, no registry login:
   ```bash
-  curl -L -o hc1com-design-system-0.18.3.tgz https://github.com/pkhatriHC1/hc1-design-system/releases/download/v0.18.3/hc1com-design-system-0.18.3.tgz
+  curl -L -o hc1com-design-system-0.18.4.tgz https://github.com/pkhatriHC1/hc1-design-system/releases/download/v0.18.4/hc1com-design-system-0.18.4.tgz
   ```
-  `"@hc1com/design-system": "file:./hc1com-design-system-0.18.3.tgz"`. (npm inside Bolt can't follow GitHub's release-download redirect, so use curl, not a URL dependency.)
-- **Git URL:** `"@hc1com/design-system": "github:pkhatriHC1/hc1-design-system#v0.18.3"` — the `prepare` script auto-runs `tsup` on install, so `dist/` always exists.
+  `"@hc1com/design-system": "file:./hc1com-design-system-0.18.4.tgz"`. (npm inside Bolt can't follow GitHub's release-download redirect, so use curl, not a URL dependency.)
+- **Git URL:** `"@hc1com/design-system": "github:pkhatriHC1/hc1-design-system#v0.18.4"` — the `prepare` script auto-runs `tsup` on install, so `dist/` always exists.
 - **Local file: dep (monorepo dev):** `"@hc1com/design-system": "file:../hc1-design-system"` — same auto-build via `prepare`.
 
 ---

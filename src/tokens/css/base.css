@@ -1,0 +1,32 @@
+/* ═══════════════════════════════════════════════════════════════════
+ * HC1 base styles — the page defaults every app needs, so no product
+ * re-declares them locally.
+ *
+ *   - Tailwind v4 borders default to currentColor; HC1 borders default
+ *     to the default border token.
+ *   - The page background, body text colour and font.
+ *   - Pointer cursor on enabled buttons (Tailwind v4 preflight removes it).
+ *   - Printed pages drop the grey page background.
+ * ─────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: var(--hc-color-border-default);
+  }
+
+  body {
+    background-color: var(--hc-color-bg-page);
+    color: var(--hc-color-text-primary);
+    font-family: var(--hc-font-sans);
+  }
+
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  @media print {
+    body {
+      background-color: var(--hc-color-bg-surface);
+    }
+  }
+}

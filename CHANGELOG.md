@@ -2,6 +2,15 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.4] — 2026-11-13
+
+### Added
+- **Base page styles ship with the tokens.** `@hc1com/design-system/styles` now sets the default border colour, the page background, body text colour and font, the pointer cursor on enabled buttons, and a white background when printing. Apps no longer declare these in their own CSS, so `index.css` is just the two imports:
+  ```css
+  @import "tailwindcss";
+  @import "@hc1com/design-system/styles";
+  ```
+
 ## [0.18.3] — 2026-11-13
 
 ### Fixed
