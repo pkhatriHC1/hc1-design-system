@@ -35,10 +35,24 @@ export default defineConfig({
     // arbitrary utility classes baked into our compiled JS (e.g. bg-[linear-gradient(...)]).
     // Without @source, HC1-authored components render unstyled in the consumer
     // because Tailwind never sees the class strings inside dist/*.js.
+    // Component stylesheets (plain CSS, not Tailwind classes). The JS
+    // entries import them, but tsup only extracts them to dist/index.css,
+    // which consumers never load, so EmptyState, Skeleton and Gauge
+    // rendered unstyled. Ship them next to styles.css and import them.
+    const componentCss = [
+      "empty-state/EmptyState.css",
+      "skeleton/Skeleton.css",
+      "gauge/Gauge.css",
+    ];
+    mkdirSync("dist/components", { recursive: true });
+    for (const file of componentCss) {
+      cpSync(`src/components/${file}`, `dist/components/${file.split("/")[1]}`);
+    }
     writeFileSync(
       "dist/styles.css",
       [
         '@import "./tokens/css/variables.css";',
+        ...componentCss.map(file => `@import "./components/${file.split("/")[1]}";`),
         '@source "./index.js";',
         '@source "./index.cjs";',
         '@source "./patterns/index.js";',

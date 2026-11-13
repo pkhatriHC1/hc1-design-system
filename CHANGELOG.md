@@ -2,6 +2,11 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.1] — 2026-11-13
+
+### Fixed
+- **EmptyState, Skeleton and Gauge rendered unstyled in apps.** Their stylesheets are plain CSS imported by the components, but the build only put them in `dist/index.css`, which apps never load. `@hc1com/design-system/styles` now imports them, so an empty state shows its icon circle, centred title and spacing.
+
 ## [0.18.0] — 2026-11-13
 
 ### Added
