@@ -94,7 +94,7 @@ export function PatientIdentityStrip({
       data-slot="patient-identity-strip"
       className={cn(
         "flex flex-wrap items-center gap-[var(--hc-space-16)]",
-        "rounded-[var(--hc-radius-control)] border",
+        "rounded-[var(--hc-radius-surface)] border",
         "border-[color:var(--hc-color-border-subtle)]",
         "bg-[color:var(--hc-color-bg-elevated)]",
         compact ? "p-[var(--hc-space-8)]" : "p-[var(--hc-space-16)]",

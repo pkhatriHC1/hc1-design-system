@@ -200,12 +200,14 @@ export const KpiCard = forwardRef<HTMLDivElement, KpiCardProps>(function KpiCard
       {/* Row 3 — supporting text + goal label */}
       {(supporting || goal) && (
         <div className="flex items-baseline justify-between gap-[var(--hc-space-12)]">
-          <span
-            data-slot="kpi-card-supporting"
-            className="min-w-0 text-[14px] leading-[1.4] text-[color:var(--hc-color-text-supporting)]"
-          >
-            {supporting}
-          </span>
+          {supporting && (
+            <span
+              data-slot="kpi-card-supporting"
+              className="min-w-0 text-[14px] leading-[1.4] text-[color:var(--hc-color-text-supporting)]"
+            >
+              {supporting}
+            </span>
+          )}
           {goal && (
             <span
               data-slot="kpi-card-goal-label"

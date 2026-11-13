@@ -79,7 +79,7 @@ export function ChartCard({
     <div
       data-slot="chart-card"
       className={cn(
-        "flex flex-col rounded-[var(--hc-radius-control)] border",
+        "flex flex-col rounded-[var(--hc-radius-surface)] border",
         "border-[color:var(--hc-color-border-subtle)]",
         "bg-[color:var(--hc-color-bg-elevated)]",
         className,

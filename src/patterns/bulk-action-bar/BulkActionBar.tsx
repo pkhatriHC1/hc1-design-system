@@ -59,7 +59,7 @@ export function BulkActionBar({
       data-variant={variant}
       className={cn(
         "flex flex-wrap items-center gap-3",
-        "rounded-[var(--hc-radius-control)] border shadow-[var(--hc-shadow-sm)]",
+        "rounded-[var(--hc-radius-surface)] border shadow-[var(--hc-shadow-sm)]",
         "border-[color:var(--hc-color-brand-100)]",
         "bg-[color:var(--hc-color-brand-50)]",
         "px-[var(--hc-space-16)] py-[var(--hc-space-8)]",

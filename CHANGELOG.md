@@ -2,6 +2,13 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.2] — 2026-11-13
+
+### Fixed
+- **Surface radius is 12px everywhere.** ChartCard, PatientIdentityStrip and BulkActionBar used the 8px control radius; they now use the 12px surface radius like Card, KpiGroup, Alert, Dialog and Drawer. Controls (buttons, fields, chips) and tiles inside a card keep 8px.
+- **KpiCard goal label** sat on the right with an empty space beside it when there was no supporting text. It now starts at the left edge in that case.
+- **Card.Actions** are centred against the header text instead of pinned to its top, so a button lines up with a two-line title and description.
+
 ## [0.18.1] — 2026-11-13
 
 ### Fixed

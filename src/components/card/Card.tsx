@@ -444,7 +444,7 @@ CardFooter.displayName = "Card.Footer";
 
 const actionsVariants = cva(
   cn(
-    "flex flex-wrap items-center min-w-0",
+    "flex flex-wrap items-center min-w-0 self-center",
     "gap-[var(--hc-card-actions-gap)]",
   ),
   {
