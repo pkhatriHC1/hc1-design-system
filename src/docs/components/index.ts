@@ -24,5 +24,6 @@ export * from "./ToastDoc";
 export * from "./CheckboxDoc";
 export * from "./RadioDoc";
 export * from "./SwitchDoc";
+export * from "./SliderDoc";
 export * from "./TextareaDoc";
 export * from "./GaugeDoc";

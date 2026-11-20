@@ -2,6 +2,11 @@
 
 All notable changes to `@hc1/design-system` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.0] — 2026-11-20
+
+### Added
+- **Slider.** Pick a number on a range by dragging, with optional exact entry. Props: `value` / `defaultValue` / `onChange(number)`, `min` / `max` / `step`, `label`, `description`, `unit`, `showInput` (editable number box kept in sync), `marks` (reference points such as a benchmark: `{ value, label }`), `startLabel` / `endLabel` (captions under the ends, e.g. "Liberal" / "Restrictive"), `size` (`sm` | `md`), `disabled`, `invalid`, `formatValue`. Built on a native range input like Checkbox and Switch, so apps install nothing new. Docs: Components → Slider. Replaces the local range input in PBM's goal settings.
+
 ## [0.18.5] — 2026-11-13
 
 ### Added

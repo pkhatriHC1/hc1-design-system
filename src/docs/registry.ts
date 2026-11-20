@@ -50,6 +50,7 @@ import {
   CheckboxDoc,
   RadioDoc,
   SwitchDoc,
+  SliderDoc,
   TextareaDoc,
   GaugeDoc,
   ComboboxDoc,
@@ -146,6 +147,7 @@ export const SECTIONS: SectionEntry[] = [
   { id: "checkbox",     label: "Checkbox",     category: "components",  Component: CheckboxDoc },
   { id: "radio",        label: "Radio",        category: "components",  Component: RadioDoc },
   { id: "switch",       label: "Switch",       category: "components",  Component: SwitchDoc },
+  { id: "slider",       label: "Slider",       category: "components",  Component: SliderDoc },
   { id: "textarea",     label: "Textarea",     category: "components",  Component: TextareaDoc },
   { id: "gauge",        label: "Gauge",        category: "components",  Component: GaugeDoc },
 

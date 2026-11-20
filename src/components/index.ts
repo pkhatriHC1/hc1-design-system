@@ -26,6 +26,7 @@ export * from "./drawer";
 export * from "./checkbox";
 export * from "./radio";
 export * from "./switch";
+export * from "./slider";
 export * from "./textarea";
 export * from "./tooltip";
 export * from "./popover";
